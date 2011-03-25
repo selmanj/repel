@@ -1,9 +1,6 @@
 package edu.oregonstate.eecs.iis.pel.temporal;
 
 public class SpanInterval {
-	
-	
-
 	private int startFrom, startTo;
 	private boolean startFromInc, startToInc;
 	private int endFrom, endTo;
@@ -72,24 +69,6 @@ public class SpanInterval {
 		
 		return sb.toString();
 	}
-	
-	/*
-	public String toStringSetNotation() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("{");
-		sb.append((startInclusive ? "[" : "("));
-		sb.append("q, r");
-		sb.append((endInclusive ? "]" : ")"));
-		sb.append("|");
-		sb.append("(" + start.getStart() + (start.isStartInclusive() ? " <= " : " < " ) 
-				+ "q" + (start.isEndInclusive() ? " <= " : " < " ) + start.getEnd() + ")");
-		sb.append(" ^ ");
-		sb.append("(" + end.getStart() + (end.isStartInclusive() ? " <= " : " < " ) 
-				+ "r" + (end.isEndInclusive() ? " <= " : " < " ) + end.getEnd() + ")");
-		sb.append("}");
-		return sb.toString();
-	}
-	*/
 	
 	public int getStartFrom() {
 		return startFrom;
