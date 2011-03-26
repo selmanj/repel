@@ -1,5 +1,10 @@
 package edu.oregonstate.eecs.iis.pel.temporal;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class SpanInterval {
 	private int startFrom, startTo;
 	private boolean startFromInc, startToInc;
@@ -10,6 +15,8 @@ public class SpanInterval {
 	
 	public static final int POSITIVE_INF = Integer.MAX_VALUE;
 	public static final int NEGATIVE_INF = Integer.MIN_VALUE;
+	
+	private static final Pattern SPAN_PATTERN = Pattern.compile("([\\[\\(])");
 	
 	public SpanInterval(Interval start, Interval end, boolean startInclusive, boolean endInclusive) {
 		
@@ -22,6 +29,23 @@ public class SpanInterval {
 		endTo = end.getEnd();
 		endFromInc = end.isStartInclusive();
 		endToInc = end.isEndInclusive();
+		
+		this.startInc = startInclusive;
+		this.endInc = endInclusive;
+	}
+	
+	public SpanInterval(int startFrom, int startTo, boolean startFromInc, boolean startToInc,
+			int endFrom, int endTo, boolean endFromInc, boolean endToInc, 
+			boolean startInclusive, boolean endInclusive) {
+		this.startFrom = startFrom;
+		this.startTo = startTo;
+		this.startFromInc = startFromInc;
+		this.startToInc = startToInc;
+		
+		this.endFrom = endFrom;
+		this.endTo = endTo;
+		this.endFromInc = endFromInc;
+		this.endToInc = endToInc;
 		
 		this.startInc = startInclusive;
 		this.endInc = endInclusive;
@@ -68,6 +92,36 @@ public class SpanInterval {
 		sb.append((endInclusive ? "]" : ")"));
 		
 		return sb.toString();
+	}
+	
+	public Set<SpanInterval> normalize() {
+		Set<SpanInterval> result = new HashSet<SpanInterval>();
+		
+	    int newStartTo = (getStartTo() < getEndTo() ? getStartTo() : getEndTo());	// j' = min(j,l)
+	    if (getStartTo() <= newStartTo) {
+	    	SpanInterval normalized = new SpanInterval(getStartFrom(),
+	    			getStartTo(),
+	    			isStartFromInclusive(),
+	    			isStartToInclusive(),
+	    			getEndFrom(),
+	    			getEndTo(),
+	    			isEndFromInclusive(),
+	    			isEndToInclusive(),
+	    			isStartInclusive(),
+	    			isEndInclusive());
+	    	result.add(normalized);
+	    }
+	    
+		return result;
+	}
+	
+	public static SpanInterval parseSpanInterval(String s) throws SpanIntervalFormatException {
+		Matcher matcher = SPAN_PATTERN.matcher(s);
+		if (matcher.matches()) {
+			System.out.println("matches!");
+			System.out.println("group 1 is "+ matcher.group(1));
+		}
+		return null;
 	}
 	
 	public int getStartFrom() {

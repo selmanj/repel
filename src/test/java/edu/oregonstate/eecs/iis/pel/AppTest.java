@@ -1,4 +1,4 @@
-package edu.oregonstate.eecs.iis.interval;
+package edu.oregonstate.eecs.iis.pel;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
