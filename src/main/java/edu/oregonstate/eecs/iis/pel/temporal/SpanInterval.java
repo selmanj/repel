@@ -16,7 +16,9 @@ public class SpanInterval {
 	public static final int POSITIVE_INF = Integer.MAX_VALUE;
 	public static final int NEGATIVE_INF = Integer.MIN_VALUE;
 	
-	private static final Pattern SPAN_PATTERN = Pattern.compile("([\\[\\(])");
+	// TODO: doesn't account for negative numbers, needed?
+	private static final Pattern SPAN_PATTERN = 
+		Pattern.compile("([\\[\\(])\\s*([\\[\\(])\\s*(\\d+|-?inf)\\s*,\\s*(\\d+|-?inf)\\s*([\\]\\)])\\s*,\\s*([\\[\\(])\\s*(\\d+|-?inf)\\s*,\\s*(\\d+|-?inf)\\s*([\\]\\)])\\s*([\\]\\)])");
 	
 	public SpanInterval(Interval start, Interval end, boolean startInclusive, boolean endInclusive) {
 		
@@ -117,10 +119,13 @@ public class SpanInterval {
 	
 	public static SpanInterval parseSpanInterval(String s) throws SpanIntervalFormatException {
 		Matcher matcher = SPAN_PATTERN.matcher(s);
-		if (matcher.matches()) {
-			System.out.println("matches!");
-			System.out.println("group 1 is "+ matcher.group(1));
+		if (!matcher.matches()) {
+			throw new SpanIntervalFormatException("unable to parse string as interval: "+ s);
 		}
+		boolean startInc = (matcher.group(1).equals("[") ? true : false);
+		boolean startFromInc = (matcher.group(2).equals("[") ? true : false);
+		//boolean startFr
+		
 		return null;
 	}
 	

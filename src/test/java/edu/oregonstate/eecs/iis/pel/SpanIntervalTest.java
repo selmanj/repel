@@ -4,6 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import edu.oregonstate.eecs.iis.pel.temporal.SpanInterval;
+import edu.oregonstate.eecs.iis.pel.temporal.SpanIntervalFormatException;
+
 public class SpanIntervalTest {
 
 	@Test
@@ -13,7 +16,11 @@ public class SpanIntervalTest {
 
 	@Test
 	public void testParseSpanInterval() {
-		fail("Not yet implemented");
+		try{
+			SpanInterval.parseSpanInterval("[(1,2), [3 ,4))");
+		} catch(SpanIntervalFormatException e) {
+			fail(e.toString());
+		}
 	}
 
 }
