@@ -53,6 +53,21 @@ public class SpanInterval {
 		this.endInc = endInclusive;
 	}
 	
+	public SpanInterval(SpanInterval copyFrom) {
+		this.startFrom = copyFrom.startFrom;
+		this.startTo = copyFrom.startTo;
+		this.startFromInc = copyFrom.startFromInc;
+		this.startToInc = copyFrom.startToInc;
+		
+		this.endFrom = copyFrom.endFrom;
+		this.endTo = copyFrom.endTo;
+		this.endFromInc = copyFrom.endFromInc;
+		this.endToInc = copyFrom.endToInc;
+		
+		this.startInc = copyFrom.startInc;
+		this.endInc = copyFrom.endInc;
+	}
+	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		
@@ -124,9 +139,24 @@ public class SpanInterval {
 		}
 		boolean startInc = (matcher.group(1).equals("[") ? true : false);
 		boolean startFromInc = (matcher.group(2).equals("[") ? true : false);
-		//boolean startFr
-		
-		return null;
+		int startFrom = parseSpanIntervalInt(matcher.group(3));
+		int startTo = parseSpanIntervalInt(matcher.group(4));
+		boolean startToInc = (matcher.group(5).equals("]") ? true : false);
+		boolean endFromInc = (matcher.group(6).equals("[") ? true : false);
+		int endFrom = parseSpanIntervalInt(matcher.group(7));
+		int endTo = parseSpanIntervalInt(matcher.group(8));
+		boolean endToInc = (matcher.group(9).equals("]") ? true : false);
+		boolean endInc = (matcher.group(10).equals("]") ? true : false);
+
+		return new SpanInterval(startFrom, startTo, startFromInc, startToInc, 
+				endFrom, endTo, endFromInc, endToInc, 
+				startInc, endInc);	
+	}
+	
+	private static int parseSpanIntervalInt(String s) {
+		if (s.equals("inf")) { return POSITIVE_INF; }
+		if (s.equals("-inf")) { return NEGATIVE_INF; }
+		return Integer.parseInt(s);
 	}
 	
 	public int getStartFrom() {
