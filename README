@@ -1,0 +1,5 @@
+This is a maven project.  In order to compile and run it you will need a copy
+of maven; see http://maven.apache.org
+
+At the moment it's more of a library than an application.  Once it accepts
+input expect to see some details listed here.
