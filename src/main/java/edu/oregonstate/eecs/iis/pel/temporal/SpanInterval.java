@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// TODO: totally forgot about Math.max and Math.min in some places, code could be cleaned up here
 public class SpanInterval {
 	private int startFrom, startTo;
 	private boolean startFromInc, startToInc;
@@ -114,22 +115,87 @@ public class SpanInterval {
 	public Set<SpanInterval> normalize() {
 		Set<SpanInterval> result = new HashSet<SpanInterval>();
 		
-	    int newStartTo = (getStartTo() < getEndTo() ? getStartTo() : getEndTo());	// j' = min(j,l)
-	    if (getStartTo() <= newStartTo) {
-	    	SpanInterval normalized = new SpanInterval(getStartFrom(),
-	    			getStartTo(),
-	    			isStartFromInclusive(),
-	    			isStartToInclusive(),
-	    			getEndFrom(),
-	    			getEndTo(),
-	    			isEndFromInclusive(),
-	    			isEndToInclusive(),
-	    			isStartInclusive(),
-	    			isEndInclusive());
-	    	result.add(normalized);
+		SpanInterval copy = new SpanInterval(this);
+		copy.setStartTo(getStartTo() < getEndTo() ? getStartTo() : getEndTo());	// j' = min(j,l))
+		copy.setEndFrom(getEndFrom() > getStartFrom() ? getEndFrom() : getStartFrom()); // k' = max(k,i)
+		if (isStartFromInclusive() && getStartFrom() == NEGATIVE_INF) {
+			copy.setStartFromInclusive(false);
+		}
+		if (isEndToInclusive() && getEndTo() == POSITIVE_INF) {
+			copy.setEndToInclusive(false);
+		}
+	    if (isStartToInclusive() 
+	    		&& copy.getStartTo() != POSITIVE_INF
+	    		&& (getStartTo() < getEndTo() || isEndToInclusive() && isStartInclusive() && isEndInclusive())) {
+	    	copy.setStartToInclusive(true);
+	    } else {
+	    	copy.setStartToInclusive(false);
 	    }
 	    
+	    if (isEndFromInclusive()
+	    		&& copy.getEndFrom() != NEGATIVE_INF
+	    		&& (getEndFrom() >  getStartFrom() || isStartFromInclusive() && isStartInclusive() && isEndInclusive())) {
+	    	copy.setEndFromInclusive(true);
+	    } else {
+	    	copy.setEndFromInclusive(false);
+	    }
+
+		
+	    if (copy.getStartFrom() > copy.getStartTo()) {	// this and the following test are self-explanatory
+	    	return result;
+	    }
+	    if (copy.getEndFrom() > copy.getEndTo()) {
+	    	return result;
+	    }
+	    
+	    // if the start range is over exactly 1 time unit (instaneous), require it to be inclusive
+	    if (copy.getStartFrom() == copy.getStartTo() && (!copy.isStartFromInclusive() || !copy.isStartToInclusive())) {
+	    	return result;
+	    }
+	    // same with end range
+	    if (copy.getEndFrom() == copy.getEndTo() && (!copy.isEndFromInclusive() || !copy.isEndToInclusive())) {
+	    	return result;
+	    }
+	    // if startFrom is the same as endTo, require it to be inclusive
+	    if (copy.getStartFrom() == copy.getEndTo() && (!copy.isStartInclusive() || !copy.isEndInclusive())) {
+	    	return result;
+	    }
+	    // disqualify invalid infinities
+	    if (copy.getStartFrom() == POSITIVE_INF || copy.getStartTo() == NEGATIVE_INF 
+	    		|| copy.getEndFrom() == POSITIVE_INF || copy.getEndTo() == NEGATIVE_INF) {
+	    	return result;
+	    }
+	    		
+	    // we passed all the invalid tests, add it to the set
+	    result.add(copy);
 		return result;
+	}
+	
+	public Set<SpanInterval> intersect(SpanInterval other) {
+		Set<SpanInterval> result = new HashSet<SpanInterval>();
+		
+		if (isStartInclusive() != other.isStartInclusive()
+				|| isEndInclusive() != other.isEndInclusive()) {
+			return result;
+		}
+		int sf = Math.max(getStartFrom(), other.getStartFrom());
+		int st = Math.min(getStartTo(), other.getStartTo());
+		int ef = Math.max(getEndFrom(), other.getEndFrom());
+		int et = Math.min(getEndTo(), other.getEndTo());
+		
+		boolean sfi;
+		if (getStartFrom() > other.getStartFrom()) {
+			sfi = isStartFromInclusive();
+		} else if (getStartFrom() == other.getStartFrom()) {
+			sfi = isStartFromInclusive() && other.isStartFromInclusive();
+		} else {
+			sfi = other.isStartFromInclusive();
+		}
+		
+		boolean sei;
+		//if ()
+		
+		return null;
 	}
 	
 	public static SpanInterval parseSpanInterval(String s) throws SpanIntervalFormatException {
