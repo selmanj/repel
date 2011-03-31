@@ -8,6 +8,8 @@
 #ifndef SPANINTERVAL_H
 #define SPANINTERVAL_H
 
+#include "interval.h"
+
 class SpanInterval {
 public:
 	SpanInterval();
@@ -15,12 +17,13 @@ public:
 	SpanInterval(unsigned int start, unsigned int end);
 	SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
 
-	Interval const& start() const {return start;};
-	Interval const& end() const {return end;};
+	Interval const& start() const {return st;};
+	Interval const& end() const {return en;};
 	void setStart(const Interval& start) {st = start;};
 	void setEnd(const Interval& end) {en = end;};
 
-	SpanInterval normalize() const;
+  bool isEmpty() const;
+	//SpanInterval normalize() const;
 private:
 	Interval st, en;
 
