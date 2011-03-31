@@ -12,7 +12,7 @@
 using namespace std;
 
 int main() {
-	Interval blarg = Interval(0,5);
+	Interval blarg(0,5);
 	std::cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
 	char x;
 	std::cin >> x;
