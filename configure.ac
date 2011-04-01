@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.50)
 AC_INIT(pel, 0.1, selman at eecs.oregonstate.edu)
-AC_CONFIG_SRCDIR([src/])
+AC_CONFIG_SRCDIR([src/pel.cpp])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
 
@@ -12,12 +12,6 @@ AC_PROG_CXX
 AC_PROG_CC
 
 # Checks for libraries.
-AC_ARG_WITH([boost-include-path],
-            [AS_HELP_STRING([--with-boost-include-path],
-                            [location of the boost headers, defaults to /usr/local/boost_1_46_1])],
-            [BOOST_CFLAGS="-I$withval"],
-            [BOOST_CFLAGS="-I/usr/local/boost_1_46_1"])
-AC_SUBST([BOOST_CFLAGS])
 
 # Checks for header files.
 
