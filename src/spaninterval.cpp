@@ -26,6 +26,41 @@ SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigne
 {
 }
 
+bool SpanInterval::operator==(const SpanInterval& b) const {
+  return (start() == b.start() && end() == b.end());
+}
+
+bool SpanInterval::operator!=(const SpanInterval& b) const {
+  return !(*this == b);
+}
+
+bool SpanInterval::operator>(const SpanInterval& b) const {
+  if (*this == b) return false;
+  return !(*this < b);
+}
+
+bool SpanInterval::operator<(const SpanInterval& b) const {
+  if (*this == b) return false;
+  if (start().start() < b.start().start()) return true;
+  if (start().start() > b.start().start()) return false;
+  if (start().end() < b.start().end()) return true;
+  if (start().end() > b.start().end()) return false;
+  if (end().start() < b.end().start()) return true;
+  if (end().start() > b.end().start()) return false;
+  if (end().end() < b.end().end()) return true;
+  if (end().end() > b.end().end()) return false;
+  // return false as failure
+  return false;
+}
+
+bool SpanInterval::operator>=(const SpanInterval& b) const {
+  return !(*this < b);
+}
+
+bool SpanInterval::operator<=(const SpanInterval& b) const {
+  return !(*this > b);
+}
+
 bool SpanInterval::isEmpty() const {
   unsigned int j = std::min(st.end(), en.end());
   unsigned int k = std::max(en.start(), st.start());
@@ -48,4 +83,10 @@ SpanInterval SpanInterval::normalize() const throw (bad_normalize) {
 	return SpanInterval(st.start(), j, k, en.end());
 }
 
+SpanInterval SpanInterval::intersection(const SpanInterval& other) const {
+  return SpanInterval(std::max(start().start(), other.start().start()),
+                      std::min(start().end(), other.start().end()),
+                      std::max(end().start(), other.end().start()),
+                      std::min(end().end(), other.end().end()));
+}
 

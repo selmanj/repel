@@ -11,6 +11,8 @@
 #include "interval.h"
 #include "bad_normalize.h"
 
+#include <climits>
+
 class SpanInterval {
 public:
 	SpanInterval();
@@ -23,8 +25,20 @@ public:
 	void setStart(const Interval& start) {st = start;};
 	void setEnd(const Interval& end) {en = end;};
 
+  bool operator==(const SpanInterval& b) const;
+  bool operator!=(const SpanInterval& b) const;
+  bool operator>(const SpanInterval& b) const;
+  bool operator<(const SpanInterval& b) const;
+  bool operator>=(const SpanInterval& b) const;
+  bool operator<=(const SpanInterval& b) const;
+
 	bool isEmpty() const;
 	SpanInterval normalize() const throw(bad_normalize);
+  SpanInterval intersection(const SpanInterval&  other) const;
+//  void compliment(std::set<SpanInterval>& collect) const;
+
+  static const unsigned int NEG_INF = 0;
+  static const unsigned int POS_INF = UINT_MAX;
 private:
 	Interval st, en;
 
