@@ -9,6 +9,7 @@
 #define SPANINTERVAL_H
 
 #include "interval.h"
+#include "bad_normalize.h"
 
 class SpanInterval {
 public:
@@ -22,8 +23,8 @@ public:
 	void setStart(const Interval& start) {st = start;};
 	void setEnd(const Interval& end) {en = end;};
 
-  bool isEmpty() const;
-	//SpanInterval normalize() const;
+	bool isEmpty() const;
+	SpanInterval normalize() const throw(bad_normalize);
 private:
 	Interval st, en;
 

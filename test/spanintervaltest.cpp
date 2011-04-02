@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE SpanInterval test
 #include <boost/test/included/unit_test.hpp>
-#include "spaninterval.h"
-#include "interval.h"
+#include "../src/spaninterval.h"
+#include "../src/interval.h"
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {

@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <exception>
+#include "bad_normalize.h"
 #include "interval.h"
 #include "spaninterval.h"
 
@@ -26,8 +27,8 @@ SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigne
 }
 
 bool SpanInterval::isEmpty() const {
-  int j = std::min(st.end(), en.end());
-  int k = std::max(en.start(), st.start()); 
+  unsigned int j = std::min(st.end(), en.end());
+  unsigned int k = std::max(en.start(), st.start());
 
   if (st.start() > j
       || st.end() < k)
@@ -35,10 +36,16 @@ bool SpanInterval::isEmpty() const {
   return false;
 }
 
-/*
-SpanInterval SpanInterval::normalize() throw (std::exception) {
-	//if (st.)
 
+SpanInterval SpanInterval::normalize() const throw (bad_normalize) {
+	if (isEmpty()) {
+		bad_normalize bad;		// TODO: why two lines?  can't collapse into one?
+		throw bad;
+	}
+	int j = std::min(st.end(), en.end());
+	int k = std::max(en.start(), st.start());
+
+	return SpanInterval(st.start(), j, k, en.end());
 }
 
-*/
+
