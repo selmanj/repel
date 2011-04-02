@@ -12,6 +12,7 @@
 #include "bad_normalize.h"
 
 #include <climits>
+#include <set>
 
 class SpanInterval {
 public:
@@ -34,8 +35,9 @@ public:
 
 	bool isEmpty() const;
 	SpanInterval normalize() const throw(bad_normalize);
+  void normalize(std::set<SpanInterval>& collect) const;
   SpanInterval intersection(const SpanInterval&  other) const;
-//  void compliment(std::set<SpanInterval>& collect) const;
+  void compliment(std::set<SpanInterval>& collect) const;
 
   static const unsigned int NEG_INF = 0;
   static const unsigned int POS_INF = UINT_MAX;

@@ -83,6 +83,14 @@ SpanInterval SpanInterval::normalize() const throw (bad_normalize) {
 	return SpanInterval(st.start(), j, k, en.end());
 }
 
+void SpanInterval::normalize(std::set<SpanInterval>& collect) const {
+  try {
+    collect.insert(normalize());
+  } catch (bad_normalize& e) {
+    // do nothing
+  }
+}
+
 SpanInterval SpanInterval::intersection(const SpanInterval& other) const {
   return SpanInterval(std::max(start().start(), other.start().start()),
                       std::min(start().end(), other.start().end()),
@@ -90,3 +98,13 @@ SpanInterval SpanInterval::intersection(const SpanInterval& other) const {
                       std::min(end().end(), other.end().end()));
 }
 
+void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
+  SpanInterval a(NEG_INF, POS_INF, NEG_INF, end().start()-1);
+  a.normalize(collect);
+  SpanInterval b(NEG_INF, POS_INF, end().end()+1, POS_INF);
+  b.normalize(collect);
+  SpanInterval c(NEG_INF, start().start()-1, NEG_INF, POS_INF);
+  c.normalize(collect);
+  SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
+  d.normalize(collect);
+}
