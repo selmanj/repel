@@ -3,13 +3,12 @@
 
 AC_PREREQ(2.50)
 AC_INIT(pel, 0.1, selman at eecs.oregonstate.edu)
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_SRCDIR([src/pel.cpp])
-AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
 
 # Checks for programs.
 AC_PROG_CXX
-AC_PROG_CC
 
 # Checks for libraries.
 
@@ -21,6 +20,5 @@ AC_C_CONST
 
 # Checks for library functions.
 
-AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
