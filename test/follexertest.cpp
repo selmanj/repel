@@ -9,9 +9,8 @@
 BOOST_AUTO_TEST_CASE( parser_test )
 {
   std::istringstream stream("flying(a,theAir) @ [1,11] # this is a test of a comment \n");
-  FOLLexer lexer;
  
-  std::vector<FOLToken> tokens = lexer.tokenize(&stream); 
+  std::vector<FOLToken> tokens = FOLParse::tokenize(&stream); 
   BOOST_CHECK_EQUAL(tokens.size(), 13);
   BOOST_CHECK_EQUAL(tokens[0].type(), FOLParse::IDENT);
   BOOST_CHECK_EQUAL(tokens[0].contents(), "flying");

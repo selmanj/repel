@@ -5,7 +5,7 @@
 #include "follexer.h"
 #include "foltoken.h"
 
-std::vector<FOLToken> FOLLexer::tokenize(std::istream* input) const {
+std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
   std::vector<FOLToken> tokens; 
   while (!input->eof()) {
     int c = input->get();
