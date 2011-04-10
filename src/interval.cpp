@@ -8,7 +8,6 @@
 Interval::Interval(unsigned int start, unsigned int end)
 	: st(start), en(end)
 {
-
 }
 
 bool Interval::operator==(const Interval& b) const {

@@ -73,7 +73,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
           break;
         case ',':
           token.setType(FOLParse::COMMA);
-          token.setContents(")");
+          token.setContents(",");
           tokens.push_back(token);
           break;
         case ':':

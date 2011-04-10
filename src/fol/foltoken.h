@@ -21,9 +21,9 @@ class FOLToken {
 public:
   FOLToken(FOLParse::FOL_TOKEN_TYPE type=FOLParse::INVALID, std::string contents="");
 
-  FOLParse::FOL_TOKEN_TYPE type() {return typ;};
+  FOLParse::FOL_TOKEN_TYPE type() const {return typ;};
   void setType(FOLParse::FOL_TOKEN_TYPE type) {typ=type;};
-  std::string contents() {return data;};
+  std::string contents() const {return data;};
   void setContents(std::string contents) {data = contents;};
 
 private:

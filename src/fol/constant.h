@@ -2,15 +2,21 @@
 #define CONSTANT_H
 
 #include <string>
+#include "term.h"
 
 class Constant : public Term {
   public:
-    Constant(std::string name="");
-    virtual ~Constant() {};
+    Constant(std::string name);
+    Constant(const Constant& c) : str(c.str) {};
+    ~Constant() {};
 
-    std::string name() const {return str;};
+    void operator=(const Constant& c) {str = c.str;};
+
   private:
+    virtual Term* doClone() const;
+    virtual std::string doName() const {return str;};
+    virtual bool doEquals(const Term& t) const;
     std::string str;
-}
+};
 
 #endif
