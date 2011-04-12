@@ -5,10 +5,12 @@
 #include <vector>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "term.h"
+#include "sentence.h"
 
-class Atom {
+class Atom : public Sentence {
 public:
   Atom(std::string name) : pred(name) {};
+  Atom(const Atom& a) : pred(a.pred), terms(a.terms) {};
   template <typename ForwardIterator>
   Atom(std::string name,
       ForwardIterator first,
@@ -24,6 +26,15 @@ public:
 private:
   std::string pred;
   boost::ptr_vector<Term> terms;
+
+  virtual Sentence* doClone() const {return new Atom(*this);}
+  virtual bool doEquals(const Sentence& t) const {
+    const Atom *at = dynamic_cast<const Atom*>(&t);
+    if (at == NULL) {
+      return false;
+    }
+    return (pred == at->pred) && (terms == at->terms);
+  }
 
 };
 #endif
