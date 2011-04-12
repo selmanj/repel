@@ -64,8 +64,7 @@ am_pel_OBJECTS = pel.$(OBJEXT) interval.$(OBJEXT) \
 	spaninterval.$(OBJEXT)
 pel_OBJECTS = $(am_pel_OBJECTS)
 pel_LDADD = $(LDADD)
-am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) atom.$(OBJEXT) \
-	constant.$(OBJEXT)
+am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -74,9 +73,8 @@ am_test_follexertest_OBJECTS = follexertest.$(OBJEXT) \
 test_follexertest_OBJECTS = $(am_test_follexertest_OBJECTS)
 test_follexertest_LDADD = $(LDADD)
 am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
-	folparser.$(OBJEXT) follexer.$(OBJEXT) foltoken.$(OBJEXT) \
-	atom.$(OBJEXT) constant.$(OBJEXT) spaninterval.$(OBJEXT) \
-	interval.$(OBJEXT) event.$(OBJEXT)
+	follexer.$(OBJEXT) foltoken.$(OBJEXT) constant.$(OBJEXT) \
+	spaninterval.$(OBJEXT) interval.$(OBJEXT) event.$(OBJEXT)
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
@@ -200,8 +198,8 @@ PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest tes
 TESTS = $(PEL_BUILT_TESTS)
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp
-test_atomtest_SOURCES = test/atomtest.cpp src/fol/atom.cpp src/fol/constant.cpp 
-test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/folparser.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/atom.cpp src/fol/constant.cpp src/spaninterval.cpp src/interval.cpp src/fol/event.cpp
+test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
+test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/spaninterval.cpp src/interval.cpp src/fol/event.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -308,13 +306,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atom.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomtest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/constant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/follexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/follexertest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/folparser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/folparsertest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/foltoken.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interval.Po@am__quote@
@@ -392,20 +388,6 @@ atomtest.obj: test/atomtest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o atomtest.obj `if test -f 'test/atomtest.cpp'; then $(CYGPATH_W) 'test/atomtest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/atomtest.cpp'; fi`
 
-atom.o: src/fol/atom.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT atom.o -MD -MP -MF "$(DEPDIR)/atom.Tpo" -c -o atom.o `test -f 'src/fol/atom.cpp' || echo '$(srcdir)/'`src/fol/atom.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/atom.Tpo" "$(DEPDIR)/atom.Po"; else rm -f "$(DEPDIR)/atom.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/atom.cpp' object='atom.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o atom.o `test -f 'src/fol/atom.cpp' || echo '$(srcdir)/'`src/fol/atom.cpp
-
-atom.obj: src/fol/atom.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT atom.obj -MD -MP -MF "$(DEPDIR)/atom.Tpo" -c -o atom.obj `if test -f 'src/fol/atom.cpp'; then $(CYGPATH_W) 'src/fol/atom.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/atom.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/atom.Tpo" "$(DEPDIR)/atom.Po"; else rm -f "$(DEPDIR)/atom.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/atom.cpp' object='atom.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o atom.obj `if test -f 'src/fol/atom.cpp'; then $(CYGPATH_W) 'src/fol/atom.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/atom.cpp'; fi`
-
 constant.o: src/fol/constant.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT constant.o -MD -MP -MF "$(DEPDIR)/constant.Tpo" -c -o constant.o `test -f 'src/fol/constant.cpp' || echo '$(srcdir)/'`src/fol/constant.cpp; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/constant.Tpo" "$(DEPDIR)/constant.Po"; else rm -f "$(DEPDIR)/constant.Tpo"; exit 1; fi
@@ -475,20 +457,6 @@ folparsertest.obj: test/folparsertest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/folparsertest.cpp' object='folparsertest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o folparsertest.obj `if test -f 'test/folparsertest.cpp'; then $(CYGPATH_W) 'test/folparsertest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/folparsertest.cpp'; fi`
-
-folparser.o: src/fol/folparser.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT folparser.o -MD -MP -MF "$(DEPDIR)/folparser.Tpo" -c -o folparser.o `test -f 'src/fol/folparser.cpp' || echo '$(srcdir)/'`src/fol/folparser.cpp; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/folparser.Tpo" "$(DEPDIR)/folparser.Po"; else rm -f "$(DEPDIR)/folparser.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/folparser.cpp' object='folparser.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o folparser.o `test -f 'src/fol/folparser.cpp' || echo '$(srcdir)/'`src/fol/folparser.cpp
-
-folparser.obj: src/fol/folparser.cpp
-@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT folparser.obj -MD -MP -MF "$(DEPDIR)/folparser.Tpo" -c -o folparser.obj `if test -f 'src/fol/folparser.cpp'; then $(CYGPATH_W) 'src/fol/folparser.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/folparser.cpp'; fi`; \
-@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/folparser.Tpo" "$(DEPDIR)/folparser.Po"; else rm -f "$(DEPDIR)/folparser.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/folparser.cpp' object='folparser.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o folparser.obj `if test -f 'src/fol/folparser.cpp'; then $(CYGPATH_W) 'src/fol/folparser.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/folparser.cpp'; fi`
 
 event.o: src/fol/event.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT event.o -MD -MP -MF "$(DEPDIR)/event.Tpo" -c -o event.o `test -f 'src/fol/event.cpp' || echo '$(srcdir)/'`src/fol/event.cpp; \
