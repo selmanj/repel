@@ -21,10 +21,10 @@ public:
 	SpanInterval(unsigned int start, unsigned int end);
 	SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
 
-	Interval const& start() const {return st;};
-	Interval const& end() const {return en;};
-	void setStart(const Interval& start) {st = start;};
-	void setEnd(const Interval& end) {en = end;};
+	Interval const& start() const {return start_;};
+	Interval const& end() const {return end_;};
+	void setStart(const Interval& start) {start_ = start;};
+	void setEnd(const Interval& end) {end_ = end;};
 
   bool operator==(const SpanInterval& b) const;
   bool operator!=(const SpanInterval& b) const;
@@ -42,7 +42,7 @@ public:
   static const unsigned int NEG_INF = 0;
   static const unsigned int POS_INF = UINT_MAX;
 private:
-	Interval st, en;
+	Interval start_, end_;
 
 };
 

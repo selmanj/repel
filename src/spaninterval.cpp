@@ -12,17 +12,17 @@
 #include "spaninterval.h"
 
 SpanInterval::SpanInterval(const Interval& start, const Interval& end)
-	: st(start), en(end)
+	: start_(start), end_(end)
 {
 }
 
 SpanInterval::SpanInterval(unsigned int start, unsigned int end) 
-  : st(start, end), en(start, end)
+  : start_(start, end), end_(start, end)
 {
 }
 
 SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo) 
-  : st(startFrom, startTo), en(endFrom, endTo) 
+  : start_(startFrom, startTo), end_(endFrom, endTo) 
 {
 }
 
@@ -62,11 +62,11 @@ bool SpanInterval::operator<=(const SpanInterval& b) const {
 }
 
 bool SpanInterval::isEmpty() const {
-  unsigned int j = std::min(st.end(), en.end());
-  unsigned int k = std::max(en.start(), st.start());
+  unsigned int j = std::min(start_.end(), end_.end());
+  unsigned int k = std::max(end_.start(), start_.start());
 
-  if (st.start() > j
-      || st.end() < k)
+  if (start_.start() > j
+      || start_.end() < k)
     return true;
   return false;
 }
@@ -77,10 +77,10 @@ SpanInterval SpanInterval::normalize() const throw (bad_normalize) {
 		bad_normalize bad;		// TODO: why two lines?  can't collapse into one?
 		throw bad;
 	}
-	int j = std::min(st.end(), en.end());
-	int k = std::max(en.start(), st.start());
+	int j = std::min(start_.end(), end_.end());
+	int k = std::max(end_.start(), start_.start());
 
-	return SpanInterval(st.start(), j, k, en.end());
+	return SpanInterval(start_.start(), j, k, end_.end());
 }
 
 void SpanInterval::normalize(std::set<SpanInterval>& collect) const {
