@@ -1,6 +1,13 @@
 #define BOOST_TEST_MODULE FOLLexer 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#ifdef HAVE_CONFIG_H
+  #include "../config.h"
+#endif
+#ifdef HAVE_BOOST_UNIT_TEST_FRAMEWORK
+  #define BOOST_TEST_DYN_LINK
+  #include <boost/test/unit_test.hpp>
+#else
+  #include <boost/test/included/unit_test.hpp>
+#endif
 #include "../src/fol/follexer.h"
 #include "../src/fol/foltoken.h"
 #include <iostream>

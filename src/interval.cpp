@@ -2,11 +2,13 @@
  * interval.cpp
  *
  */
-
+#ifdef HAVE_CONFIG_H
+  #include "../config.h"
+#endif
 #include "interval.h"
 
 Interval::Interval(unsigned int start, unsigned int end)
-	: st(start), en(end)
+	: start_(start), end_(end)
 {
 }
 
