@@ -4,12 +4,15 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <boost/shared_ptr.hpp>
 #include "foltoken.h"
 #include "bad_parse.h"
 #include "atom.h"
 #include "../spaninterval.h"
 #include "event.h"
 #include "constant.h"
+#include "variable.h"
+#include "negation.h"
 
 
 // anonymous namespace for helper functions
@@ -57,6 +60,21 @@ namespace {
   }
 
   template <class ForwardIterator>
+  std::string consumeVariable(iters<ForwardIterator> &its) throw (bad_parse) {
+    if (its.cur == its.last) {
+      bad_parse e;
+      throw e;
+    }
+    if (its.cur->type() != FOLParse::VARIABLE) {
+      bad_parse e;
+      throw e;
+    }
+    std::string name = its.cur->contents();
+    its.cur++;
+    return name;
+  }
+
+  template <class ForwardIterator>
   unsigned int consumeNumber(iters<ForwardIterator> &its) throw (bad_parse) {
     if (its.cur == its.last) {
       bad_parse e;
@@ -76,12 +94,13 @@ namespace {
   }
 
   template <class ForwardIterator>
-  Event doParseEvent(iters<ForwardIterator> &its) {
-    Atom a = doParseGroundAtom(its);
+  boost::shared_ptr<Event> doParseEvent(iters<ForwardIterator> &its) {
+    boost::shared_ptr<Atom> a = doParseGroundAtom(its);
     consumeTokenType(FOLParse::AT, its);
     SpanInterval i = doParseInterval(its);
 
-    return Event(a, i);
+    boost::shared_ptr<Event> p(new Event(a,i));
+    return p;
   }
 
   template <class ForwardIterator>
@@ -129,25 +148,93 @@ namespace {
   }
 
   template <class ForwardIterator>
-  Atom doParseGroundAtom(iters<ForwardIterator> &its) {
+  boost::shared_ptr<Atom> doParseGroundAtom(iters<ForwardIterator> &its) {
     std::string predName = consumeIdent(its);
-    Atom a(predName);
+    boost::shared_ptr<Atom> a(new Atom(predName));
 
     consumeTokenType(FOLParse::OPEN_PAREN, its);
-    a.push_back(new Constant(consumeIdent(its))); // ownership transfered to atom
+    a->push_back(new Constant(consumeIdent(its))); // ownership transfered to atom
     while (peekTokenType(FOLParse::COMMA, its)) {
       consumeTokenType(FOLParse::COMMA, its);
-      a.push_back(new Constant(consumeIdent(its)));
+      a->push_back(new Constant(consumeIdent(its)));
     }
     consumeTokenType(FOLParse::CLOSE_PAREN, its);
     return a;
+  }
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
+    std::string predName = consumeIdent(its);
+    boost::shared_ptr<Atom> a(new Atom(predName));
+
+    consumeTokenType(FOLParse::OPEN_PAREN, its);
+    if (peekTokenType(FOLParse::IDENT, its)) {
+      a->push_back(new Constant(consumeIdent(its)));
+    } else {
+      a->push_back(new Variable(consumeVariable(its)));
+    }
+    while (peekTokenType(FOLParse::COMMA, its)) {
+      consumeTokenType(FOLParse::COMMA, its);
+      if (peekTokenType(FOLParse::IDENT, its)) {
+        a->push_back(new Constant(consumeIdent(its)));
+      } else {
+        a->push_back(new Variable(consumeVariable(its)));
+      }
+    }
+    consumeTokenType(FOLParse::CLOSE_PAREN, its);
+    return a;
+  }
+
+  /*
+  template <class ForwardIterator>
+  void doParseWeightedFormula(iters<ForwardIterator> &its) {
+    unsigned int weight = consumeNumber(its);
+    consumeTokenType(FOLParse::COLON, its);
+    doParseFormula(its);
+  }
+
+  template <class ForwardIterator>
+  void doParseFormula(iters<ForwardIterator> &its) {
+
+  }
+  */
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> doParseStaticFormula_conn(iters<ForwardIterator> &its) {
+    boost::shared_ptr<Sentence> s = doParseStaticFormula_unary(its);
+    while (peekTokenType(FOLParse::AND, its) || peekTokenType(FOLParse::OR, its)) {
+
+    }
+  }
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> doParseStaticFormula_unary(iters<ForwardIterator> &its) {
+    if (peekTokenType(FOLParse::NOT, its)) {
+      boost::shared_ptr<Sentence> s(new Negation(doParseStaticFormula(its)));
+      return s;
+    } else {
+      return doParseStaticFormula_paren(its);
+    }
+  }
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &its) {
+    boost::shared_ptr<Sentence> s;
+    if (peekTokenType(FOLParse::OPEN_PAREN, its)) {
+      consumeTokenType(FOLParse::OPEN_PAREN, its);
+      s = doParseStaticFormula(its);  
+      consumeTokenType(FOLParse::CLOSE_PAREN, its);
+    } else {
+      s = doParseAtom(its);
+    }
+    return s;
   }
 };
 
 namespace FOLParse 
 {
   template <class ForwardIterator>
-  Event parseEvent(const ForwardIterator &first,
+  boost::shared_ptr<Event> parseEvent(const ForwardIterator &first,
       const ForwardIterator &last) {
     iters<ForwardIterator> its(first, last);
     return doParseEvent(its);
@@ -161,10 +248,16 @@ namespace FOLParse
   };
 
   template <class ForwardIterator>
-  Atom parseGroundAtom(const ForwardIterator &first,
+  boost::shared_ptr<Atom> parseGroundAtom(const ForwardIterator &first,
       const ForwardIterator &last) {
     iters<ForwardIterator> its(first, last);
     return doParseGroundAtom(its);
+  };
+  template <class ForwardIterator>
+  boost::shared_ptr<Atom> parseAtom(const ForwardIterator &first,
+      const ForwardIterator &last) {
+    iters<ForwardIterator> its(first, last);
+    return doParseAtom(its);
   };
 };
 #endif

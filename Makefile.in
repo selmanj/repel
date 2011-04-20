@@ -74,7 +74,8 @@ test_follexertest_OBJECTS = $(am_test_follexertest_OBJECTS)
 test_follexertest_LDADD = $(LDADD)
 am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
 	follexer.$(OBJEXT) foltoken.$(OBJEXT) constant.$(OBJEXT) \
-	spaninterval.$(OBJEXT) interval.$(OBJEXT) event.$(OBJEXT)
+	variable.$(OBJEXT) spaninterval.$(OBJEXT) interval.$(OBJEXT) \
+	event.$(OBJEXT)
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
@@ -199,7 +200,7 @@ TESTS = $(PEL_BUILT_TESTS)
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
-test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/spaninterval.cpp src/interval.cpp src/fol/event.cpp
+test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/interval.cpp src/fol/event.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -317,6 +318,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spaninterval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spanintervaltest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/variable.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -457,6 +459,20 @@ folparsertest.obj: test/folparsertest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/folparsertest.cpp' object='folparsertest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o folparsertest.obj `if test -f 'test/folparsertest.cpp'; then $(CYGPATH_W) 'test/folparsertest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/folparsertest.cpp'; fi`
+
+variable.o: src/fol/variable.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT variable.o -MD -MP -MF "$(DEPDIR)/variable.Tpo" -c -o variable.o `test -f 'src/fol/variable.cpp' || echo '$(srcdir)/'`src/fol/variable.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/variable.Tpo" "$(DEPDIR)/variable.Po"; else rm -f "$(DEPDIR)/variable.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/variable.cpp' object='variable.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o variable.o `test -f 'src/fol/variable.cpp' || echo '$(srcdir)/'`src/fol/variable.cpp
+
+variable.obj: src/fol/variable.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT variable.obj -MD -MP -MF "$(DEPDIR)/variable.Tpo" -c -o variable.obj `if test -f 'src/fol/variable.cpp'; then $(CYGPATH_W) 'src/fol/variable.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/variable.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/variable.Tpo" "$(DEPDIR)/variable.Po"; else rm -f "$(DEPDIR)/variable.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/variable.cpp' object='variable.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o variable.obj `if test -f 'src/fol/variable.cpp'; then $(CYGPATH_W) 'src/fol/variable.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/variable.cpp'; fi`
 
 event.o: src/fol/event.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT event.o -MD -MP -MF "$(DEPDIR)/event.Tpo" -c -o event.o `test -f 'src/fol/event.cpp' || echo '$(srcdir)/'`src/fol/event.cpp; \

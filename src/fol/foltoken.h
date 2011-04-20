@@ -9,11 +9,21 @@ namespace FOLParse {
     CLOSE_PAREN,
     COMMA,
     COLON,
+    SEMICOLON,
     AT,
+    AND,
+    OR,
+    NOT,
+    EX1,
+    AT1,
     ENDL,
     OPEN_BRACKET,
     CLOSE_BRACKET,
+    OPEN_BRACE,
+    CLOSE_BRACE,
     IDENT,
+    VARIABLE,
+    VAR,
     NUMBER  };
 }
 

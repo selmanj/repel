@@ -21,6 +21,9 @@ public:
 
   Term& operator[] (boost::ptr_vector<Term>::size_type n) {return terms[n];};
   const Term& operator[] (boost::ptr_vector<Term>::size_type n) const {return terms[n];};
+  // TODO make the at() function throw an exception
+  Term& at(boost::ptr_vector<Term>::size_type n) {return terms[n];};
+  const Term& at(boost::ptr_vector<Term>::size_type n) const {return terms[n];};
   void push_back(Term* t) {terms.push_back(t);};
   
 private:

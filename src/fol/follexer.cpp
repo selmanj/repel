@@ -31,7 +31,23 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
           break;
         }
       }
-      token.setType(FOLParse::IDENT);
+      // now check for reserved keywords
+      if (ident == "v") {
+        // OR
+        token.setType(FOLParse::OR);
+      } else if (ident == "var") {
+        // VAR
+        token.setType(FOLParse::VAR);
+      } else if (ident == "ex1") {
+        // EX1
+        token.setType(FOLParse::EX1);
+      } else if (ident == "at1") {
+        // AT1
+        token.setType(FOLParse::AT1); 
+      } else {
+        // IDENT
+        token.setType(FOLParse::IDENT);
+      }
       token.setContents(ident);
       tokens.push_back(token);
     } else if (c >= '0' && c <= '9') {
@@ -49,8 +65,31 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
       token.setType(FOLParse::NUMBER);
       token.setContents(num);
       tokens.push_back(token); 
+    } else if (c == '?') {
+      // variable
+      std::string var;
+      while (!input->eof()) {
+        c = input->peek();
+        if (c >= 'A' && c <= 'Z'
+            || c >= 'a' && c <= 'z'
+            || c >= '0' && c <= '9'
+            || c == '_') {
+          input->get();
+          var.push_back(c);
+        } else {
+          break;
+        }
+      }
+      token.setType(FOLParse::VARIABLE);
+      token.setContents(var);
+      tokens.push_back(token);
     } else {
       switch (c) {
+        case '!':
+          token.setType(FOLParse::NOT);
+          token.setContents("!");
+          tokens.push_back(token);
+          break;
         case '[':
           token.setType(FOLParse::OPEN_BRACKET);
           token.setContents("[");
@@ -59,6 +98,16 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
         case ']':
           token.setType(FOLParse::CLOSE_BRACKET);
           token.setContents("]");
+          tokens.push_back(token);
+          break;
+        case '{':
+          token.setType(FOLParse::OPEN_BRACE);
+          token.setContents("{");
+          tokens.push_back(token);
+          break;
+        case '}':
+          token.setType(FOLParse::CLOSE_BRACE);
+          token.setContents("}");
           tokens.push_back(token);
           break;
         case '(':
@@ -71,6 +120,11 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
           token.setContents(")");
           tokens.push_back(token);
           break;
+        case '^':
+          token.setType(FOLParse::AND);
+          token.setContents("^");
+          tokens.push_back(token);
+          break;
         case ',':
           token.setType(FOLParse::COMMA);
           token.setContents(",");
@@ -79,6 +133,11 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
         case ':':
           token.setType(FOLParse::COLON);
           token.setContents(":");
+          tokens.push_back(token);
+          break;
+        case ';':
+          token.setType(FOLParse::SEMICOLON);
+          token.setContents(";");
           tokens.push_back(token);
           break;
         case '@':
