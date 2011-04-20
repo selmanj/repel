@@ -32,6 +32,6 @@ private:
     }
     return sentences_ == con.sentences_; 
   }
-}
+};
 
 #endif
