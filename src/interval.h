@@ -10,12 +10,12 @@ public:
 	void setStart(unsigned int start) {start_ = start;};
 	void setEnd(unsigned int end) {end_ = end;};
 
-  bool operator==(const Interval& b) const;
-  bool operator!=(const Interval& b) const;
-  bool operator>(const Interval& b) const;
-  bool operator<(const Interval& b) const;
-  bool operator>=(const Interval& b) const;
-  bool operator<=(const Interval& b) const;
+	bool operator==(const Interval& b) const;
+	bool operator!=(const Interval& b) const;
+	bool operator>(const Interval& b) const;
+	bool operator<(const Interval& b) const;
+	bool operator>=(const Interval& b) const;
+	bool operator<=(const Interval& b) const;
 private:
 	unsigned int start_, end_;
 };

@@ -26,21 +26,21 @@ public:
 	void setStart(const Interval& start) {start_ = start;};
 	void setEnd(const Interval& end) {end_ = end;};
 
-  bool operator==(const SpanInterval& b) const;
-  bool operator!=(const SpanInterval& b) const;
-  bool operator>(const SpanInterval& b) const;
-  bool operator<(const SpanInterval& b) const;
-  bool operator>=(const SpanInterval& b) const;
-  bool operator<=(const SpanInterval& b) const;
+	bool operator==(const SpanInterval& b) const;
+	bool operator!=(const SpanInterval& b) const;
+	bool operator>(const SpanInterval& b) const;
+	bool operator<(const SpanInterval& b) const;
+	bool operator>=(const SpanInterval& b) const;
+	bool operator<=(const SpanInterval& b) const;
 
 	bool isEmpty() const;
 	SpanInterval normalize() const throw(bad_normalize);
-  void normalize(std::set<SpanInterval>& collect) const;
-  SpanInterval intersection(const SpanInterval&  other) const;
-  void compliment(std::set<SpanInterval>& collect) const;
+	void normalize(std::set<SpanInterval>& collect) const;
+	SpanInterval intersection(const SpanInterval&  other) const;
+	void compliment(std::set<SpanInterval>& collect) const;
 
-  static const unsigned int NEG_INF = 0;
-  static const unsigned int POS_INF = UINT_MAX;
+	static const unsigned int NEG_INF = 0;
+	static const unsigned int POS_INF = UINT_MAX;
 private:
 	Interval start_, end_;
 

@@ -5,7 +5,7 @@
 #include <iostream>
 #include "foltoken.h"
 namespace FOLParse {
-  std::vector<FOLToken> tokenize(std::istream* input);
+std::vector<FOLToken> tokenize(std::istream* input);
 };
 
 #endif
