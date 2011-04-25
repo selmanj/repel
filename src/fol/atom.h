@@ -3,34 +3,43 @@
 
 #include <string>
 #include <vector>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/shared_ptr.hpp>
 #include "term.h"
 #include "sentence.h"
 
 class Atom : public Sentence {
 public:
+  typedef std::vector<boost::shared_ptr<Term> >::size_type size_type;
+
   Atom(std::string name) : pred(name) {};
-  Atom(const Atom& a) : pred(a.pred), terms(a.terms) {};
+  Atom(const Atom& a) : pred(a.pred), terms(a.terms) {};	// shallow copy
   template <typename ForwardIterator>
   Atom(std::string name,
       ForwardIterator first,
-      ForwardIterator last) : pred(name), terms(first, last) {};
+      ForwardIterator last) : pred(name) {
+	  ForwardIterator it = first;
+	  while (it != last) {
+		  boost::shared_ptr<Term> t(it->clone());
+		  terms.push_back(t);
+		  it++;
+	  }
+  };
   bool isGrounded() const;
   int arity() const {return terms.size();};
   std::string name() const {return pred;};
 
-  Term& operator[] (boost::ptr_vector<Term>::size_type n) {return terms[n];};
-  const Term& operator[] (boost::ptr_vector<Term>::size_type n) const {return terms[n];};
+  //Term& operator[] (boost::ptr_vector<Term>::size_type n) {return terms[n];};
+  //const Term& operator[] (boost::ptr_vector<Term>::size_type n) const {return terms[n];};
   // TODO make the at() function throw an exception
-  Term& at(boost::ptr_vector<Term>::size_type n) {return terms[n];};
-  const Term& at(boost::ptr_vector<Term>::size_type n) const {return terms[n];};
-  void push_back(Term* t) {terms.push_back(t);};
+  boost::shared_ptr<Term> at(size_type n) {return terms[n];};
+  void push_back(const boost::shared_ptr<Term>& t)  {terms.push_back(t);};
   
 private:
   std::string pred;
-  boost::ptr_vector<Term> terms;
+  //boost::ptr_vector<Term> terms;
+  std::vector<boost::shared_ptr<Term> > terms;
 
-  virtual Sentence* doClone() const {return new Atom(*this);}
+  virtual Sentence* doClone() const {return new Atom(*this);}	// TODO is shallow copy what we want here?
   virtual bool doEquals(const Sentence& t) const {
     const Atom *at = dynamic_cast<const Atom*>(&t);
     if (at == NULL) {

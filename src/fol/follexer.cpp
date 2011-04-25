@@ -83,8 +83,14 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
       token.setType(FOLParse::VARIABLE);
       token.setContents(var);
       tokens.push_back(token);
+    } else if (c == '-' && input->peek() == '>') {
+    	input->get();
+    	// implies
+    	token.setType(FOLParse::IMPLIES);
+    	token.setContents("->");
+    	tokens.push_back(token);
     } else {
-      switch (c) {
+      switch (c) {	// simple cases below
         case '!':
           token.setType(FOLParse::NOT);
           token.setContents("!");

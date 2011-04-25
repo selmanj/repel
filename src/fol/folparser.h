@@ -13,6 +13,8 @@
 #include "constant.h"
 #include "variable.h"
 #include "negation.h"
+#include "conjunction.h"
+#include "disjunction.h"
 
 
 // anonymous namespace for helper functions
@@ -153,10 +155,12 @@ namespace {
     boost::shared_ptr<Atom> a(new Atom(predName));
 
     consumeTokenType(FOLParse::OPEN_PAREN, its);
-    a->push_back(new Constant(consumeIdent(its))); // ownership transfered to atom
+    boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
+    a->push_back(c); // ownership transfered to atom
     while (peekTokenType(FOLParse::COMMA, its)) {
       consumeTokenType(FOLParse::COMMA, its);
-      a->push_back(new Constant(consumeIdent(its)));
+      boost::shared_ptr<Constant> cnext(new Constant(consumeIdent(its)));
+      a->push_back(cnext);
     }
     consumeTokenType(FOLParse::CLOSE_PAREN, its);
     return a;
@@ -169,16 +173,20 @@ namespace {
 
     consumeTokenType(FOLParse::OPEN_PAREN, its);
     if (peekTokenType(FOLParse::IDENT, its)) {
-      a->push_back(new Constant(consumeIdent(its)));
+      boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
+      a->push_back(c);
     } else {
-      a->push_back(new Variable(consumeVariable(its)));
+      boost::shared_ptr<Variable> v(new Variable(consumeVariable(its)));
+      a->push_back(v);
     }
     while (peekTokenType(FOLParse::COMMA, its)) {
       consumeTokenType(FOLParse::COMMA, its);
       if (peekTokenType(FOLParse::IDENT, its)) {
-        a->push_back(new Constant(consumeIdent(its)));
+        boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
+        a->push_back(c);
       } else {
-        a->push_back(new Variable(consumeVariable(its)));
+        boost::shared_ptr<Variable> v(new Variable(consumeVariable(its)));
+        a->push_back(v);
       }
     }
     consumeTokenType(FOLParse::CLOSE_PAREN, its);
@@ -198,13 +206,59 @@ namespace {
 
   }
   */
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> doParseStaticFormula(iters<ForwardIterator> &its) {
+	  return doParseStaticFormula_exat(its);
+  }
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> doParseStaticFormula_exat(iters<ForwardIterator> &its) {	// TODO: support exactly 1/at most 1
+	  return doParseStaticFormula_quant(its);
+  }
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> doParseStaticFormula_quant(iters<ForwardIterator> &its) {	// TODO: support quantification
+	  return doParseStaticFormula_imp(its);
+  }
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> doParseStaticFormula_imp(iters<ForwardIterator> &its) {	// TODO: support double-implication
+    boost::shared_ptr<Sentence> s1 = doParseStaticFormula_conn(its);
+    while (peekTokenType(FOLParse::IMPLIES, its)) {	// Implication is just special case of disjunction, ie X -> Y = !X v Y
+		consumeTokenType(FOLParse::IMPLIES, its);
+		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_conn(its);
+		boost::shared_ptr<Negation> neg(new Negation(s1));
+		boost::shared_ptr<Disjunction> dis(new Disjunction());
+
+		dis->push_back(neg);
+		dis->push_back(s2);
+
+		s1 = boost::static_pointer_cast<Sentence>(dis);
+    }
+    return s1;
+  }
 
   template <class ForwardIterator>
   boost::shared_ptr<Sentence> doParseStaticFormula_conn(iters<ForwardIterator> &its) {
-    boost::shared_ptr<Sentence> s = doParseStaticFormula_unary(its);
+    boost::shared_ptr<Sentence> s1 = doParseStaticFormula_unary(its);
     while (peekTokenType(FOLParse::AND, its) || peekTokenType(FOLParse::OR, its)) {
-
+    	if (peekTokenType(FOLParse::AND, its)) {
+    		consumeTokenType(FOLParse::AND, its);
+    		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_unary(its);
+    		boost::shared_ptr<Conjunction> con(new Conjunction);
+    		con->push_back(s1);
+    		con->push_back(s2);
+    		s1 = boost::static_pointer_cast<Sentence>(con);
+    	} else {	// must be disjunction
+    		consumeTokenType(FOLParse::OR, its);
+    		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_unary(its);
+    		boost::shared_ptr<Disjunction> dis(new Disjunction());
+    		dis->push_back(s1);
+    		dis->push_back(s2);
+    		s1 = boost::static_pointer_cast<Sentence>(dis);
+    	}
     }
+    return s1;
   }
 
   template <class ForwardIterator>
@@ -259,5 +313,12 @@ namespace FOLParse
     iters<ForwardIterator> its(first, last);
     return doParseAtom(its);
   };
+
+  template <class ForwardIterator>
+  boost::shared_ptr<Sentence> parseStaticFormula(const ForwardIterator &first,
+		  const ForwardIterator &last) {
+	  iters<ForwardIterator> its(first, last);
+	  return doParseStaticFormula(its);
+  }
 };
 #endif

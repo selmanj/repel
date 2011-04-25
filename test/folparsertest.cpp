@@ -45,8 +45,8 @@ BOOST_AUTO_TEST_CASE( event_test)
   std::vector<FOLToken> tokens = FOLParse::tokenize(&stream); 
   boost::shared_ptr<Event> e = FOLParse::parseEvent(tokens.begin(), tokens.end());
   BOOST_CHECK_EQUAL(e->fact()->name(), "mrManager");
-  BOOST_CHECK_EQUAL(e->fact()->at(0).name(), "georgeMichael");
-  BOOST_CHECK_EQUAL(e->fact()->at(1).name(), "bananaStand");
+  BOOST_CHECK_EQUAL(e->fact()->at(0)->name(), "georgeMichael");
+  BOOST_CHECK_EQUAL(e->fact()->at(1)->name(), "bananaStand");
 
 }
 
@@ -57,8 +57,24 @@ BOOST_AUTO_TEST_CASE( atom_test)
   boost::shared_ptr<Atom> a = FOLParse::parseAtom(tokens.begin(), tokens.end());
   BOOST_CHECK_EQUAL(a->name(), "love");
   BOOST_CHECK_EQUAL(a->arity(), 2);
-  BOOST_CHECK_EQUAL((*a)[0].name(), "cats");
-  BOOST_CHECK_EQUAL((*a)[1].name(), "meowmix");
-  BOOST_CHECK(dynamic_cast<Variable*>(&(*a)[0]) != NULL);
-  BOOST_CHECK(dynamic_cast<Constant*>(&(*a)[1]) != NULL);
+  BOOST_CHECK_EQUAL(a->at(0)->name(), "cats");
+  BOOST_CHECK_EQUAL(a->at(1)->name(), "meowmix");
+  BOOST_CHECK(boost::dynamic_pointer_cast<Variable>(a->at(0)) != NULL);
+  BOOST_CHECK(boost::dynamic_pointer_cast<Constant>(a->at(1)) != NULL);
+}
+
+BOOST_AUTO_TEST_CASE( static_formula_test )
+{
+	std::istringstream stream("p(?x,y)");	// simple atom case
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
+	boost::shared_ptr<Sentence> s = FOLParse::parseStaticFormula(tokens.begin(), tokens.end());
+	boost::shared_ptr<Atom> a = boost::dynamic_pointer_cast<Atom>(s);
+	BOOST_CHECK(a != NULL);
+	BOOST_CHECK_EQUAL(a->name(), "p");
+	BOOST_CHECK(boost::dynamic_pointer_cast<Variable>(a->at(0)) != NULL);
+
+	std::istringstream stream2("p(x) v q(x) -> r(x)");
+	tokens = FOLParse::tokenize(&stream2);
+	boost::shared_ptr<Sentence> s2 = FOLParse::parseStaticFormula(tokens.begin(), tokens.end());
+
 }

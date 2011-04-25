@@ -10,6 +10,8 @@ namespace FOLParse {
     COMMA,
     COLON,
     SEMICOLON,
+    IMPLIES,
+    DOUBLEIMPLIES,
     AT,
     AND,
     OR,
