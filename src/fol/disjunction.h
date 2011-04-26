@@ -20,18 +20,33 @@ public:
 
 	void push_back(const boost::shared_ptr<Sentence>& s) {sentences_.push_back(s);};
 
-
 private:
+
+
 	std::vector<boost::shared_ptr<Sentence> > sentences_;
 
-	virtual Sentence* doClone() const { return new Disjunction(*this); }
+	virtual Sentence* doClone() const { return new Disjunction(*this); };
+
 	virtual bool doEquals(const Sentence& s) const {
 		const Disjunction *con = dynamic_cast<const Disjunction*>(&s);
 		if (con == NULL) {
 			return false;
 		}
 		return sentences_ == con->sentences_;
-	}
+	};
+
+	virtual void doToString(std::string& str) const {	// NOTE, this does not use parenthesis, incorrect!! TODO FIX THIS
+		for (std::vector<boost::shared_ptr<Sentence> >::const_iterator it = sentences_.begin();
+				it != sentences_.end();
+				it++) {
+			str += (*it)->toString();
+			if (it+1 != sentences_.end()) {
+				str += " v ";
+			}
+		}
+	};
+
+	virtual int doPrecedence() const { return 4; };
 };
 
 #endif

@@ -13,6 +13,7 @@ public:
 	boost::shared_ptr<Sentence> sentence() {return s_;};
 
 private:
+
 	boost::shared_ptr<Sentence> s_;
 	virtual Sentence* doClone() const { return new Negation(*this); };
 	virtual bool doEquals(const Sentence& s) const {
@@ -22,6 +23,21 @@ private:
 		}
 		return *s_ == *(neg->s_);
 	};
+
+	virtual void doToString(std::string& str) const {
+		str += "!";
+		if (s_ != NULL) {
+			if (s_->precedence() > precedence()) {
+				str += "(";
+				str += s_->toString();
+				str += ")";
+			} else {
+				str += s_->toString();
+			}
+		}
+	};
+
+	virtual int doPrecedence() const { return 2; };
 };
 
 #endif

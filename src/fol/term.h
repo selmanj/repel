@@ -11,6 +11,14 @@ public:
 	Term* clone() const { return doClone(); };
 	bool operator==(const Term& b) const {return doEquals(b);};
 
+	std::string toString() const {
+		std::string str;
+		doToString(str);
+		return str;
+	};
+
+protected:
+	virtual void doToString(std::string& str) const = 0;
 private:
 	virtual Term* doClone() const = 0;
 	virtual std::string doName() const = 0;

@@ -37,10 +37,12 @@ void consumeTokenType(FOLParse::FOL_TOKEN_TYPE type,
 		iters<ForwardIterator> &its) throw (bad_parse) {
 	if (its.cur == its.last) {
 		bad_parse e;
+		e.details << "unexpectedly reached end of tokens while parsing type " << type << std::endl;
 		throw e;
 	}
 	if (its.cur->type() != type) {
 		bad_parse e;
+		e.details << "expected type " << type << " but instead we have: " << its.cur->type() << std::endl;
 		throw e;
 	}
 	its.cur++;
@@ -50,10 +52,12 @@ template <class ForwardIterator>
 std::string consumeIdent(iters<ForwardIterator> &its) throw (bad_parse) {
 	if (its.cur == its.last) {
 		bad_parse e;
+		e.details << "unexpectedly reached end of tokens while looking for identifier" << std::endl;
 		throw e;
 	}
 	if (its.cur->type() != FOLParse::IDENT) {
 		bad_parse e;
+		e.details << "expected an identifier, instead we have type " << its.cur->type() << std::endl;
 		throw e;
 	}
 	std::string name = its.cur->contents();
@@ -65,10 +69,12 @@ template <class ForwardIterator>
 std::string consumeVariable(iters<ForwardIterator> &its) throw (bad_parse) {
 	if (its.cur == its.last) {
 		bad_parse e;
+		e.details << "unexpectedly reached end of tokens while looking for variable" << std::endl;
 		throw e;
 	}
 	if (its.cur->type() != FOLParse::VARIABLE) {
 		bad_parse e;
+		e.details << "expected a variable, instead we have type " << its.cur->type() << std::endl;
 		throw e;
 	}
 	std::string name = its.cur->contents();
@@ -80,10 +86,12 @@ template <class ForwardIterator>
 unsigned int consumeNumber(iters<ForwardIterator> &its) throw (bad_parse) {
 	if (its.cur == its.last) {
 		bad_parse e;
+		e.details << "unexpectedly reached end of tokens while looking for number" << std::endl;
 		throw e;
 	}
 	if (its.cur->type() != FOLParse::NUMBER) {
 		bad_parse e;
+		e.details << "expected a number, instead we have type " << its.cur->type() << std::endl;
 		throw e;
 	}
 
@@ -223,10 +231,10 @@ boost::shared_ptr<Sentence> doParseStaticFormula_quant(iters<ForwardIterator> &i
 
 template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseStaticFormula_imp(iters<ForwardIterator> &its) {	// TODO: support double-implication
-	boost::shared_ptr<Sentence> s1 = doParseStaticFormula_conn(its);
+	boost::shared_ptr<Sentence> s1 = doParseStaticFormula_or(its);
 	while (peekTokenType(FOLParse::IMPLIES, its)) {	// Implication is just special case of disjunction, ie X -> Y = !X v Y
 		consumeTokenType(FOLParse::IMPLIES, its);
-		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_conn(its);
+		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_or(its);
 		boost::shared_ptr<Negation> neg(new Negation(s1));
 		boost::shared_ptr<Disjunction> dis(new Disjunction());
 
@@ -239,24 +247,29 @@ boost::shared_ptr<Sentence> doParseStaticFormula_imp(iters<ForwardIterator> &its
 }
 
 template <class ForwardIterator>
-boost::shared_ptr<Sentence> doParseStaticFormula_conn(iters<ForwardIterator> &its) {
+boost::shared_ptr<Sentence> doParseStaticFormula_or(iters<ForwardIterator> &its) {
+	boost::shared_ptr<Sentence> s1 = doParseStaticFormula_and(its);
+	while (peekTokenType(FOLParse::OR, its)) {
+		consumeTokenType(FOLParse::OR, its);
+		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_and(its);
+		boost::shared_ptr<Disjunction> dis(new Disjunction());
+		dis->push_back(s1);
+		dis->push_back(s2);
+		s1 = boost::static_pointer_cast<Sentence>(dis);
+	}
+	return s1;
+}
+
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseStaticFormula_and(iters<ForwardIterator> &its) {
 	boost::shared_ptr<Sentence> s1 = doParseStaticFormula_unary(its);
-	while (peekTokenType(FOLParse::AND, its) || peekTokenType(FOLParse::OR, its)) {
-		if (peekTokenType(FOLParse::AND, its)) {
+	while (peekTokenType(FOLParse::AND, its)) {
 			consumeTokenType(FOLParse::AND, its);
 			boost::shared_ptr<Sentence> s2 = doParseStaticFormula_unary(its);
 			boost::shared_ptr<Conjunction> con(new Conjunction);
 			con->push_back(s1);
 			con->push_back(s2);
 			s1 = boost::static_pointer_cast<Sentence>(con);
-		} else {	// must be disjunction
-			consumeTokenType(FOLParse::OR, its);
-			boost::shared_ptr<Sentence> s2 = doParseStaticFormula_unary(its);
-			boost::shared_ptr<Disjunction> dis(new Disjunction());
-			dis->push_back(s1);
-			dis->push_back(s2);
-			s1 = boost::static_pointer_cast<Sentence>(dis);
-		}
 	}
 	return s1;
 }

@@ -39,14 +39,33 @@ private:
 	//boost::ptr_vector<Term> terms;
 	std::vector<boost::shared_ptr<Term> > terms;
 
-	virtual Sentence* doClone() const {return new Atom(*this);}	// TODO is shallow copy what we want here?
+	virtual Sentence* doClone() const {return new Atom(*this);};	// TODO is shallow copy what we want here?
+
 	virtual bool doEquals(const Sentence& t) const {
 		const Atom *at = dynamic_cast<const Atom*>(&t);
 		if (at == NULL) {
 			return false;
 		}
 		return (pred == at->pred) && (terms == at->terms);
-	}
+	};
+
+	virtual void doToString(std::string& str) const {
+		str += pred;
+		str += "(";
+		for (std::vector<boost::shared_ptr<Term> >::const_iterator it = terms.begin();
+				it != terms.end();
+				it++) {
+			str += (*it)->toString();
+			if (it + 1 != terms.end()) {
+				str += ", ";
+			}
+		}
+		str += ")";
+	};
+
+	virtual int doPrecedence() const {
+		return 0;
+	};
 
 };
 #endif

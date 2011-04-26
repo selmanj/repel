@@ -2,11 +2,15 @@
 #define BAD_PARSE_H
 
 #include <exception>
+#include <iostream>
 
 class bad_parse : public std::exception {
-	virtual const char* what() const throw() {
-		return "Unable to parse"; // TODO: real clear there, this will surely stop all questions about failed parsings
-	}
+public:
+	bad_parse() throw () {};
+	bad_parse(bad_parse& other) : details(other.details.str()) {};
+	virtual ~bad_parse() throw () {};
+	std::ostringstream details;
+	virtual const char* what() const throw() {return "unable to parse";};
 };
 
 #endif

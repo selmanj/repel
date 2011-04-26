@@ -3,7 +3,7 @@
 #include "constant.h"
 
 Constant::Constant(std::string name) 
-: str(name)
+: name_(name)
 {
 }
 
@@ -17,5 +17,5 @@ bool Constant::doEquals(const Term& t) const {
 	if (con == NULL) {
 		return false; // wrong type
 	}
-	return con->str == str;
+	return con->name_ == name_;
 }

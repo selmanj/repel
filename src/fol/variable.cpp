@@ -3,7 +3,7 @@
 #include "variable.h"
 
 Variable::Variable(std::string name) 
-: str(name)
+: name_(name)
 {
 }
 
@@ -17,5 +17,10 @@ bool Variable::doEquals(const Term& t) const {
 	if (var == NULL) {
 		return false; // wrong type
 	}
-	return var->str == str;
+	return var->name_ == name_;
+}
+
+void Variable::doToString(std::string& str) const {
+	str += "?";
+	str += name_;
 }
