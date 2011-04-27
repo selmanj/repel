@@ -17,6 +17,7 @@
 #include "conjunction.h"
 #include "disjunction.h"
 #include "liquidop.h"
+#include "diamondop.h"
 
 // anonymous namespace for helper functions
 namespace {
@@ -226,8 +227,14 @@ boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
 	} else if (peekTokenType(FOLParse::DIAMOND, its)) {
 		consumeTokenType(FOLParse::DIAMOND, its);
 		std::set<Interval::INTERVAL_RELATION> relations = doParseRelationList(its);
+		if (relations.empty()) {
+			// use default
+			relations = DiamondOp::defaultRelations();
+		}
+		boost::shared_ptr<Sentence> s = doParseFormula(its);
 
-		//boost::shared_ptr s = doParseFormula(its);
+		boost::shared_ptr<Sentence> dia(new DiamondOp(s, relations.begin(), relations.end()));
+		return dia;
 	}
 }
 
@@ -293,12 +300,12 @@ template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseFormula_paren(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
 		consumeTokenType(FOLParse::OPEN_BRACE, its);
-		boost::shared_ptr s = doParseStaticFormula(its);
+		boost::shared_ptr<Sentence> s = doParseStaticFormula(its);
 		consumeTokenType(FOLParse::CLOSE_BRACE, its);
 
-		boost::shared_ptr liq(new LiquidOp(s));
+		boost::shared_ptr<Sentence> liq(new LiquidOp(s));
 		return liq;
-	} else if (peekTokenType(FOLParse::OPEN_PAREN)) {
+	} else if (peekTokenType(FOLParse::OPEN_PAREN, its)) {
 		return doParseFormula(its);
 	} else {
 		return doParseAtom(its);
