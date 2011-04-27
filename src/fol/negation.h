@@ -7,7 +7,7 @@
 class Negation : public Sentence {
 public:
 	Negation(boost::shared_ptr<Sentence> sentence) : s_(sentence) {};
-	Negation(const Negation& neg) : s_(neg.s_->clone()) {}; // deep copy
+	Negation(const Negation& neg) : s_(neg.s_) {}; // shallow copy
 	virtual ~Negation() {};
 
 	boost::shared_ptr<Sentence> sentence() {return s_;};
