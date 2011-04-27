@@ -1,28 +1,39 @@
 #ifndef CONJUNCTION_H
 #define CONJUNCTION_H
 
+#include <set>
 #include <boost/shared_ptr.hpp>
 #include "sentence.h"
+#include "../interval.h"
 
 class Conjunction : public Sentence {
 public:
-	typedef std::vector<boost::shared_ptr<Sentence> >::iterator iterator;
-	typedef std::vector<boost::shared_ptr<Sentence> >::const_iterator const_iterator;
 
-	Conjunction() {};
-	Conjunction(const Conjunction& a) : sentences_(a.sentences_) {};
+	static const std::set<Interval::INTERVAL_RELATION>& defaultRelations() {
+		static std::set<Interval::INTERVAL_RELATION>* defaults = new std::set<Interval::INTERVAL_RELATION>();
+		if (defaults->empty()) {
+			defaults->insert(Interval::EQUALS);
+		}
+		return *defaults;
+	}
+
+	template<class InputIterator>
+	Conjunction(const boost::shared_ptr<Sentence>& left,
+			const boost::shared_ptr<Sentence>& right,
+			InputIterator begin,
+			InputIterator end)
+		: left_(left), right_(right), rels_(begin, end) {};
+	Conjunction(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right)
+		: left_(left), right_(right), rels_(defaultRelations()) {}
+	Conjunction(const Conjunction& a)
+		: left_(a.left_), right_(a.right_), rels_(a.rels_) {};
 	virtual ~Conjunction() {};
 
-	iterator begin() {return sentences_.begin();};
-	const_iterator begin() const {return sentences_.begin();};
-	iterator end() {return sentences_.end();};
-	const_iterator end() const {return sentences_.end();};
-
-	//void push_back(Sentence* s) {sentences_.push_back(s);};
-	void push_back(boost::shared_ptr<Sentence> s){sentences_.push_back(s);};
 private:
 
-	std::vector<boost::shared_ptr<Sentence> > sentences_;
+	boost::shared_ptr<Sentence>  left_;
+	boost::shared_ptr<Sentence> right_;
+	std::set<Interval::INTERVAL_RELATION> rels_;
 
 	virtual Sentence* doClone() const { return new Conjunction(*this); };
 	virtual bool doEquals(const Sentence& s) const {
@@ -30,24 +41,24 @@ private:
 		if (con == NULL) {
 			return false;
 		}
-		return sentences_ == con->sentences_;
+		return (left_ == con->left_ && right_ == con->right_ && rels_ == con->rels_);
 	};
 
-	virtual void doToString(std::string& str) const {	// NOTE, this does not use parenthesis, incorrect!! TODO FIX THIS
-		for (std::vector<boost::shared_ptr<Sentence> >::const_iterator it = sentences_.begin();
-				it != sentences_.end();
-				it++) {
-			if ((*it)->precedence() > precedence()) {
-				str += "(";
-				str += (*it)->toString();
-				str += ")";
-			} else {
-				str += (*it)->toString();
-			}
-
-			if (it+1 != sentences_.end()) {
-				str += " ^ ";
-			}
+	virtual void doToString(std::string& str) const {
+		if (left_->precedence() > precedence()) {
+			str += "(";
+			str += left_->toString();
+			str += ")";
+		} else {
+			str += left_->toString();
+		}
+		str += " ^ ";
+		if (right_->precedence() > precedence()) {
+			str += "(";
+			str += right_->toString();
+			str += ")";
+		} else {
+			str += right_->toString();
 		}
 	};
 

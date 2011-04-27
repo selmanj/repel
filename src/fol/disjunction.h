@@ -6,24 +6,14 @@
 
 class Disjunction : public Sentence {
 public:
-	typedef std::vector<boost::shared_ptr<Sentence> >::iterator iterator;
-	typedef std::vector<boost::shared_ptr<Sentence> >::const_iterator const_iterator;
-
-	Disjunction() {};
-	Disjunction(const Disjunction& a) : sentences_(a.sentences_) {};	// shallow copy
+	Disjunction(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right)
+		: left_(left), right_(right) {};
+	Disjunction(const Disjunction& a) : left_(a.left_), right_(a.right_) {};	// shallow copy
 	virtual ~Disjunction() {};
 
-	iterator begin() {return sentences_.begin();};
-	const_iterator begin() const {return sentences_.begin();};
-	iterator end() {return sentences_.end();};
-	const_iterator end() const {return sentences_.end();};
-
-	void push_back(const boost::shared_ptr<Sentence>& s) {sentences_.push_back(s);};
-
 private:
-
-
-	std::vector<boost::shared_ptr<Sentence> > sentences_;
+	boost::shared_ptr<Sentence> left_;
+	boost::shared_ptr<Sentence> right_;
 
 	virtual Sentence* doClone() const { return new Disjunction(*this); };
 
@@ -32,17 +22,24 @@ private:
 		if (con == NULL) {
 			return false;
 		}
-		return sentences_ == con->sentences_;
+		return (left_ == con->left_ && right_ == con->right_);
 	};
 
-	virtual void doToString(std::string& str) const {	// NOTE, this does not use parenthesis, incorrect!! TODO FIX THIS
-		for (std::vector<boost::shared_ptr<Sentence> >::const_iterator it = sentences_.begin();
-				it != sentences_.end();
-				it++) {
-			str += (*it)->toString();
-			if (it+1 != sentences_.end()) {
-				str += " v ";
-			}
+	virtual void doToString(std::string& str) const {
+		if (left_->precedence() > precedence()) {
+			str += "(";
+			str += left_->toString();
+			str += ")";
+		} else {
+			str += left_->toString();
+		}
+		str += " v ";
+		if (right_->precedence() > precedence()) {
+			str += "(";
+			str += right_->toString();
+			str += ")";
+		} else {
+			str += right_->toString();
 		}
 	};
 

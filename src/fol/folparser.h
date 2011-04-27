@@ -5,6 +5,7 @@
 #include <iterator>
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include <boost/tuple/tuple.hpp>
 #include "foltoken.h"
 #include "bad_parse.h"
 #include "atom.h"
@@ -203,19 +204,76 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 	return a;
 }
 
-/*
-  template <class ForwardIterator>
-  void doParseWeightedFormula(iters<ForwardIterator> &its) {
-    unsigned int weight = consumeNumber(its);
-    consumeTokenType(FOLParse::COLON, its);
-    doParseFormula(its);
-  }
+template <class ForwardIterator>
+boost::tuple<int, boost::shared_ptr<Sentence> > doParseWeightedFormula(iters<ForwardIterator> &its) {
+	unsigned int weight = consumeNumber(its);
+	consumeTokenType(FOLParse::COLON, its);
+	boost::shared_ptr<Sentence> p = doParseFormula(its);
+	return boost::tuple<int, boost::shared_ptr<Sentence> >(weight, p);
+}
 
-  template <class ForwardIterator>
-  void doParseFormula(iters<ForwardIterator> &its) {
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula(iters<ForwardIterator> &its) {
+	return doParseFormula_exat(its);
+}
 
-  }
- */
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula_exat(iters<ForwardIterator> &its) {	// TODO: support exactly 1/at most 1
+	return doParseFormula_quant(its);
+}
+
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula_quant(iters<ForwardIterator> &its) {	// TODO: support quantification
+	return doParseFormula_imp(its);
+}
+
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula_imp(iters<ForwardIterator> &its) {
+	boost::shared_ptr<Sentence> s = doParseFormula_or(its);
+	while (peekTokenType(FOLParse::IMPLIES, its)) {
+		consumeTokenType(FOLParse::IMPLIES, its);
+		boost::shared_ptr<Sentence> s2 = doParseFormula_or(its);
+		boost::shared_ptr<Negation> neg(new Negation(s));
+		boost::shared_ptr<Sentence> dis(new Disjunction(neg, s2));
+		s = dis;
+	}
+	return s;
+}
+
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula_or(iters<ForwardIterator> &its) {
+	boost::shared_ptr<Sentence> s = doParseFormula_and(its);
+	while (peekTokenType(FOLParse::OR, its)) {
+		consumeTokenType(FOLParse::OR, its);
+		boost::shared_ptr<Sentence> s2 = doParseFormula_and(its);
+		boost::shared_ptr<Sentence> dis(new Disjunction(s,s2));
+		s = dis;
+	}
+	return s;
+}
+
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula_and(iters<ForwardIterator> &its) {
+	boost::shared_ptr<Sentence> s = doParseFormula_unary(its);
+	while (peekTokenType(FOLParse::AND, its) || peekTokenType(FOLParse::SEMICOLON, its)) {
+		std::set<Interval::INTERVAL_RELATION> rels;
+		if (peekTokenType(FOLParse::SEMICOLON, its)) {
+			consumeTokenType(FOLParse::SEMICOLON, its);
+			rels.insert(Interval::MEETS);	// meets is the default in this case;
+		} else {
+			consumeTokenType(FOLParse::AND, its);
+			rels = doParseRelationList(its);
+			if (rels.empty()) {
+				rels = Conjunction::defaultRelations();
+			}
+		}
+		boost::shared_ptr<Sentence> s2 = doParseFormula_unary(its);
+		boost::shared_ptr<Sentence> con(new Conjunction(s,s2,rels.begin(), rels.end()));
+		s = con;
+	}
+	return s;
+}
+
 template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::NOT, its)) {
@@ -235,6 +293,8 @@ boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
 
 		boost::shared_ptr<Sentence> dia(new DiamondOp(s, relations.begin(), relations.end()));
 		return dia;
+	} else {
+		return doParseFormula_paren(its);
 	}
 }
 
@@ -254,7 +314,7 @@ std::set<Interval::INTERVAL_RELATION> doParseRelationList(iters<ForwardIterator>
 }
 
 template <class ForwardIterator>
-Interval::INTERVAL_RELATION doParseRelation(ForwardIterator& its) {
+Interval::INTERVAL_RELATION doParseRelation(iters<ForwardIterator>& its) {
 	if (peekTokenType(FOLParse::EQUALS, its)) {
 		consumeTokenType(FOLParse::EQUALS, its);
 		return Interval::EQUALS;
@@ -298,10 +358,10 @@ Interval::INTERVAL_RELATION doParseRelation(ForwardIterator& its) {
 
 template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseFormula_paren(iters<ForwardIterator> &its) {
-	if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
-		consumeTokenType(FOLParse::OPEN_BRACE, its);
+	if (peekTokenType(FOLParse::OPEN_BRACKET, its)) {
+		consumeTokenType(FOLParse::OPEN_BRACKET, its);
 		boost::shared_ptr<Sentence> s = doParseStaticFormula(its);
-		consumeTokenType(FOLParse::CLOSE_BRACE, its);
+		consumeTokenType(FOLParse::CLOSE_BRACKET, its);
 
 		boost::shared_ptr<Sentence> liq(new LiquidOp(s));
 		return liq;
@@ -334,12 +394,9 @@ boost::shared_ptr<Sentence> doParseStaticFormula_imp(iters<ForwardIterator> &its
 		consumeTokenType(FOLParse::IMPLIES, its);
 		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_or(its);
 		boost::shared_ptr<Negation> neg(new Negation(s1));
-		boost::shared_ptr<Disjunction> dis(new Disjunction());
+		boost::shared_ptr<Sentence> dis(new Disjunction(neg, s2));
 
-		dis->push_back(neg);
-		dis->push_back(s2);
-
-		s1 = boost::static_pointer_cast<Sentence>(dis);
+		s1 = dis;
 	}
 	return s1;
 }
@@ -350,10 +407,9 @@ boost::shared_ptr<Sentence> doParseStaticFormula_or(iters<ForwardIterator> &its)
 	while (peekTokenType(FOLParse::OR, its)) {
 		consumeTokenType(FOLParse::OR, its);
 		boost::shared_ptr<Sentence> s2 = doParseStaticFormula_and(its);
-		boost::shared_ptr<Disjunction> dis(new Disjunction());
-		dis->push_back(s1);
-		dis->push_back(s2);
-		s1 = boost::static_pointer_cast<Sentence>(dis);
+		boost::shared_ptr<Sentence> dis(new Disjunction(s1, s2));
+
+		s1 = dis;
 	}
 	return s1;
 }
@@ -364,10 +420,9 @@ boost::shared_ptr<Sentence> doParseStaticFormula_and(iters<ForwardIterator> &its
 	while (peekTokenType(FOLParse::AND, its)) {
 			consumeTokenType(FOLParse::AND, its);
 			boost::shared_ptr<Sentence> s2 = doParseStaticFormula_unary(its);
-			boost::shared_ptr<Conjunction> con(new Conjunction);
-			con->push_back(s1);
-			con->push_back(s2);
-			s1 = boost::static_pointer_cast<Sentence>(con);
+			boost::shared_ptr<Sentence> con(new Conjunction(s1, s2));
+
+			s1 = con;
 	}
 	return s1;
 }
@@ -430,6 +485,13 @@ boost::shared_ptr<Sentence> parseStaticFormula(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
 	return doParseStaticFormula(its);
+}
+
+template <class ForwardIterator>
+boost::tuple<unsigned int, boost::shared_ptr<Sentence> > parseWeightedFormula(const ForwardIterator &first,
+		const ForwardIterator &last) {
+	iters<ForwardIterator> its(first, last);
+	return doParseWeightedFormula(its);
 }
 };
 #endif

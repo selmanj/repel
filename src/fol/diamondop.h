@@ -45,7 +45,7 @@ private:
 	};
 
 	virtual void doToString(std::string& str) const {
-		str += "<> ";
+		str += "<>";
 		if (rels_ != DiamondOp::defaultRelations()) {
 			str += "{";
 			if (!rels_.empty())	{	// better be safe, not sure if this could happen but still...
@@ -58,8 +58,10 @@ private:
 				}
 			}
 
-			str += "} ";
+			str += "}";
 		}
+		str += " ";
+
 		if (s_ != NULL) {
 			// check if we need parenthesis
 			if (s_->precedence() > precedence()) {
