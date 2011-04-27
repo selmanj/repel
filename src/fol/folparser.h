@@ -9,13 +9,14 @@
 #include "bad_parse.h"
 #include "atom.h"
 #include "../spaninterval.h"
+#include "../interval.h"
 #include "event.h"
 #include "constant.h"
 #include "variable.h"
 #include "negation.h"
 #include "conjunction.h"
 #include "disjunction.h"
-
+#include "liquidop.h"
 
 // anonymous namespace for helper functions
 namespace {
@@ -214,6 +215,96 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 
   }
  */
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
+	if (peekTokenType(FOLParse::NOT, its)) {
+		consumeTokenType(FOLParse::NOT, its);
+		boost::shared_ptr<Sentence> s = doParseFormula(its);
+
+		boost::shared_ptr<Sentence> neg(new Negation(s));
+		return neg;
+	} else if (peekTokenType(FOLParse::DIAMOND, its)) {
+		consumeTokenType(FOLParse::DIAMOND, its);
+		std::set<Interval::INTERVAL_RELATION> relations = doParseRelationList(its);
+
+		//boost::shared_ptr s = doParseFormula(its);
+	}
+}
+
+template <class ForwardIterator>
+std::set<Interval::INTERVAL_RELATION> doParseRelationList(iters<ForwardIterator> &its) {
+	std::set<Interval::INTERVAL_RELATION> relations;
+	if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
+		consumeTokenType(FOLParse::OPEN_BRACE, its);
+		relations.insert(doParseRelation(its));
+		while (peekTokenType(FOLParse::COMMA, its)) {
+			consumeTokenType(FOLParse::COMMA, its);
+			relations.insert(doParseRelation(its));
+		}
+		consumeTokenType(FOLParse::CLOSE_BRACE, its);
+	}
+	return relations;
+}
+
+template <class ForwardIterator>
+Interval::INTERVAL_RELATION doParseRelation(ForwardIterator& its) {
+	if (peekTokenType(FOLParse::EQUALS, its)) {
+		consumeTokenType(FOLParse::EQUALS, its);
+		return Interval::EQUALS;
+	} else if (peekTokenType(FOLParse::GT, its)) {
+		consumeTokenType(FOLParse::GT, its);
+		return Interval::GREATERTHAN;
+	} else if (peekTokenType(FOLParse::LT, its)) {
+		consumeTokenType(FOLParse::LT, its);
+		return Interval::LESSTHAN;
+	} else {
+		// looking for an ident here that matches
+		std::string str = consumeIdent(its);
+		if (str == "m") {
+			return Interval::MEETS;
+		} else if (str == "mi") {
+			return Interval::MEETSI;
+		} else if (str == "s") {
+			return Interval::STARTS;
+		} else if (str == "si") {
+			return Interval::STARTSI;
+		} else if (str == "d") {
+			return Interval::DURING;
+		} else if (str == "di") {
+			return Interval::DURINGI;
+		} else if (str == "f") {
+			return Interval::FINISHES;
+		} else if (str == "fi") {
+			return Interval::FINISHESI;
+		} else if (str == "o") {
+			return Interval::OVERLAPS;
+		} else if (str == "oi") {
+			return Interval::OVERLAPSI;
+		} else {
+			// no more matches!
+			bad_parse p;
+			p.details << "no interval relation matches \"" << str << "\"" << std::endl;
+			throw p;
+		}
+	}
+}
+
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseFormula_paren(iters<ForwardIterator> &its) {
+	if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
+		consumeTokenType(FOLParse::OPEN_BRACE, its);
+		boost::shared_ptr s = doParseStaticFormula(its);
+		consumeTokenType(FOLParse::CLOSE_BRACE, its);
+
+		boost::shared_ptr liq(new LiquidOp(s));
+		return liq;
+	} else if (peekTokenType(FOLParse::OPEN_PAREN)) {
+		return doParseFormula(its);
+	} else {
+		return doParseAtom(its);
+	}
+}
+
 template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseStaticFormula(iters<ForwardIterator> &its) {
 	return doParseStaticFormula_exat(its);

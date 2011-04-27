@@ -15,6 +15,7 @@
 #include "../src/fol/constant.h"
 #include "../src/spaninterval.h"
 #include <iostream>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -73,8 +74,14 @@ BOOST_AUTO_TEST_CASE( static_formula_test )
 	BOOST_CHECK_EQUAL(a->name(), "p");
 	BOOST_CHECK(boost::dynamic_pointer_cast<Variable>(a->at(0)) != NULL);
 
-	std::istringstream stream2("p(x) v q(x) -> r(x)");
+	std::istringstream stream2("p(x) ^ q(x) -> r(x)");
 	tokens = FOLParse::tokenize(&stream2);
 	boost::shared_ptr<Sentence> s2 = FOLParse::parseStaticFormula(tokens.begin(), tokens.end());
+	BOOST_CHECK_EQUAL(s2->toString(), "!(p(x) ^ q(x)) v r(x)");
+
+	std::istringstream stream3("p(x) ^ (q(x) v r(x))");
+	tokens = FOLParse::tokenize(&stream3);
+	boost::shared_ptr<Sentence> s3 = FOLParse::parseStaticFormula(tokens.begin(), tokens.end());
+	BOOST_CHECK_EQUAL(s3->toString(), "p(x) ^ (q(x) v r(x))");
 
 }
