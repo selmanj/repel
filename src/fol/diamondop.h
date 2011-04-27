@@ -1,23 +1,38 @@
-#ifndef LIQUIDOP_H
-#define LIQUIDOP_H
+#ifndef DIAMONDOP_H
+#define DIAMONDOP_H
 
 #include <boost/shared_ptr.hpp>
+#include <set>
 #include "sentence.h"
 
-class LiquidOp : public Sentence {
+class DiamondOp : public Sentence {
 public:
-	LiquidOp(boost::shared_ptr<Sentence> sentence) : s_(sentence) {};
-	LiquidOp(const LiquidOp& neg) : s_(neg.s_) {}; // shallow copy
-	virtual ~LiquidOp() {};
+	DiamondOp(boost::shared_ptr<Sentence> sentence) : s_(sentence) {
+		// default is that it overlaps somehow
+		rels_.insert(Interval::STARTS);
+		rels_.insert(Interval::STARTSI);
+		rels_.insert(Interval::DURING);
+		rels_.insert(Interval::DURINGI);
+		rels_.insert(Interval::FINISHES);
+		rels_.insert(Interval::FINISHESI);
+		rels_.insert(Interval::OVERLAPS);
+		rels_.insert(Interval::OVERLAPSI);
+	};
+
+	template <class InputIterator>
+	DiamondOp(boost::shared_ptr<Sentence> sentence, InputIterator begin, InputIterator end) : s_(sentence), rels_(begin, end) {};
+	DiamondOp(const DiamondOp& dia) : s_(dia.s_) , rels_(dia.rels_) {}; // shallow copy
+	virtual ~DiamondOp() {};
 
 	boost::shared_ptr<Sentence> sentence() {return s_;};
 
 private:
-
+	std::set<Interval::INTERVAL_RELATION> rels_;
 	boost::shared_ptr<Sentence> s_;
-	virtual Sentence* doClone() const { return new LiquidOp(*this); };
+
+	virtual Sentence* doClone() const { return new DiamondOp(*this); };
 	virtual bool doEquals(const Sentence& s) const {
-		const LiquidOp *liq = dynamic_cast<const LiquidOp*>(&s);
+		const DiamondOp *liq = dynamic_cast<const DiamondOp*>(&s);
 		if (liq == NULL) {
 			return false;
 		}
