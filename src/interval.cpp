@@ -6,7 +6,7 @@
 #include "interval.h"
 
 Interval::Interval(unsigned int start, unsigned int end)
-: start_(start), end_(end)
+: s_(start), e_(end)
 {
 }
 
@@ -38,6 +38,60 @@ bool Interval::operator>=(const Interval& b) const {
 
 bool Interval::operator<=(const Interval& b) const {
 	return !operator>(b);
+}
+
+bool Interval::meets(const Interval& b) const {
+	return e_+1 == b.s_;
+}
+
+bool Interval::meetsI(const Interval& b) const {
+	return b.e_+1 == s_;
+}
+
+bool Interval::overlaps(const Interval& b) const {
+	return s_ < b.s_ && e_ >= b.s_ && e_ < b.e_;
+}
+
+bool Interval::overlapsI(const Interval& b) const {
+	return s_ > b.s_ && s_ <= b.e_ && e_ > b.e_;
+}
+
+bool Interval::starts(const Interval& b) const {
+	return s_ == b.s_ && e_ < b.e_;
+}
+
+bool Interval::startsI(const Interval& b) const {
+	return s_ == b.s_ && b.e_ < e_;
+}
+
+bool Interval::during(const Interval& b) const {
+	return s_ > b.s_ && e_ < b.e_;
+}
+
+bool Interval::duringI(const Interval& b) const {
+	return b.s_ > s_ && b.e_ < e_;
+}
+
+bool Interval::finishes(const Interval& b) const {
+	return s_ > b.s_ && e_ == b.e_;
+}
+
+bool Interval::finishesI(const Interval& b) const {
+	return b.s_ > s_ && b.e_ == e_;
+}
+
+bool Interval::equals(const Interval& b) const {
+	// in case == is ever defined more exactly, for now just define the
+	// relation here as well
+	return s_ == b.s_ && e_ == b.e_;
+}
+
+bool Interval::after(const Interval& b) const {
+	return s_ > b.e_+1;
+}
+
+bool Interval::before(const Interval& b) const {
+	return e_+1 < b.s_;
 }
 
 std::string Interval::relationToString(INTERVAL_RELATION rel) {
