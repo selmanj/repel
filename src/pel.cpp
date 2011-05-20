@@ -20,24 +20,29 @@ int main(int argc, char* argv[]) {
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	    ("help", "produce help message")
-//	    ("i", po::value<std::string>(), "facts file")
 	;
 
+	po::options_description hidden("Hidden options");
+	hidden.add_options()
+		("facts-file", po::value<std::string>(), "facts file")
+		("formula-file", po::value<std::string>(), "formula file")
+	;
+	po::positional_options_description p;
+	p.add("facts-file", 1);
+	p.add("formula-file", 2);
+
+	po::options_description cmdline_options;
+	cmdline_options.add(desc).add(hidden);
+
 	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
 	po::notify(vm);
 
-	if (vm.count("help")) {
-	    std::cout << desc << "\n";
+	if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
+	    std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
+		std::cout << desc << std::endl;
 	    return 1;
 	}
-/*
-	if (vm.count("i")) {
-	    std::cout << "input file was set to "
-	 << vm["i"].as<std::string>() << ".\n";
-	} else {
-	    std::cout << "input file was not set.\n";
-	}
-	*/
+
 	return 0;
 }
