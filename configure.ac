@@ -15,6 +15,7 @@ AC_PROG_CXX
 # Checks for header files.
 AX_BOOST_BASE([1.40.0])
 AX_BOOST_UNIT_TEST_FRAMEWORK
+AX_BOOST_PROGRAM_OPTIONS
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
