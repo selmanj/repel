@@ -6,6 +6,7 @@
 #include <boost/shared_ptr.hpp>
 #include "term.h"
 #include "sentence.h"
+#include "sentencevisitor.h"
 
 class Atom : public Sentence {
 public:
@@ -66,6 +67,10 @@ private:
 	virtual int doPrecedence() const {
 		return 0;
 	};
+
+	virtual void visit(SentenceVisitor& v) const {
+		v.accept(*this);
+	}
 
 };
 #endif

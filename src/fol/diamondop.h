@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include <set>
 #include "sentence.h"
+#include "sentencevisitor.h"
 
 class DiamondOp : public Sentence {
 public:
@@ -75,6 +76,11 @@ private:
 	};
 
 	virtual int doPrecedence() const { return 2; };
+	virtual void visit(SentenceVisitor& v) const {
+		s_->visit(v);
+
+		v.accept(*this);
+	}
 };
 
 #endif

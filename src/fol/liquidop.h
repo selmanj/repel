@@ -33,6 +33,12 @@ private:
 	};
 
 	virtual int doPrecedence() const { return 2; };
+
+	virtual void visit(SentenceVisitor& v) const {
+		s_->visit(v);
+
+		v.accept(*this);
+	}
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include "sentence.h"
+#include "sentencevisitor.h"
 #include "../interval.h"
 
 class Conjunction : public Sentence {
@@ -63,6 +64,13 @@ private:
 	};
 
 	virtual int doPrecedence() const { return 3; };
+
+	virtual void visit(SentenceVisitor& v) const {
+		left_->visit(v);
+		right_->visit(v);
+
+		v.accept(*this);
+	}
 };
 
 #endif

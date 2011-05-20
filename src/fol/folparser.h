@@ -11,7 +11,6 @@
 #include "atom.h"
 #include "../spaninterval.h"
 #include "../interval.h"
-#include "event.h"
 #include "constant.h"
 #include "variable.h"
 #include "negation.h"
@@ -107,13 +106,12 @@ unsigned int consumeNumber(iters<ForwardIterator> &its) throw (bad_parse) {
 }
 
 template <class ForwardIterator>
-boost::shared_ptr<Event> doParseEvent(iters<ForwardIterator> &its) {
+boost::tuple<boost::shared_ptr<Atom>, SpanInterval> doParseEvent(iters<ForwardIterator> &its) {
 	boost::shared_ptr<Atom> a = doParseGroundAtom(its);
 	consumeTokenType(FOLParse::AT, its);
 	SpanInterval i = doParseInterval(its);
 
-	boost::shared_ptr<Event> p(new Event(a,i));
-	return p;
+	return boost::tuple<boost::shared_ptr<Atom>, SpanInterval > (a,i);
 }
 
 template <class ForwardIterator>
@@ -454,7 +452,7 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 namespace FOLParse 
 {
 template <class ForwardIterator>
-boost::shared_ptr<Event> parseEvent(const ForwardIterator &first,
+boost::tuple<boost::shared_ptr<Atom>, SpanInterval> parseEvent(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
 	return doParseEvent(its);

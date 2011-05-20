@@ -4,6 +4,8 @@
 #include <string>
 #include <boost/utility.hpp>
 
+class SentenceVisitor;
+
 class Sentence : boost::noncopyable {
 public:
 	virtual ~Sentence() {};
@@ -15,6 +17,7 @@ public:
 		return str;
 	};
 	int precedence() const { return doPrecedence(); };
+	virtual void visit(SentenceVisitor& s) const = 0;
 private:
 	virtual void doToString(std::string& str) const = 0;
 	virtual Sentence* doClone() const = 0;
@@ -24,5 +27,7 @@ private:
 
 inline Sentence* new_clone(const Sentence& t) {
 	return t.clone();
-}
+};
+
+
 #endif

@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include "sentence.h"
+#include "sentencevisitor.h"
 
 class Disjunction : public Sentence {
 public:
@@ -44,6 +45,12 @@ private:
 	};
 
 	virtual int doPrecedence() const { return 4; };
+	virtual void visit(SentenceVisitor& v) const {
+		left_->visit(v);
+		right_->visit(v);
+
+		v.accept(*this);
+	}
 };
 
 #endif
