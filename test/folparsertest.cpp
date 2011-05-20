@@ -45,10 +45,10 @@ BOOST_AUTO_TEST_CASE( event_test)
 {
 	std::istringstream stream("mrManager(georgeMichael, bananaStand) @ [10:20]");
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	boost::shared_ptr<Event> e = FOLParse::parseEvent(tokens.begin(), tokens.end());
-	BOOST_CHECK_EQUAL(e->fact()->name(), "mrManager");
-	BOOST_CHECK_EQUAL(e->fact()->at(0)->name(), "georgeMichael");
-	BOOST_CHECK_EQUAL(e->fact()->at(1)->name(), "bananaStand");
+	boost::tuple<boost::shared_ptr<Atom>, SpanInterval> e = FOLParse::parseEvent(tokens.begin(), tokens.end());
+	BOOST_CHECK_EQUAL(e.get<0>()->name(), "mrManager");
+	BOOST_CHECK_EQUAL(e.get<0>()->at(0)->name(), "georgeMichael");
+	BOOST_CHECK_EQUAL(e.get<0>()->at(1)->name(), "bananaStand");
 
 }
 
