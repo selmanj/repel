@@ -5,6 +5,7 @@
 #include "follexer.h"
 #include "foltoken.h"
 
+// TODO: make this use an iterator rather than return a vector
 std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 	std::vector<FOLToken> tokens;
 	while (!input->eof()) {

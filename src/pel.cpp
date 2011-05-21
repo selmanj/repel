@@ -14,6 +14,7 @@ namespace po = boost::program_options;
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
@@ -43,6 +44,7 @@ int main(int argc, char* argv[]) {
 		std::cout << desc << std::endl;
 	    return 1;
 	}
+
 
 	return 0;
 }

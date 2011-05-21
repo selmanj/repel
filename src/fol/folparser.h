@@ -4,8 +4,10 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <fstream>
 #include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
+#include "follexer.h"
 #include "foltoken.h"
 #include "bad_parse.h"
 #include "atom.h"
@@ -103,6 +105,25 @@ unsigned int consumeNumber(iters<ForwardIterator> &its) throw (bad_parse) {
 	in >> num;
 	its.cur++;
 	return num;
+}
+
+template <class ForwardIterator>
+bool endOfTokens(iters<ForwardIterator> &its) {
+	return its.cur == its.last;
+}
+
+
+template <class OutputIterator, class ForwardIterator>
+void doParseEventFile(OutputIterator &store, iters<ForwardIterator> &its) {
+	while (!endOfTokens(its)) {
+		if (peekTokenType(FOLParse::ENDL, its)) {
+			consumeTokenType(FOLParse::ENDL, its);
+		} else {
+			boost::tuple<boost::shared_ptr<Atom>, SpanInterval> event = doParseEvent(its);
+			*store = event;
+			store++;
+		}
+	}
 }
 
 template <class ForwardIterator>
@@ -451,6 +472,20 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 
 namespace FOLParse 
 {
+template <class OutputIterator, class ForwardIterator>
+void parseEventFile(const char *filename, OutputIterator &store) {
+	std::ifstream file(filename);
+	if (!file.is_open()) {
+		std::exception e("unable to open event file for parsing");
+		throw e;
+	}
+	std::vector<FOLToken> tokens = FOLParse::tokenize(file);
+
+	iters<ForwardIterator> its(tokens.begin(), tokens.end());
+	doParseEventFile(store, its);
+	file.close();
+};
+
 template <class ForwardIterator>
 boost::tuple<boost::shared_ptr<Atom>, SpanInterval> parseEvent(const ForwardIterator &first,
 		const ForwardIterator &last) {
