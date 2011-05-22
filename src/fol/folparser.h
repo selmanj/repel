@@ -113,7 +113,7 @@ void doParseEventFile(OutputIterator &store, iters<ForwardIterator> &its) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
-			boost::tuple<boost::shared_ptr<Atom>, SpanInterval> event = doParseEvent(its);
+			FOL::EventTuple event = doParseEvent(its);
 			*store = event;
 			store++;
 		}
@@ -134,7 +134,7 @@ void doParseFormulaFile(OutputIterator &store, iters<ForwardIterator> &its) {
 }
 
 template <class ForwardIterator>
-boost::tuple<boost::shared_ptr<Atom>, SpanInterval> doParseEvent(iters<ForwardIterator> &its) {
+FOL::EventTuple doParseEvent(iters<ForwardIterator> &its) {
 	boost::shared_ptr<Atom> a = doParseGroundAtom(its);
 	consumeTokenType(FOLParse::AT, its);
 	SpanInterval i = doParseInterval(its);
@@ -513,7 +513,7 @@ void parseFormulaFile(const char *filename, OutputIterator &store) {
 }
 
 template <class ForwardIterator>
-boost::tuple<boost::shared_ptr<Atom>, SpanInterval> parseEvent(const ForwardIterator &first,
+FOL::EventTuple parseEvent(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
 	return doParseEvent(its);

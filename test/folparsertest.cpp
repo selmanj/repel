@@ -13,7 +13,7 @@
 #include "../src/fol/folparser.h"
 #include "../src/fol/follexer.h"
 #include "../src/fol/foltoken.h"
-#include "../src/fol/constant.h"
+#include "../src/fol/fol.h"
 #include "../src/spaninterval.h"
 #include <iostream>
 #include <algorithm>
@@ -94,22 +94,22 @@ BOOST_AUTO_TEST_CASE( static_formula_test )
 BOOST_AUTO_TEST_CASE( weighted_formula_test ) {
 	std::istringstream stream("10: p(?x,y)");	// simple atom case
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	boost::tuple<unsigned int,boost::shared_ptr<Sentence> > tup = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
+	WSentence form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
 
-	BOOST_CHECK_EQUAL(tup.get<0>(), 10);
-	BOOST_CHECK_EQUAL(tup.get<1>()->toString(), "p(?x, y)");
+	BOOST_CHECK_EQUAL(form.weight(), 10);
+	BOOST_CHECK_EQUAL(form.sentence()->toString(), "p(?x, y)");
 
 	std::istringstream stream2("55: [ p(?x,?y) ^ q(?x,?y) -> r(?x, ?y) ]");
 	tokens = FOLParse::tokenize(&stream2);
-	tup = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
+	form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
 
-	BOOST_CHECK_EQUAL(tup.get<0>(), 55);
-	BOOST_CHECK_EQUAL(tup.get<1>()->toString(), "[ !(p(?x, ?y) ^ q(?x, ?y)) v r(?x, ?y) ]");
+	BOOST_CHECK_EQUAL(form.weight(), 55);
+	BOOST_CHECK_EQUAL(form.sentence()->toString(), "[ !(p(?x, ?y) ^ q(?x, ?y)) v r(?x, ?y) ]");
 
 	std::istringstream stream3("0: <>{m,mi} p(x) ^{o} q(x) ; r(x) ; <> z(x)");
 	tokens = FOLParse::tokenize(&stream3);
-	tup = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
+	form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
 
-	BOOST_CHECK_EQUAL(tup.get<0>(), 0);
-	BOOST_CHECK_EQUAL(tup.get<1>()->toString(), "<>{m, mi} (p(x) ^ q(x) ^ r(x) ^ <> z(x))");
+	BOOST_CHECK_EQUAL(form.weight(), 0);
+	BOOST_CHECK_EQUAL(form.sentence()->toString(), "<>{m, mi} (p(x) ^ q(x) ^ r(x) ^ <> z(x))");
 }
