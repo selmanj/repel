@@ -10,7 +10,7 @@
 
 #include <set>
 #include <string>
-#include "sentence.h"
+#include "fol.h"
 
 class Domain {
 public:

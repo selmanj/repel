@@ -9,17 +9,11 @@
 #include <boost/tuple/tuple.hpp>
 #include "follexer.h"
 #include "foltoken.h"
+#include "domain.h"
 #include "bad_parse.h"
-#include "atom.h"
 #include "../spaninterval.h"
 #include "../interval.h"
-#include "constant.h"
-#include "variable.h"
-#include "negation.h"
-#include "conjunction.h"
-#include "disjunction.h"
-#include "liquidop.h"
-#include "diamondop.h"
+#include "fol.h"
 
 // anonymous namespace for helper functions
 namespace {
@@ -126,6 +120,19 @@ void doParseEventFile(OutputIterator &store, iters<ForwardIterator> &its) {
 	}
 }
 
+template <class OutputIterator, class ForwardIterator>
+void doParseFormulaFile(OutputIterator &store, iters<ForwardIterator> &its) {
+	while (!endOfTokens(its)) {
+		if (peekTokenType(FOLParse::ENDL, its)) {
+			consumeTokenType(FOLParse::ENDL, its);
+		} else {
+			WSentence formula = doParseWeightedFormula(its);
+			*store = formula;
+			store++;
+		}
+	}
+}
+
 template <class ForwardIterator>
 boost::tuple<boost::shared_ptr<Atom>, SpanInterval> doParseEvent(iters<ForwardIterator> &its) {
 	boost::shared_ptr<Atom> a = doParseGroundAtom(its);
@@ -224,11 +231,11 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 }
 
 template <class ForwardIterator>
-boost::tuple<int, boost::shared_ptr<Sentence> > doParseWeightedFormula(iters<ForwardIterator> &its) {
+WSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
 	unsigned int weight = consumeNumber(its);
 	consumeTokenType(FOLParse::COLON, its);
 	boost::shared_ptr<Sentence> p = doParseFormula(its);
-	return boost::tuple<int, boost::shared_ptr<Sentence> >(weight, p);
+	return WSentence(p, weight);
 }
 
 template <class ForwardIterator>
@@ -472,6 +479,11 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 
 namespace FOLParse 
 {
+
+Domain* loadDomainFromFiles(const char *eventfile, const char *formulafile) {
+
+};
+
 template <class OutputIterator, class ForwardIterator>
 void parseEventFile(const char *filename, OutputIterator &store) {
 	std::ifstream file(filename);
@@ -485,6 +497,20 @@ void parseEventFile(const char *filename, OutputIterator &store) {
 	doParseEventFile(store, its);
 	file.close();
 };
+
+template <class OutputIterator, class ForwardIterator>
+void parseFormulaFile(const char *filename, OutputIterator &store) {
+	std::ifstream file(filename);
+	if (!file.is_open()) {
+		std::exception e("unable to open event file for parsing");
+		throw e;
+	}
+	std::vector<FOLToken> tokens = FOLParse::tokenize(file);
+
+	iters<ForwardIterator> its(tokens.begin(), tokens.end());
+	doParseFormulaFile(store, its);
+	file.close();
+}
 
 template <class ForwardIterator>
 boost::tuple<boost::shared_ptr<Atom>, SpanInterval> parseEvent(const ForwardIterator &first,
@@ -521,7 +547,7 @@ boost::shared_ptr<Sentence> parseStaticFormula(const ForwardIterator &first,
 }
 
 template <class ForwardIterator>
-boost::tuple<unsigned int, boost::shared_ptr<Sentence> > parseWeightedFormula(const ForwardIterator &first,
+WSentence parseWeightedFormula(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
 	return doParseWeightedFormula(its);

@@ -3,8 +3,7 @@
 
 #include <string>
 #include <boost/utility.hpp>
-
-class SentenceVisitor;
+#include "sentencevisitor.h"
 
 class Sentence : boost::noncopyable {
 public:

@@ -8,6 +8,8 @@
 #ifndef SENTENCEVISITOR_H_
 #define SENTENCEVISITOR_H_
 
+class Sentence;
+
 class SentenceVisitor {
 public:
 	SentenceVisitor();
