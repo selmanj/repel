@@ -15,6 +15,9 @@ namespace po = boost::program_options;
 #include <iostream>
 #include <string>
 #include <vector>
+#include "fol/fol.h"
+#include "fol/folparser.h"
+#include "fol/domain.h"
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
@@ -45,6 +48,7 @@ int main(int argc, char* argv[]) {
 	    return 1;
 	}
 
+	Domain *d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
 
 	return 0;
 }

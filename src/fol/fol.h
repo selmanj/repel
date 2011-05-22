@@ -23,6 +23,7 @@
 #include "term.h"
 #include "variable.h"
 #include "wsentence.h"
+#include "sentencevisitor.h"
 #include "../spaninterval.h"
 
 namespace FOL {

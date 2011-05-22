@@ -12,9 +12,9 @@ class Sentence;
 
 class SentenceVisitor {
 public:
-	SentenceVisitor();
+	SentenceVisitor() {};
 	virtual void accept(const Sentence& s) = 0;
-	virtual ~SentenceVisitor();
+	virtual ~SentenceVisitor() {};
 };
 
 #endif /* SENTENCEVISITOR_H_ */

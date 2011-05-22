@@ -14,6 +14,7 @@
 #include "../spaninterval.h"
 #include "../interval.h"
 #include "fol.h"
+#include "constant.h"
 
 // anonymous namespace for helper functions
 namespace {
@@ -480,37 +481,47 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 namespace FOLParse 
 {
 
-Domain* loadDomainFromFiles(const char *eventfile, const char *formulafile) {
 
-};
-
-template <class OutputIterator, class ForwardIterator>
-void parseEventFile(const char *filename, OutputIterator &store) {
-	std::ifstream file(filename);
+template <class OutputIterator>
+void parseEventFile(const std::string &filename, OutputIterator store) {
+	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
-		std::exception e("unable to open event file for parsing");
+		std::runtime_error e("unable to open event file for parsing");
 		throw e;
 	}
-	std::vector<FOLToken> tokens = FOLParse::tokenize(file);
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&file);
 
-	iters<ForwardIterator> its(tokens.begin(), tokens.end());
+	iters<std::vector<FOLToken>::const_iterator > its(tokens.begin(), tokens.end());
 	doParseEventFile(store, its);
 	file.close();
 };
 
-template <class OutputIterator, class ForwardIterator>
-void parseFormulaFile(const char *filename, OutputIterator &store) {
-	std::ifstream file(filename);
+template <class OutputIterator>
+void parseFormulaFile(const std::string &filename, OutputIterator store) {
+	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
-		std::exception e("unable to open event file for parsing");
+		std::runtime_error e("unable to open event file for parsing");
 		throw e;
 	}
-	std::vector<FOLToken> tokens = FOLParse::tokenize(file);
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&file);
 
-	iters<ForwardIterator> its(tokens.begin(), tokens.end());
+	iters<std::vector<FOLToken>::const_iterator> its(tokens.begin(), tokens.end());
 	doParseFormulaFile(store, its);
 	file.close();
-}
+};
+
+Domain* loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
+	std::vector<FOL::EventTuple> events;
+	std::vector<WSentence> formulas;
+
+	parseEventFile(eventfile, events.begin());
+	FOLParse::parseFormulaFile(formulafile, formulas.begin());
+
+	Domain *d = new Domain(events.begin(), events.end(),
+			formulas.begin(), formulas.end());
+
+	return d;
+};
 
 template <class ForwardIterator>
 FOL::EventTuple parseEvent(const ForwardIterator &first,
