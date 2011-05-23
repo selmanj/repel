@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <exception>
+#include <string>
 #include "bad_normalize.h"
 #include "interval.h"
 #include "spaninterval.h"
@@ -107,4 +108,8 @@ void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
 	c.normalize(collect);
 	SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
 	d.normalize(collect);
+}
+
+std::string SpanInterval::toString() const {
+	return std::string("[(");
 }

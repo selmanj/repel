@@ -5,6 +5,7 @@
 #include <iterator>
 #include <string>
 #include <fstream>
+#include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include "follexer.h"
@@ -108,28 +109,26 @@ bool endOfTokens(iters<ForwardIterator> &its) {
 }
 
 
-template <class OutputIterator, class ForwardIterator>
-void doParseEventFile(OutputIterator &store, iters<ForwardIterator> &its) {
+template <class ForwardIterator>
+void doParseEventFile(std::vector<FOL::EventTuple>& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
 			FOL::EventTuple event = doParseEvent(its);
-			*store = event;
-			store++;
+			store.push_back(event);
 		}
 	}
 }
 
-template <class OutputIterator, class ForwardIterator>
-void doParseFormulaFile(OutputIterator &store, iters<ForwardIterator> &its) {
+template <class ForwardIterator>
+void doParseFormulaFile(std::vector<WSentence>& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
 			WSentence formula = doParseWeightedFormula(its);
-			*store = formula;
-			store++;
+			store.push_back(formula);
 		}
 	}
 }
@@ -140,7 +139,7 @@ FOL::EventTuple doParseEvent(iters<ForwardIterator> &its) {
 	consumeTokenType(FOLParse::AT, its);
 	SpanInterval i = doParseInterval(its);
 
-	return boost::tuple<boost::shared_ptr<Atom>, SpanInterval > (a,i);
+	return FOL::EventTuple (a,i);
 }
 
 template <class ForwardIterator>
@@ -481,9 +480,7 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 namespace FOLParse 
 {
 
-
-template <class OutputIterator>
-void parseEventFile(const std::string &filename, OutputIterator store) {
+void parseEventFile(const std::string &filename, std::vector<FOL::EventTuple>& store) {
 	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
 		std::runtime_error e("unable to open event file for parsing");
@@ -496,15 +493,13 @@ void parseEventFile(const std::string &filename, OutputIterator store) {
 	file.close();
 };
 
-template <class OutputIterator>
-void parseFormulaFile(const std::string &filename, OutputIterator store) {
+void parseFormulaFile(const std::string &filename, std::vector<WSentence>& store) {
 	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
 		std::runtime_error e("unable to open event file for parsing");
 		throw e;
 	}
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&file);
-
 	iters<std::vector<FOLToken>::const_iterator> its(tokens.begin(), tokens.end());
 	doParseFormulaFile(store, its);
 	file.close();
@@ -514,8 +509,10 @@ Domain* loadDomainFromFiles(const std::string &eventfile, const std::string &for
 	std::vector<FOL::EventTuple> events;
 	std::vector<WSentence> formulas;
 
-	parseEventFile(eventfile, events.begin());
-	FOLParse::parseFormulaFile(formulafile, formulas.begin());
+	parseEventFile(eventfile, events);
+	std::cout << "Read " << events.size() << " events from file." << std::endl;
+	parseFormulaFile(formulafile, formulas);
+	std::cout << "Read " << formulas.size() << " formulas from file." << std::endl;
 
 	Domain *d = new Domain(events.begin(), events.end(),
 			formulas.begin(), formulas.end());

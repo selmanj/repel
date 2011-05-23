@@ -38,6 +38,8 @@ public:
 		unobsPreds_.erase(obsPreds_.begin(), obsPreds_.end());
 	};
 	virtual ~Domain() {};
+
+
 private:
 	std::set<std::string> obsPreds_;
 	std::set<std::string> unobsPreds_;

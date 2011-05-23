@@ -177,6 +177,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 				token.setType(FOLParse::ENDL);
 				token.setContents("\n");
 				tokens.push_back(token);
+				break;
 			case '#':
 				// comment, do nothing until we get to endl
 				while (!input->eof()) {

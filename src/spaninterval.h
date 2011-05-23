@@ -39,6 +39,8 @@ public:
 	SpanInterval intersection(const SpanInterval&  other) const;
 	void compliment(std::set<SpanInterval>& collect) const;
 
+	std::string toString() const;
+
 	static const unsigned int NEG_INF = 0;
 	static const unsigned int POS_INF = UINT_MAX;
 private:

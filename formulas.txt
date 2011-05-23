@@ -1,0 +1,4 @@
+# test formulas file, again not much good here
+
+10: P(?x,?y) -> S(?x, ?y)
+5: Q(?x) -> QQ(?x)
