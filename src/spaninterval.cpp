@@ -116,14 +116,22 @@ void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
 	d.normalize(collect);
 	*/
 	// I think the following ends up the same as the previous, just disjoint
-	SpanInterval a(NEG_INF, start().start()-1, NEG_INF, POS_INF);
-	SpanInterval b(start().start(), start().end(), NEG_INF, end().start()-1);
-	SpanInterval c(start().start(), start().end(), end().end()+1, POS_INF);
-	SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
-	a.normalize(collect);
-	b.normalize(collect);
-	c.normalize(collect);
-	d.normalize(collect);
+	if (start().start() != NEG_INF) {
+		SpanInterval a(NEG_INF, start().start()-1, NEG_INF, POS_INF);
+		a.normalize(collect);
+	}
+	if (end().start() != NEG_INF) {
+		SpanInterval b(start().start(), start().end(), NEG_INF, end().start()-1);
+		b.normalize(collect);
+	}
+	if (end().end() != POS_INF) {
+		SpanInterval c(start().start(), start().end(), end().end()+1, POS_INF);
+		c.normalize(collect);
+	}
+	if (start().end() != POS_INF) {
+		SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
+		d.normalize(collect);
+	}
 }
 
 void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& collect) const {

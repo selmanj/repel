@@ -46,14 +46,12 @@ BOOST_AUTO_TEST_CASE( basic_test )
 		BOOST_CHECK(removed.find(SpanInterval(1,4,10,14))!=removed.end());
 		BOOST_CHECK(removed.find(SpanInterval(5,7,10,14))!=removed.end());
 		BOOST_CHECK(removed.find(SpanInterval(8,11,10,14))!=removed.end());
-
-
 	}
 
 }
 
 BOOST_AUTO_TEST_CASE( siset_test ) {
-	SpanInterval sp1(0,10,0,10);
+	SpanInterval sp1(1,10,1,10);
 	SpanInterval sp2(8,11,8,11);
 	SISet set;
 	BOOST_CHECK(set.isDisjoint());
@@ -61,4 +59,9 @@ BOOST_AUTO_TEST_CASE( siset_test ) {
 	BOOST_CHECK(set.isDisjoint());
 	set.add(sp2);
 	BOOST_CHECK(!set.isDisjoint());
+	set.makeDisjoint();
+	BOOST_CHECK(set.isDisjoint());
+
+	std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
+	std::cout << "double compliment is " << set.compliment().compliment().toString() << std::endl;
 }
