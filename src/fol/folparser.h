@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
 #include "follexer.h"
 #include "foltoken.h"
 #include "domain.h"
@@ -110,12 +109,12 @@ bool endOfTokens(iters<ForwardIterator> &its) {
 
 
 template <class ForwardIterator>
-void doParseEventFile(std::vector<FOL::EventTuple>& store, iters<ForwardIterator> &its) {
+void doParseEventFile(std::vector<FOL::EventPair>& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
-			FOL::EventTuple event = doParseEvent(its);
+			FOL::EventPair event = doParseEvent(its);
 			store.push_back(event);
 		}
 	}
@@ -134,12 +133,12 @@ void doParseFormulaFile(std::vector<WSentence>& store, iters<ForwardIterator> &i
 }
 
 template <class ForwardIterator>
-FOL::EventTuple doParseEvent(iters<ForwardIterator> &its) {
+FOL::EventPair doParseEvent(iters<ForwardIterator> &its) {
 	boost::shared_ptr<Atom> a = doParseGroundAtom(its);
 	consumeTokenType(FOLParse::AT, its);
 	SpanInterval i = doParseInterval(its);
 
-	return FOL::EventTuple (a,i);
+	return FOL::EventPair (a,i);
 }
 
 template <class ForwardIterator>
@@ -480,7 +479,7 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 namespace FOLParse 
 {
 
-void parseEventFile(const std::string &filename, std::vector<FOL::EventTuple>& store) {
+void parseEventFile(const std::string &filename, std::vector<FOL::EventPair>& store) {
 	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
 		std::runtime_error e("unable to open event file for parsing");
@@ -506,7 +505,7 @@ void parseFormulaFile(const std::string &filename, std::vector<WSentence>& store
 };
 
 Domain* loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
-	std::vector<FOL::EventTuple> events;
+	std::vector<FOL::EventPair> events;
 	std::vector<WSentence> formulas;
 
 	parseEventFile(eventfile, events);
@@ -521,7 +520,7 @@ Domain* loadDomainFromFiles(const std::string &eventfile, const std::string &for
 };
 
 template <class ForwardIterator>
-FOL::EventTuple parseEvent(const ForwardIterator &first,
+FOL::EventPair parseEvent(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
 	return doParseEvent(its);

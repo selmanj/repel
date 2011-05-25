@@ -9,7 +9,7 @@
 #define FOL_H_
 
 #include <boost/shared_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
+#include <utility>
 
 /* include all the elements needed for FOL sentences */
 #include "atom.h"
@@ -27,7 +27,7 @@
 #include "../spaninterval.h"
 
 namespace FOL {
-	typedef boost::tuple<boost::shared_ptr<Atom>, SpanInterval> EventTuple;
+	typedef std::pair<boost::shared_ptr<Atom>, SpanInterval> EventPair;
 }
 
 #endif /* FOL_H_ */

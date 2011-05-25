@@ -9,7 +9,6 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <boost/test/unit_test.hpp>
-#include <boost/tuple/tuple.hpp>
 #include "../src/fol/folparser.h"
 #include "../src/fol/follexer.h"
 #include "../src/fol/foltoken.h"
@@ -19,6 +18,8 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <utility>
+
 
 BOOST_AUTO_TEST_CASE( parser_test )
 {
@@ -45,10 +46,10 @@ BOOST_AUTO_TEST_CASE( event_test)
 {
 	std::istringstream stream("mrManager(georgeMichael, bananaStand) @ [10:20]");
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	boost::tuple<boost::shared_ptr<Atom>, SpanInterval> e = FOLParse::parseEvent(tokens.begin(), tokens.end());
-	BOOST_CHECK_EQUAL(e.get<0>()->name(), "mrManager");
-	BOOST_CHECK_EQUAL(e.get<0>()->at(0)->name(), "georgeMichael");
-	BOOST_CHECK_EQUAL(e.get<0>()->at(1)->name(), "bananaStand");
+	std::pair<boost::shared_ptr<Atom>, SpanInterval> e = FOLParse::parseEvent(tokens.begin(), tokens.end());
+	BOOST_CHECK_EQUAL(e.first->name(), "mrManager");
+	BOOST_CHECK_EQUAL(e.first->at(0)->name(), "georgeMichael");
+	BOOST_CHECK_EQUAL(e.first->at(1)->name(), "bananaStand");
 
 }
 

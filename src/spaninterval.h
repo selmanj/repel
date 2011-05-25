@@ -39,6 +39,7 @@ public:
 	void normalize(std::set<SpanInterval>& collect) const;
 	SpanInterval intersection(const SpanInterval&  other) const;
 	void compliment(std::set<SpanInterval>& collect) const;
+	void liqCompliment(std::set<SpanInterval>& collect) const;
 	void subtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const;
 
 	std::string toString() const;

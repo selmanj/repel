@@ -24,7 +24,7 @@ public:
 
 		// collect all fact predicates
 		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			boost::shared_ptr<Sentence> s = boost::get<0>(*it);
+			boost::shared_ptr<Sentence> s = it->first;
 			//it->get<0>()->visit(predCollector);
 		}
 		obsPreds_.insert(predCollector.preds.begin(), predCollector.preds.end());

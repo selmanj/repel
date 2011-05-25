@@ -134,6 +134,18 @@ void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
 	}
 }
 
+void SpanInterval::liqCompliment(std::set<SpanInterval>& collect) const {
+	// at most two intervals
+	if (start().start() != NEG_INF) {
+		SpanInterval a(NEG_INF, start().start()-1);
+		collect.insert(a);
+	}
+	if (end().end() != POS_INF) {
+		SpanInterval b(end().end()+1, POS_INF);
+		collect.insert(b);
+	}
+}
+
 void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& collect) const {
 	/*
 	SpanInterval a(start().start(), remove.start().start()-1, end().start(), remove.end().start()-1);

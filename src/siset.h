@@ -11,21 +11,25 @@
 #include "spaninterval.h"
 class SISet {
 public:
-	SISet() {}
+	SISet(bool forceLiquid=false) : forceLiquid_(forceLiquid) {}
 	template <class InputIterator>
-	SISet(InputIterator begin, InputIterator end) : set_(begin, end) {}
+	SISet(InputIterator begin, InputIterator end, bool forceLiquid=false) : set_(begin, end), forceLiquid_(forceLiquid) {}
+
 	const std::set<SpanInterval>& set() const {return set_;};
+	bool forceLiquid() const {return forceLiquid_;};
+
 	bool isDisjoint() const;
 	SISet compliment() const;
 
 	// modifiers
-	void add(const SpanInterval &s) { set_.insert(s);};
+	void add(const SpanInterval &s);
 	void makeDisjoint();
 	void clear() {set_.clear();};
 
 	std::string toString() const;
 
 private:
+	bool forceLiquid_;
 	std::set<SpanInterval> set_;
 };
 

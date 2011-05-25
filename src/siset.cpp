@@ -13,13 +13,18 @@
 #include "spaninterval.h"
 
 SISet SISet::compliment() const {
+
 	// {A U B U C U.. }^c = A^c I B^c I ...
 	// {A U B U ..} intersect {C U D U } .. intersect D
 	// expensive operation!  faster way to do this?
 	std::list<std::set<SpanInterval> > intersections;
 	for (std::set<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
 		std::set<SpanInterval> compliment;
-		it->compliment(compliment);
+		if (forceLiquid_) {
+			it->liqCompliment(compliment);
+		} else {
+			it->compliment(compliment);
+		}
 		intersections.push_back(compliment);
 	}
 
@@ -46,7 +51,7 @@ SISet SISet::compliment() const {
 	if (intersections.empty()) {
 		return SISet();
 	}
-	return SISet(intersections.front().begin(), intersections.front().end());
+	return SISet(intersections.front().begin(), intersections.front().end(), forceLiquid_);
 }
 
 
@@ -66,24 +71,49 @@ bool SISet::isDisjoint() const {
 	return true;
 }
 
+void SISet::add(const SpanInterval &s) {
+	if (forceLiquid_ && !s.isLiquid()) {
+		std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
+		throw e;
+	}
+	set_.insert(s);
+}
+
 void SISet::makeDisjoint() {
-	// scan over all pairs, looking for intersections
-	for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
-		for (std::set<SpanInterval>::const_iterator sIt = fIt; sIt != set_.end(); sIt++) {
-			// don't compare to yourself
-			if (sIt == fIt) {
-				continue;
+	if (forceLiquid_) {
+		// all our intervals are liquid so we can make them disjoint by
+		// merging them
+		for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
+			std::set<SpanInterval>::const_iterator sIt = fIt;
+			sIt++;
+			if (sIt != set_.end() && !fIt->intersection(*sIt).isEmpty()) {
+				// merge the two
+				SpanInterval merged(fIt->start().start(), sIt->end().end());
+				set_.erase(sIt);	// invalidates sIt
+				set_.erase(fIt);	// invalidates fIt
+				fIt = set_.insert(merged).first;
 			}
-			SpanInterval intersect = fIt->intersection(*sIt);
-			if (!intersect.isEmpty()) {
-				// remove it from the second set
-				std::set<SpanInterval>::const_iterator backup = sIt;
-				backup--;
-				std::set<SpanInterval> leftover;
-				sIt->subtract(intersect, leftover);
-				set_.erase(sIt);
-				set_.insert(leftover.begin(), leftover.end());
-				sIt = backup;
+		}
+	} else {
+		// scan over all pairs, looking for intersections
+		for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
+			for (std::set<SpanInterval>::const_iterator sIt = fIt; sIt != set_.end(); sIt++) {
+				// don't compare to yourself
+				if (sIt == fIt) {
+					continue;
+				}
+				SpanInterval intersect = fIt->intersection(*sIt);
+				if (!intersect.isEmpty()) {
+
+					// remove it from the second set
+					std::set<SpanInterval> leftover;
+					sIt->subtract(intersect, leftover);
+
+					std::set<SpanInterval>::const_iterator toRemove = sIt;
+					sIt--;
+					set_.erase(toRemove);
+					set_.insert(leftover.begin(), leftover.end());
+				}
 			}
 		}
 	}
