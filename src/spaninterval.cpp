@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <exception>
 #include <string>
+#include <sstream>
 #include "bad_normalize.h"
 #include "interval.h"
 #include "spaninterval.h"
@@ -67,9 +68,13 @@ bool SpanInterval::isEmpty() const {
 	unsigned int k = std::max(end_.start(), start_.start());
 
 	if (start_.start() > j
-			|| start_.end() < k)
+			|| end_.end() < k)
 		return true;
 	return false;
+}
+
+bool SpanInterval::isLiquid() const {
+	return (start().start() == end().start() && start().end() == end().end());
 }
 
 
@@ -100,6 +105,7 @@ SpanInterval SpanInterval::intersection(const SpanInterval& other) const {
 }
 
 void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
+	/*
 	SpanInterval a(NEG_INF, POS_INF, NEG_INF, end().start()-1);
 	a.normalize(collect);
 	SpanInterval b(NEG_INF, POS_INF, end().end()+1, POS_INF);
@@ -108,8 +114,43 @@ void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
 	c.normalize(collect);
 	SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
 	d.normalize(collect);
+	*/
+	// I think the following ends up the same as the previous, just disjoint
+	SpanInterval a(NEG_INF, start().start()-1, NEG_INF, POS_INF);
+	SpanInterval b(start().start(), start().end(), NEG_INF, end().start()-1);
+	SpanInterval c(start().start(), start().end(), end().end()+1, POS_INF);
+	SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
+	a.normalize(collect);
+	b.normalize(collect);
+	c.normalize(collect);
+	d.normalize(collect);
+}
+
+void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& collect) const {
+	/*
+	SpanInterval a(start().start(), remove.start().start()-1, end().start(), remove.end().start()-1);
+	a.normalize(collect);
+	SpanInterval b(start().start(), remove.start().start()-1, remove.end().end()+1, end().end());
+	b.normalize(collect);
+	SpanInterval c(remove.start().end()+1, start().end(), end().start(), remove.end().start()-1);
+	c.normalize(collect);
+	SpanInterval d(remove.start().end()+1, start().end(), remove.end().end()+1, end().end());
+	d.normalize(collect);
+	*/
+	std::set<SpanInterval> compliment;
+	remove.compliment(compliment);
+	for (std::set<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
+		collect.insert(this->intersection(*it));
+	}
 }
 
 std::string SpanInterval::toString() const {
-	return std::string("[(");
+	std::stringstream str;
+	str << "[";
+	if (isLiquid()) {
+		str << start().start() << ":" << start().end() << "]";
+	} else {
+		str << "(" << start().start() << ", " << start().end() << "), (" << end().start() << ", " << end().end() << ")]";
+	}
+	return str.str();
 }

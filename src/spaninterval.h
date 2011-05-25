@@ -34,10 +34,12 @@ public:
 	bool operator<=(const SpanInterval& b) const;
 
 	bool isEmpty() const;
+	bool isLiquid() const;
 	SpanInterval normalize() const throw(bad_normalize);
 	void normalize(std::set<SpanInterval>& collect) const;
 	SpanInterval intersection(const SpanInterval&  other) const;
 	void compliment(std::set<SpanInterval>& collect) const;
+	void subtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const;
 
 	std::string toString() const;
 

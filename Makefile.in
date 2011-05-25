@@ -79,7 +79,7 @@ am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
-	interval.$(OBJEXT) spaninterval.$(OBJEXT)
+	interval.$(OBJEXT) spaninterval.$(OBJEXT) siset.$(OBJEXT)
 test_spanintervaltest_OBJECTS = $(am_test_spanintervaltest_OBJECTS)
 test_spanintervaltest_LDADD = $(LDADD)
 SCRIPTS = $(dist_noinst_SCRIPTS)
@@ -213,7 +213,7 @@ AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_O
 dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/interval.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp
 PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest
-test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp
+test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
 test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/interval.cpp
@@ -346,6 +346,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/foltoken.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spaninterval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spanintervaltest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/variable.Po@am__quote@
@@ -517,6 +518,20 @@ spanintervaltest.obj: test/spanintervaltest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/spanintervaltest.cpp' object='spanintervaltest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o spanintervaltest.obj `if test -f 'test/spanintervaltest.cpp'; then $(CYGPATH_W) 'test/spanintervaltest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/spanintervaltest.cpp'; fi`
+
+siset.o: src/siset.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT siset.o -MD -MP -MF $(DEPDIR)/siset.Tpo -c -o siset.o `test -f 'src/siset.cpp' || echo '$(srcdir)/'`src/siset.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/siset.Tpo $(DEPDIR)/siset.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/siset.cpp' object='siset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o siset.o `test -f 'src/siset.cpp' || echo '$(srcdir)/'`src/siset.cpp
+
+siset.obj: src/siset.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT siset.obj -MD -MP -MF $(DEPDIR)/siset.Tpo -c -o siset.obj `if test -f 'src/siset.cpp'; then $(CYGPATH_W) 'src/siset.cpp'; else $(CYGPATH_W) '$(srcdir)/src/siset.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/siset.Tpo $(DEPDIR)/siset.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/siset.cpp' object='siset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o siset.obj `if test -f 'src/siset.cpp'; then $(CYGPATH_W) 'src/siset.cpp'; else $(CYGPATH_W) '$(srcdir)/src/siset.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
