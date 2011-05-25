@@ -30,26 +30,24 @@ BOOST_AUTO_TEST_CASE( basic_test )
 
 		std::set<SpanInterval> removed;
 		sp1.subtract(sp2,removed);
-		std::cout << "size = " << removed.size() << std::endl;
-		BOOST_FOREACH(SpanInterval sp, removed) {
-			std::cout << "SP: " << sp.toString() << std::endl;
-		}
-		BOOST_CHECK(removed.size() == 4);
-		BOOST_CHECK(removed.find(SpanInterval(1,4)) != removed.end());
+
+		BOOST_CHECK(removed.size() == 3);
 		BOOST_CHECK(removed.find(SpanInterval(1,4,1,11)) != removed.end());
 		BOOST_CHECK(removed.find(SpanInterval(11,11)) != removed.end());
-		BOOST_CHECK(removed.find(SpanInterval(1,11,11, 11)) != removed.end());
+		BOOST_CHECK(removed.find(SpanInterval(5,10,11,11)) != removed.end());
 	}
 	{
-		SpanInterval sp1(1,6, 6,15);
-		SpanInterval sp2(2,3, 7,9);
+		SpanInterval sp1(1,11, 10,14);
+		SpanInterval sp2(5,7, 5,9);
 		std::set<SpanInterval> removed;
 		sp1.subtract(sp2,removed);
 
-		std::cout << "size = " << removed.size() << std::endl;
-		BOOST_FOREACH(SpanInterval sp, removed) {
-			std::cout << "SP: " << sp.toString() << std::endl;
-		}
+		BOOST_CHECK(removed.size() == 3);
+		BOOST_CHECK(removed.find(SpanInterval(1,4,10,14))!=removed.end());
+		BOOST_CHECK(removed.find(SpanInterval(5,7,10,14))!=removed.end());
+		BOOST_CHECK(removed.find(SpanInterval(8,11,10,14))!=removed.end());
+
+
 	}
 
 }
