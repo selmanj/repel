@@ -1,5 +1,5 @@
 # test facts file, nothing much good here.
 
-P(a,b) @ [1,10]
-P(b,c) @ [1,5]
-Q(a) @ [11,15]
+P(a,b) @ [1:10]
+P(b,c) @ [1:5]
+Q(a) @ [11:15]

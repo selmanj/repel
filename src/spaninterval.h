@@ -16,15 +16,18 @@
 
 class SpanInterval {
 public:
-	SpanInterval();
-	SpanInterval(const Interval& start, const Interval& end);
-	SpanInterval(unsigned int start, unsigned int end);
-	SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
+	//SpanInterval(unsigned int smallest=0, unsigned int largest=UINT_MAX);
+	SpanInterval(const Interval& start, const Interval& end,
+			const Interval& maxInterval=Interval(0, UINT_MAX));
+	SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo,
+			const Interval& maxInterval=Interval(0, UINT_MAX));
 
 	Interval const& start() const {return start_;};
 	Interval const& end() const {return end_;};
 	void setStart(const Interval& start) {start_ = start;};
 	void setEnd(const Interval& end) {end_ = end;};
+	void setMaxInterval(const Interval& maxInterval);
+
 
 	bool operator==(const SpanInterval& b) const;
 	bool operator!=(const SpanInterval& b) const;
@@ -44,11 +47,11 @@ public:
 
 	std::string toString() const;
 
-	static const unsigned int NEG_INF = 0;
-	static const unsigned int POS_INF = UINT_MAX;
 private:
 	Interval start_, end_;
+	Interval maxInterval_;
 
 };
+
 
 #endif /* SPANINTERVAL_H */

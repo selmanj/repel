@@ -42,7 +42,7 @@ private:
 		if (con == NULL) {
 			return false;
 		}
-		return (left_ == con->left_ && right_ == con->right_ && rels_ == con->rels_);
+		return (*left_ == *(con->left_) && *right_ == *(con->right_) && rels_ == con->rels_);
 	};
 
 	virtual void doToString(std::string& str) const {

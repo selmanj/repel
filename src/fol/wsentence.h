@@ -17,6 +17,7 @@ public:
 	WSentence(boost::shared_ptr<Sentence> s, unsigned int w) : s_(s), w_(w) {};
 	virtual ~WSentence() {};
 
+	bool operator==(const WSentence& b) const {return (*s_ == *b.s_ && w_ == b.w_);};
 	boost::shared_ptr<Sentence> sentence() { return s_;}
 	unsigned int weight() {return w_;};
 

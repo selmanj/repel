@@ -3,13 +3,15 @@
 
 #include <string>
 #include <boost/utility.hpp>
+#include <iostream>
 
 class Term : boost::noncopyable {
 public:
 	virtual ~Term() {};
 	std::string name() const { return doName(); };
 	Term* clone() const { return doClone(); };
-	bool operator==(const Term& b) const {return doEquals(b);};
+	bool operator==(const Term& b) const {
+		return doEquals(b);};
 
 	std::string toString() const {
 		std::string str;
@@ -19,6 +21,7 @@ public:
 
 protected:
 	virtual void doToString(std::string& str) const = 0;
+
 private:
 	virtual Term* doClone() const = 0;
 	virtual std::string doName() const = 0;

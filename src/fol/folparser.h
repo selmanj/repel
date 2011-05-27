@@ -455,6 +455,7 @@ boost::shared_ptr<Sentence> doParseStaticFormula_and(iters<ForwardIterator> &its
 template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseStaticFormula_unary(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::NOT, its)) {
+		consumeTokenType(FOLParse::NOT, its);
 		boost::shared_ptr<Sentence> s(new Negation(doParseStaticFormula(its)));
 		return s;
 	} else {
@@ -504,7 +505,7 @@ void parseFormulaFile(const std::string &filename, std::vector<WSentence>& store
 	file.close();
 };
 
-Domain* loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
+boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
 	std::vector<FOL::EventPair> events;
 	std::vector<WSentence> formulas;
 
@@ -513,8 +514,8 @@ Domain* loadDomainFromFiles(const std::string &eventfile, const std::string &for
 	parseFormulaFile(formulafile, formulas);
 	std::cout << "Read " << formulas.size() << " formulas from file." << std::endl;
 
-	Domain *d = new Domain(events.begin(), events.end(),
-			formulas.begin(), formulas.end());
+	boost::shared_ptr<Domain> d(new Domain(events.begin(), events.end(),
+			formulas.begin(), formulas.end()));
 
 	return d;
 };

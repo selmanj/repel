@@ -58,24 +58,31 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 am__EXEEXT_1 = test/spanintervaltest$(EXEEXT) \
 	test/follexertest$(EXEEXT) test/folparsertest$(EXEEXT) \
-	test/atomtest$(EXEEXT)
+	test/atomtest$(EXEEXT) test/domaintest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 am_pel_OBJECTS = pel.$(OBJEXT) interval.$(OBJEXT) \
 	spaninterval.$(OBJEXT) constant.$(OBJEXT) follexer.$(OBJEXT) \
-	foltoken.$(OBJEXT) variable.$(OBJEXT)
+	foltoken.$(OBJEXT) variable.$(OBJEXT) siset.$(OBJEXT)
 pel_OBJECTS = $(am_pel_OBJECTS)
 pel_LDADD = $(LDADD)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
 am__dirstamp = $(am__leading_dot)dirstamp
+am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) interval.$(OBJEXT) \
+	siset.$(OBJEXT) spaninterval.$(OBJEXT) constant.$(OBJEXT) \
+	variable.$(OBJEXT) follexer.$(OBJEXT) foltoken.$(OBJEXT) \
+	domain.$(OBJEXT)
+test_domaintest_OBJECTS = $(am_test_domaintest_OBJECTS)
+test_domaintest_LDADD = $(LDADD)
 am_test_follexertest_OBJECTS = follexertest.$(OBJEXT) \
 	follexer.$(OBJEXT) foltoken.$(OBJEXT)
 test_follexertest_OBJECTS = $(am_test_follexertest_OBJECTS)
 test_follexertest_LDADD = $(LDADD)
 am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
 	follexer.$(OBJEXT) foltoken.$(OBJEXT) constant.$(OBJEXT) \
-	variable.$(OBJEXT) spaninterval.$(OBJEXT) interval.$(OBJEXT)
+	variable.$(OBJEXT) spaninterval.$(OBJEXT) siset.$(OBJEXT) \
+	interval.$(OBJEXT)
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
@@ -93,11 +100,11 @@ CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(pel_SOURCES) $(test_atomtest_SOURCES) \
-	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
-	$(test_spanintervaltest_SOURCES)
+	$(test_domaintest_SOURCES) $(test_follexertest_SOURCES) \
+	$(test_folparsertest_SOURCES) $(test_spanintervaltest_SOURCES)
 DIST_SOURCES = $(pel_SOURCES) $(test_atomtest_SOURCES) \
-	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
-	$(test_spanintervaltest_SOURCES)
+	$(test_domaintest_SOURCES) $(test_follexertest_SOURCES) \
+	$(test_folparsertest_SOURCES) $(test_spanintervaltest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -211,12 +218,13 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CXXFLAGS = $(BOOST_CPPFLAGS)
 AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 dist_noinst_SCRIPTS = autogen.sh
-pel_SOURCES = src/pel.cpp src/interval.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp
-PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest
+pel_SOURCES = src/pel.cpp src/interval.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp
+PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
-test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/interval.cpp
+test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
+test_domaintest_SOURCES = test/domaintest.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -322,6 +330,9 @@ test/$(am__dirstamp):
 test/atomtest$(EXEEXT): $(test_atomtest_OBJECTS) $(test_atomtest_DEPENDENCIES) test/$(am__dirstamp)
 	@rm -f test/atomtest$(EXEEXT)
 	$(CXXLINK) $(test_atomtest_OBJECTS) $(test_atomtest_LDADD) $(LIBS)
+test/domaintest$(EXEEXT): $(test_domaintest_OBJECTS) $(test_domaintest_DEPENDENCIES) test/$(am__dirstamp)
+	@rm -f test/domaintest$(EXEEXT)
+	$(CXXLINK) $(test_domaintest_OBJECTS) $(test_domaintest_LDADD) $(LIBS)
 test/follexertest$(EXEEXT): $(test_follexertest_OBJECTS) $(test_follexertest_DEPENDENCIES) test/$(am__dirstamp)
 	@rm -f test/follexertest$(EXEEXT)
 	$(CXXLINK) $(test_follexertest_OBJECTS) $(test_follexertest_LDADD) $(LIBS)
@@ -340,6 +351,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomtest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/constant.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domain.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domaintest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/follexer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/follexertest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/folparsertest.Po@am__quote@
@@ -463,6 +476,20 @@ variable.obj: src/fol/variable.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o variable.obj `if test -f 'src/fol/variable.cpp'; then $(CYGPATH_W) 'src/fol/variable.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/variable.cpp'; fi`
 
+siset.o: src/siset.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT siset.o -MD -MP -MF $(DEPDIR)/siset.Tpo -c -o siset.o `test -f 'src/siset.cpp' || echo '$(srcdir)/'`src/siset.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/siset.Tpo $(DEPDIR)/siset.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/siset.cpp' object='siset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o siset.o `test -f 'src/siset.cpp' || echo '$(srcdir)/'`src/siset.cpp
+
+siset.obj: src/siset.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT siset.obj -MD -MP -MF $(DEPDIR)/siset.Tpo -c -o siset.obj `if test -f 'src/siset.cpp'; then $(CYGPATH_W) 'src/siset.cpp'; else $(CYGPATH_W) '$(srcdir)/src/siset.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/siset.Tpo $(DEPDIR)/siset.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/siset.cpp' object='siset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o siset.obj `if test -f 'src/siset.cpp'; then $(CYGPATH_W) 'src/siset.cpp'; else $(CYGPATH_W) '$(srcdir)/src/siset.cpp'; fi`
+
 atomtest.o: test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT atomtest.o -MD -MP -MF $(DEPDIR)/atomtest.Tpo -c -o atomtest.o `test -f 'test/atomtest.cpp' || echo '$(srcdir)/'`test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/atomtest.Tpo $(DEPDIR)/atomtest.Po
@@ -476,6 +503,34 @@ atomtest.obj: test/atomtest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/atomtest.cpp' object='atomtest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o atomtest.obj `if test -f 'test/atomtest.cpp'; then $(CYGPATH_W) 'test/atomtest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/atomtest.cpp'; fi`
+
+domaintest.o: test/domaintest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domaintest.o -MD -MP -MF $(DEPDIR)/domaintest.Tpo -c -o domaintest.o `test -f 'test/domaintest.cpp' || echo '$(srcdir)/'`test/domaintest.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domaintest.Tpo $(DEPDIR)/domaintest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/domaintest.cpp' object='domaintest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domaintest.o `test -f 'test/domaintest.cpp' || echo '$(srcdir)/'`test/domaintest.cpp
+
+domaintest.obj: test/domaintest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domaintest.obj -MD -MP -MF $(DEPDIR)/domaintest.Tpo -c -o domaintest.obj `if test -f 'test/domaintest.cpp'; then $(CYGPATH_W) 'test/domaintest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/domaintest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domaintest.Tpo $(DEPDIR)/domaintest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/domaintest.cpp' object='domaintest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domaintest.obj `if test -f 'test/domaintest.cpp'; then $(CYGPATH_W) 'test/domaintest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/domaintest.cpp'; fi`
+
+domain.o: src/fol/domain.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domain.o -MD -MP -MF $(DEPDIR)/domain.Tpo -c -o domain.o `test -f 'src/fol/domain.cpp' || echo '$(srcdir)/'`src/fol/domain.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domain.Tpo $(DEPDIR)/domain.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/domain.cpp' object='domain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domain.o `test -f 'src/fol/domain.cpp' || echo '$(srcdir)/'`src/fol/domain.cpp
+
+domain.obj: src/fol/domain.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domain.obj -MD -MP -MF $(DEPDIR)/domain.Tpo -c -o domain.obj `if test -f 'src/fol/domain.cpp'; then $(CYGPATH_W) 'src/fol/domain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/domain.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domain.Tpo $(DEPDIR)/domain.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/domain.cpp' object='domain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domain.obj `if test -f 'src/fol/domain.cpp'; then $(CYGPATH_W) 'src/fol/domain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/domain.cpp'; fi`
 
 follexertest.o: test/follexertest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT follexertest.o -MD -MP -MF $(DEPDIR)/follexertest.Tpo -c -o follexertest.o `test -f 'test/follexertest.cpp' || echo '$(srcdir)/'`test/follexertest.cpp
@@ -518,20 +573,6 @@ spanintervaltest.obj: test/spanintervaltest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/spanintervaltest.cpp' object='spanintervaltest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o spanintervaltest.obj `if test -f 'test/spanintervaltest.cpp'; then $(CYGPATH_W) 'test/spanintervaltest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/spanintervaltest.cpp'; fi`
-
-siset.o: src/siset.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT siset.o -MD -MP -MF $(DEPDIR)/siset.Tpo -c -o siset.o `test -f 'src/siset.cpp' || echo '$(srcdir)/'`src/siset.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/siset.Tpo $(DEPDIR)/siset.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/siset.cpp' object='siset.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o siset.o `test -f 'src/siset.cpp' || echo '$(srcdir)/'`src/siset.cpp
-
-siset.obj: src/siset.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT siset.obj -MD -MP -MF $(DEPDIR)/siset.Tpo -c -o siset.obj `if test -f 'src/siset.cpp'; then $(CYGPATH_W) 'src/siset.cpp'; else $(CYGPATH_W) '$(srcdir)/src/siset.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/siset.Tpo $(DEPDIR)/siset.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/siset.cpp' object='siset.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o siset.obj `if test -f 'src/siset.cpp'; then $(CYGPATH_W) 'src/siset.cpp'; else $(CYGPATH_W) '$(srcdir)/src/siset.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

@@ -9,8 +9,17 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <boost/foreach.hpp>
 #include "siset.h"
 #include "spaninterval.h"
+
+SISet::SISet(const SpanInterval& si, bool forceLiquid,
+			const Interval& maxInterval)
+	: forceLiquid_(forceLiquid), maxInterval_(maxInterval) {
+	SpanInterval copy = si;
+	copy.setMaxInterval(maxInterval_);
+	set_.insert(copy);
+}
 
 SISet SISet::compliment() const {
 
@@ -49,11 +58,14 @@ SISet SISet::compliment() const {
 		}
 	}
 	if (intersections.empty()) {
-		return SISet();
+		return SISet(forceLiquid_, maxInterval_);
 	}
-	return SISet(intersections.front().begin(), intersections.front().end(), forceLiquid_);
+	return SISet(intersections.front().begin(), intersections.front().end(), forceLiquid_, maxInterval_);
 }
 
+Interval SISet::maxInterval() const {
+	return maxInterval_;
+}
 
 // O(n^2) :(  perhaps set a flag instead?
 bool SISet::isDisjoint() const {
@@ -71,12 +83,25 @@ bool SISet::isDisjoint() const {
 	return true;
 }
 
+void SISet::setMaxInterval(const Interval& maxInterval) {
+	maxInterval_ = maxInterval;
+	std::set<SpanInterval> resized;
+	for (std::set<SpanInterval>::iterator it = set_.begin(); it != set_.end(); it++) {
+		SpanInterval si = *it;
+		si.setMaxInterval(maxInterval);
+		resized.insert(si);
+	}
+	set_.swap(resized);
+}
+
 void SISet::add(const SpanInterval &s) {
-	if (forceLiquid_ && !s.isLiquid()) {
+	SpanInterval sCopy = s;
+	sCopy.setMaxInterval(maxInterval_);
+	if (forceLiquid_ && !sCopy.isLiquid()) {
 		std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
 		throw e;
 	}
-	set_.insert(s);
+	set_.insert(sCopy);
 }
 
 void SISet::makeDisjoint() {
@@ -88,7 +113,9 @@ void SISet::makeDisjoint() {
 			sIt++;
 			if (sIt != set_.end() && !fIt->intersection(*sIt).isEmpty()) {
 				// merge the two
-				SpanInterval merged(fIt->start().start(), sIt->end().end());
+				unsigned int start = fIt->start().start();
+				unsigned int end = sIt->end().end();
+				SpanInterval merged(start, end, start, end, maxInterval_);
 				set_.erase(sIt);	// invalidates sIt
 				set_.erase(fIt);	// invalidates fIt
 				fIt = set_.insert(merged).first;
@@ -112,7 +139,10 @@ void SISet::makeDisjoint() {
 					std::set<SpanInterval>::const_iterator toRemove = sIt;
 					sIt--;
 					set_.erase(toRemove);
-					set_.insert(leftover.begin(), leftover.end());
+
+					BOOST_FOREACH(SpanInterval sp, leftover) {
+						if (!sp.isEmpty()) set_.insert(leftover.begin(), leftover.end());
+					}
 				}
 			}
 		}

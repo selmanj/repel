@@ -3,10 +3,15 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
+#include <algorithm>
+#include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/iterator/indirect_iterator.hpp>
 #include "term.h"
 #include "sentence.h"
 #include "sentencevisitor.h"
+#include "constant.h"
 
 class Atom : public Sentence {
 public:
@@ -25,7 +30,16 @@ public:
 			it++;
 		}
 	};
-	bool isGrounded() const;
+
+	bool isGrounded() const {
+		for (std::vector<boost::shared_ptr<Term> >::const_iterator it = terms.begin(); it != terms.end(); it++) {
+
+			boost::shared_ptr<Constant> constant = boost::dynamic_pointer_cast<Constant>(*it);
+			if (constant.get() == 0) return false;
+		}
+		return true;
+	};
+
 	int arity() const {return terms.size();};
 	std::string name() const {return pred;};
 
@@ -33,8 +47,12 @@ public:
 	//const Term& operator[] (boost::ptr_vector<Term>::size_type n) const {return terms[n];};
 	// TODO make the at() function throw an exception
 	boost::shared_ptr<Term> at(size_type n) {return terms[n];};
-	void push_back(const boost::shared_ptr<Term>& t)  {terms.push_back(t);};
+	boost::shared_ptr<const Term> at(size_type n) const {return terms[n];};
 
+	void push_back(const boost::shared_ptr<Term>& t)  {terms.push_back(t);};
+	virtual void visit(SentenceVisitor& v) const {
+		v.accept(*this);
+	}
 private:
 	std::string pred;
 	//boost::ptr_vector<Term> terms;
@@ -47,7 +65,11 @@ private:
 		if (at == NULL) {
 			return false;
 		}
-		return (pred == at->pred) && (terms == at->terms);
+
+		return (pred == at->pred)
+				&& std::equal(boost::make_indirect_iterator(terms.begin()),
+						boost::make_indirect_iterator(terms.end()),
+						boost::make_indirect_iterator(at->terms.begin()));
 	};
 
 	virtual void doToString(std::string& str) const {
@@ -68,9 +90,7 @@ private:
 		return 0;
 	};
 
-	virtual void visit(SentenceVisitor& v) const {
-		v.accept(*this);
-	}
+
 
 };
 #endif

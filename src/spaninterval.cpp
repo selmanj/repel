@@ -13,19 +13,34 @@
 #include "interval.h"
 #include "spaninterval.h"
 
-SpanInterval::SpanInterval(const Interval& start, const Interval& end)
-: start_(start), end_(end)
+/*
+SpanInterval::SpanInterval(unsigned int smallest, unsigned int largest)
+	: maxInterval_.start()(smallest), maxInterval_.end()(largest) {
+}
+*/
+
+SpanInterval::SpanInterval(const Interval& start, const Interval& end, const Interval& maxInterval)
+: start_(start), end_(end), maxInterval_(maxInterval)
 {
 }
 
-SpanInterval::SpanInterval(unsigned int start, unsigned int end) 
-: start_(start, end), end_(start, end)
+SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo,
+		const Interval& maxInterval)
+: start_(startFrom, startTo), end_(endFrom, endTo), maxInterval_(maxInterval)
 {
 }
 
-SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo) 
-: start_(startFrom, startTo), end_(endFrom, endTo)
-{
+void SpanInterval::setMaxInterval(const Interval& maxInterval) {
+	maxInterval_ = maxInterval;
+	// i, j, k, l all must be within max interval
+	unsigned int i = std::min(std::max(start().start(), maxInterval_.start()), maxInterval_.end());
+	unsigned int j = std::min(std::max(start().end(), maxInterval_.start()), maxInterval_.end());
+	unsigned int k = std::min(std::max(end().start(), maxInterval_.start()), maxInterval_.end());
+	unsigned int l = std::min(std::max(end().end(), maxInterval_.start()), maxInterval_.end());
+
+	setStart(Interval(i,j));
+	setEnd(Interval(k,l));
+
 }
 
 bool SpanInterval::operator==(const SpanInterval& b) const {
@@ -86,7 +101,7 @@ SpanInterval SpanInterval::normalize() const throw (bad_normalize) {
 	int j = std::min(start_.end(), end_.end());
 	int k = std::max(end_.start(), start_.start());
 
-	return SpanInterval(start_.start(), j, k, end_.end());
+	return SpanInterval(start_.start(), j, k, end_.end(), maxInterval_);
 }
 
 void SpanInterval::normalize(std::set<SpanInterval>& collect) const {
@@ -101,47 +116,49 @@ SpanInterval SpanInterval::intersection(const SpanInterval& other) const {
 	return SpanInterval(std::max(start().start(), other.start().start()),
 			std::min(start().end(), other.start().end()),
 			std::max(end().start(), other.end().start()),
-			std::min(end().end(), other.end().end()));
+			std::min(end().end(), other.end().end()), maxInterval_);
 }
 
 void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
 	/*
-	SpanInterval a(NEG_INF, POS_INF, NEG_INF, end().start()-1);
+	SpanInterval a(maxInterval_.start(), maxInterval_.end(), maxInterval_.start(), end().start()-1);
 	a.normalize(collect);
-	SpanInterval b(NEG_INF, POS_INF, end().end()+1, POS_INF);
+	SpanInterval b(maxInterval_.start(), maxInterval_.end(), end().end()+1, maxInterval_.end());
 	b.normalize(collect);
-	SpanInterval c(NEG_INF, start().start()-1, NEG_INF, POS_INF);
+	SpanInterval c(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.end());
 	c.normalize(collect);
-	SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
+	SpanInterval d(start().end()+1, maxInterval_.end(), maxInterval_.start(), maxInterval_.end());
 	d.normalize(collect);
 	*/
 	// I think the following ends up the same as the previous, just disjoint
-	if (start().start() != NEG_INF) {
-		SpanInterval a(NEG_INF, start().start()-1, NEG_INF, POS_INF);
+	if (start().start() != maxInterval_.start()) {
+		SpanInterval a(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.end(), maxInterval_);
 		a.normalize(collect);
 	}
-	if (end().start() != NEG_INF) {
-		SpanInterval b(start().start(), start().end(), NEG_INF, end().start()-1);
+	if (end().start() != maxInterval_.start()) {
+		SpanInterval b(start().start(), start().end(), maxInterval_.start(), end().start()-1, maxInterval_);
 		b.normalize(collect);
 	}
-	if (end().end() != POS_INF) {
-		SpanInterval c(start().start(), start().end(), end().end()+1, POS_INF);
+	if (end().end() != maxInterval_.end()) {
+		SpanInterval c(start().start(), start().end(), end().end()+1, maxInterval_.end(), maxInterval_);
 		c.normalize(collect);
 	}
-	if (start().end() != POS_INF) {
-		SpanInterval d(start().end()+1, POS_INF, NEG_INF, POS_INF);
+	if (start().end() != maxInterval_.end()) {
+		SpanInterval d(start().end()+1, maxInterval_.end(), maxInterval_.start(), maxInterval_.end(), maxInterval_);
 		d.normalize(collect);
 	}
 }
 
 void SpanInterval::liqCompliment(std::set<SpanInterval>& collect) const {
 	// at most two intervals
-	if (start().start() != NEG_INF) {
-		SpanInterval a(NEG_INF, start().start()-1);
+	if (start().start() != maxInterval_.start()) {
+		unsigned int end = start().start()-1;
+		SpanInterval a(maxInterval_.start(), end, maxInterval_.start(), end, maxInterval_);
 		collect.insert(a);
 	}
-	if (end().end() != POS_INF) {
-		SpanInterval b(end().end()+1, POS_INF);
+	if (end().end() != maxInterval_.end()) {
+		unsigned int start = end().end()+1;
+		SpanInterval b(start, maxInterval_.end(), start, maxInterval_.end(), maxInterval_);
 		collect.insert(b);
 	}
 }
@@ -174,3 +191,4 @@ std::string SpanInterval::toString() const {
 	}
 	return str.str();
 }
+

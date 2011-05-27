@@ -1,5 +1,6 @@
 
 #include <string>
+#include <iostream>
 #include "constant.h"
 
 Constant::Constant(std::string name) 

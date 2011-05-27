@@ -11,10 +11,11 @@
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
-
+#include <boost/foreach.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <utility>
 #include "fol/fol.h"
 #include "fol/folparser.h"
 #include "fol/domain.h"
@@ -48,7 +49,14 @@ int main(int argc, char* argv[]) {
 	    return 1;
 	}
 
-	Domain *d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
+	boost::shared_ptr<Domain> d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
+	Model observations = d->defaultModel();
 
+	for (Model::const_iterator it = observations.begin(); it != observations.end(); it++) {
+		Atom atom = it->first;
+		SISet when = it->second;
+
+		std::cout << "Atom: " << atom.toString() << " @ " << when.toString() << std::endl;
+	}
 	return 0;
 }
