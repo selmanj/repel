@@ -19,6 +19,7 @@ BOOST_AUTO_TEST_CASE( sat_test )
 {
 	std::stringstream facts;
 	facts << "P(a,b) @ [1:10]";
+	facts << "Q(a,b) @ [5:15]";
 
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	FOL::EventPair pair = FOLParse::parseEvent(tokens.begin(), tokens.end());
@@ -29,7 +30,7 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	Domain d(events.begin(), events.end(), formulas.begin(), formulas.end());
 	d.setMaxInterval(Interval(0,1000));
 	boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(pair.first);
-	SISet trueAt = d.satisfied(query, d.defaultModel());
+	SISet trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:10]}");
 
 	{
@@ -41,8 +42,8 @@ BOOST_AUTO_TEST_CASE( sat_test )
 
 	// wrap it in negation
 	query = getAsSentence("!P(a,b)");
-	trueAt = d.satisfied(query, d.defaultModel());
-	BOOST_CHECK_EQUAL(trueAt.toString(), "{[0:0], [11:1000]}");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(0, 0), (0, 1000)], [(1, 10), (11, 1000)], [11:1000]}");
 
 
 }

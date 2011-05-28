@@ -37,7 +37,7 @@ public:
 	void makeDisjoint();
 	void clear() {set_.clear();};
 	void setMaxInterval(const Interval& maxInterval);
-
+	void setForceLiquid(bool forceLiquid) {forceLiquid_ = forceLiquid;};
 	std::string toString() const;
 
 private:

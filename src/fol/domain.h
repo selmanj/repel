@@ -101,7 +101,10 @@ public:
 		observations_.swap(resized);
 	}
 
-	SISet satisfied(const boost::shared_ptr<const Sentence>& s, const Model& m) const;
+	SISet satisfied(const Sentence& s, const Model& m) const;
+	SISet satisfiedAtom(const Atom& a, const Model& m) const;
+	SISet satisfiedNegation(const Negation& n, const Model& m) const;
+
 
 private:
 	std::set<std::string> obsPreds_;
