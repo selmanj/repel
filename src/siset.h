@@ -34,10 +34,12 @@ public:
 
 	// modifiers
 	void add(const SpanInterval &s);
+	void add(const SISet& b);
+
 	void makeDisjoint();
 	void clear() {set_.clear();};
 	void setMaxInterval(const Interval& maxInterval);
-	void setForceLiquid(bool forceLiquid) {forceLiquid_ = forceLiquid;};
+	void setForceLiquid(bool forceLiquid);
 	std::string toString() const;
 
 private:

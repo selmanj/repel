@@ -38,6 +38,7 @@ public:
 
 	bool isEmpty() const;
 	bool isLiquid() const;
+	SpanInterval toLiquid() const;
 	SpanInterval normalize() const throw(bad_normalize);
 	void normalize(std::set<SpanInterval>& collect) const;
 	SpanInterval intersection(const SpanInterval&  other) const;

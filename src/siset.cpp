@@ -97,11 +97,19 @@ void SISet::setMaxInterval(const Interval& maxInterval) {
 void SISet::add(const SpanInterval &s) {
 	SpanInterval sCopy = s;
 	sCopy.setMaxInterval(maxInterval_);
+	if (!sCopy.isEmpty()) {sCopy = sCopy.normalize();};
 	if (forceLiquid_ && !sCopy.isLiquid()) {
 		std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
 		throw e;
 	}
-	set_.insert(sCopy);
+
+	if (!sCopy.isEmpty()) set_.insert(sCopy);
+}
+
+void SISet::add(const SISet &b) {
+	for (std::set<SpanInterval>::const_iterator it = b.set_.begin(); it != b.set_.end(); it++) {
+		add(*it);
+	}
 }
 
 void SISet::makeDisjoint() {
@@ -141,7 +149,8 @@ void SISet::makeDisjoint() {
 					set_.erase(toRemove);
 
 					BOOST_FOREACH(SpanInterval sp, leftover) {
-						if (!sp.isEmpty()) set_.insert(leftover.begin(), leftover.end());
+						if (!sp.isEmpty()) sp = sp.normalize();
+						if (!sp.isEmpty()) set_.insert(sp);
 					}
 				}
 			}
@@ -153,6 +162,22 @@ void SISet::makeDisjoint() {
 		throw error;
 	}
 }
+
+void SISet::setForceLiquid(bool forceLiquid) {
+	if (forceLiquid && !forceLiquid_) {
+		std::set<SpanInterval> newSet;
+		BOOST_FOREACH(SpanInterval sp, set_) {
+			sp = sp.toLiquid();
+			if (!sp.isEmpty()) {
+				sp.normalize();
+				newSet.insert(sp);
+			}
+		}
+		set_.swap(newSet);
+	}
+	forceLiquid_ = forceLiquid;
+};
+
 
 std::string SISet::toString() const {
 	std::stringstream sstream;

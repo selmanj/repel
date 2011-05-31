@@ -22,36 +22,48 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	facts << "Q(a,b) @ [5:15]";
 
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
-	FOL::EventPair pair = FOLParse::parseEvent(tokens.begin(), tokens.end());
-	std::vector<FOL::EventPair> events;
-	std::vector<WSentence> formulas;
-	events.push_back(pair);
+	std::vector<FOL::EventPair> factvec;
+	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 
-	Domain d(events.begin(), events.end(), formulas.begin(), formulas.end());
+	std::vector<WSentence> formulas;
+
+
+	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
 	d.setMaxInterval(Interval(0,1000));
-	boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(pair.first);
+	boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(factvec.front().first);
 	SISet trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:10]}");
 
-	{
-		boost::shared_ptr<Sentence> q1 = getAsSentence("P(a,b)");
-		boost::shared_ptr<Sentence> q2 = getAsSentence("P(a,b)");
-		BOOST_CHECK((*q1)==(*q2));
-
-	}
-
-	// wrap it in negation
+	// negation
 	query = getAsSentence("!P(a,b)");
 	trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(0, 0), (0, 1000)], [(1, 10), (11, 1000)], [11:1000]}");
 
+	//lets try disjunction
+	query = getAsSentence("P(a,b) v Q(a,b)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:10], [(5, 10), (11, 15)], [11:15]}");
 
+	// a bit more complicated
+	query = getAsSentence("!(P(a,b) -> Q(a,b))");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(1, 4), (1, 10)]}");
+
+	// liq op
+	query = getAsSentence("[ !P(a,b) ]");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[0:0], [11:1000]}");
+
+	// lets try liq disjunction
+	query = getAsSentence("[ !(P(a,b) -> Q(a,b)) ]");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:4]}");
 }
 
 boost::shared_ptr<Sentence> getAsSentence(std::string str) {
 	std::istringstream stream(str);
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	return FOLParse::parseStaticFormula(tokens.begin(),tokens.end());
+	return FOLParse::parseFormula(tokens.begin(),tokens.end());
 }
 
 

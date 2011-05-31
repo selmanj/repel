@@ -92,6 +92,12 @@ bool SpanInterval::isLiquid() const {
 	return (start().start() == end().start() && start().end() == end().end());
 }
 
+SpanInterval SpanInterval::toLiquid() const {
+	unsigned int i = std::max(start().start(), end().start());
+	unsigned int j = std::min(start().end(), end().end());
+	return SpanInterval(i, j, i, j, maxInterval_);
+}
+
 
 SpanInterval SpanInterval::normalize() const throw (bad_normalize) {
 	if (isEmpty()) {

@@ -11,11 +11,27 @@ bool Domain::isLiquid(const std::string& predicate) const {
 
 SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 	// start with the base case
-	const Atom* a = dynamic_cast<const Atom *>(&s);
-	if (a != 0) return satisfiedAtom(*a, m);
-	// negation
-	const Negation* n = dynamic_cast<const Negation*>(&s);
-	if (n != 0) return satisfiedNegation(*n, m);
+	if (dynamic_cast<const Atom *>(&s) != 0) {
+		const Atom* a = dynamic_cast<const Atom *>(&s);
+		return satisfiedAtom(*a, m);
+	} else if (dynamic_cast<const Negation*>(&s) != 0) {
+		const Negation* n = dynamic_cast<const Negation *>(&s);
+		SISet set = satisfiedNegation(*n, m);
+		set.makeDisjoint();
+		return set;
+	} else if (dynamic_cast<const Disjunction*>(&s) != 0) {
+		const Disjunction* d = dynamic_cast<const Disjunction *>(&s);
+		SISet set = satisfiedDisjunction(*d, m);
+		set.makeDisjoint();
+		return set;
+	} else if (dynamic_cast<const LiquidOp*>(&s) != 0) {
+		const LiquidOp* l = dynamic_cast<const LiquidOp *>(&s);
+		SISet set = liqSatisfied(*(l->sentence()), m);
+		// remove liquid restriction
+		set.setForceLiquid(false);
+		set.makeDisjoint();
+		return set;
+	}
 	// made it this far, unimplemented!
 	std::runtime_error e("Domain::satisfied not implemented yet!");
 	throw e;
@@ -41,6 +57,58 @@ SISet Domain::satisfiedAtom(const Atom& a, const Model& m) const {
 SISet Domain::satisfiedNegation(const Negation& n, const Model& m) const {
 	// return the compliment of the set inside the negation
 	SISet sat = satisfied(*(n.sentence()), m);
+	sat = sat.compliment();
+	return sat;
+}
 
-	return sat.compliment();
+SISet Domain::satisfiedDisjunction(const Disjunction& d, const Model& m) const {
+	// union the left and the right
+	SISet leftSat = satisfied(*(d.left()),m);
+	SISet rightSat = satisfied(*(d.right()), m);
+	leftSat.add(rightSat);
+	return leftSat;
+}
+
+SISet Domain::liqSatisfied(const Sentence& s, const Model& m) const {
+	if (dynamic_cast<const Atom *>(&s) != 0) {
+		const Atom* a = dynamic_cast<const Atom *>(&s);
+		return liqSatisfiedAtom(*a, m);
+	} else if (dynamic_cast<const Negation *>(&s) != 0) {
+		const Negation* n = dynamic_cast<const Negation *>(&s);
+		return liqSatisfiedNegation(*n, m);
+	} else if (dynamic_cast<const Disjunction *>(&s) != 0) {
+		const Disjunction* d = dynamic_cast<const Disjunction *>(&s);
+		return liqSatisfiedDisjunction(*d, m);
+	}
+	// made it this far, unimplemented!
+	std::runtime_error e("Domain::liqSatisfied not implemented yet!");
+	throw e;
+}
+
+SISet Domain::liqSatisfiedAtom(const Atom& a, const Model& m) const {
+	if (!a.isGrounded()) {
+		std::runtime_error e("Domain::liqSatisfiedAtom currently doesn't support variables!");
+		throw e;
+	}
+	// make sure its in model
+	if (m.find(a) != m.end()){
+		SISet set = m.at(a);
+		set.setForceLiquid(true);
+		return set;
+	} else {
+		return SISet(true);
+	}
+}
+
+SISet Domain::liqSatisfiedNegation(const Negation& n, const Model& m) const {
+	SISet sat = liqSatisfied(*(n.sentence()), m);
+	sat = sat.compliment();
+	return sat;
+}
+
+SISet Domain::liqSatisfiedDisjunction(const Disjunction& d, const Model& m) const {
+	SISet leftSat = liqSatisfied(*(d.left()),m);
+	SISet rightSat = liqSatisfied(*(d.right()), m);
+	leftSat.add(rightSat);
+	return leftSat;
 }

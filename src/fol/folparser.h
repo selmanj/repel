@@ -109,7 +109,7 @@ bool endOfTokens(iters<ForwardIterator> &its) {
 
 
 template <class ForwardIterator>
-void doParseEventFile(std::vector<FOL::EventPair>& store, iters<ForwardIterator> &its) {
+void doParseEvents(std::vector<FOL::EventPair>& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
@@ -391,7 +391,10 @@ boost::shared_ptr<Sentence> doParseFormula_paren(iters<ForwardIterator> &its) {
 		boost::shared_ptr<Sentence> liq(new LiquidOp(s));
 		return liq;
 	} else if (peekTokenType(FOLParse::OPEN_PAREN, its)) {
-		return doParseFormula(its);
+		consumeTokenType(FOLParse::OPEN_PAREN, its);
+		boost::shared_ptr<Sentence> s = doParseFormula(its);
+		consumeTokenType(FOLParse::CLOSE_PAREN, its);
+		return s;
 	} else {
 		return doParseAtom(its);
 	}
@@ -489,7 +492,7 @@ void parseEventFile(const std::string &filename, std::vector<FOL::EventPair>& st
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&file);
 
 	iters<std::vector<FOLToken>::const_iterator > its(tokens.begin(), tokens.end());
-	doParseEventFile(store, its);
+	doParseEvents(store, its);
 	file.close();
 };
 
@@ -521,6 +524,13 @@ boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, cons
 };
 
 template <class ForwardIterator>
+void parseEvents(const ForwardIterator &first,
+		const ForwardIterator &last, std::vector<FOL::EventPair>& store) {
+	iters<ForwardIterator> its(first, last);
+	doParseEvents(store, its);
+};
+
+template <class ForwardIterator>
 FOL::EventPair parseEvent(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
@@ -546,6 +556,13 @@ boost::shared_ptr<Atom> parseAtom(const ForwardIterator &first,
 	iters<ForwardIterator> its(first, last);
 	return doParseAtom(its);
 };
+
+template <class ForwardIterator>
+boost::shared_ptr<Sentence> parseFormula(const ForwardIterator &first,
+		const ForwardIterator &last) {
+	iters<ForwardIterator> its(first, last);
+	return doParseFormula(its);
+}
 
 template <class ForwardIterator>
 boost::shared_ptr<Sentence> parseStaticFormula(const ForwardIterator &first,
