@@ -8,6 +8,7 @@
 #else
 #include <boost/test/included/unit_test.hpp>
 #endif
+#include <boost/optional.hpp>
 #include "../src/spaninterval.h"
 #include "../src/interval.h"
 #include "../src/siset.h"
@@ -81,6 +82,32 @@ BOOST_AUTO_TEST_CASE( sisetliq_test ) {
 	BOOST_CHECK(set.isDisjoint());
 	std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
 	std::cout << "double compliment is " << set.compliment().compliment().toString() << std::endl;
+}
 
+BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
+	Interval maxInterval(0, 1000);
+	SpanInterval sp1(1,5,6,10, maxInterval);
+	boost::optional<SpanInterval> sp2 = sp1.satisfiesRelation(Interval::MEETS);
+	BOOST_CHECK(sp2);
+	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(7, 11), (7, 1000)]");
+	sp1 = SpanInterval(999, 1000, 999, 1000, maxInterval);
+	sp2 = sp1.satisfiesRelation(Interval::MEETS);
+	BOOST_CHECK(!sp2);
 
+	sp1 = SpanInterval(1,4,7,9, maxInterval);
+	sp2 = sp1.satisfiesRelation(Interval::OVERLAPS);
+	BOOST_CHECK(sp2);
+	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(2, 9), (8, 1000)]");
+
+	sp2 = sp1.satisfiesRelation(Interval::OVERLAPSI);
+	BOOST_CHECK(sp2);
+	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(0, 3), (1, 8)]");
+
+	sp2 = sp1.satisfiesRelation(Interval::STARTS);
+	BOOST_CHECK(sp2);
+	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(1, 4), (8, 1000)]");
+
+	sp2 = sp1.satisfiesRelation(Interval::STARTSI);
+	BOOST_CHECK(sp2);
+	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(1, 4), (1, 8)]");
 }

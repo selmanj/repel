@@ -41,12 +41,13 @@ public:
 	boost::optional<SpanInterval> normalize() const;
 	void compliment(std::set<SpanInterval>& collect) const;
 	void liqCompliment(std::set<SpanInterval>& collect) const;
+	boost::optional<SpanInterval> satisfiesRelation(Interval::INTERVAL_RELATION relation) const;
+
 	void subtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const;
 
 	std::string toString() const;
 
 	friend SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
-	friend SpanInterval siSatisfying(Interval::INTERVAL_RELATION relation, const SpanInterval& set);
 
 
 private:

@@ -154,6 +154,64 @@ void SpanInterval::liqCompliment(std::set<SpanInterval>& collect) const {
 	}
 }
 
+boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation) const {
+	//SISet result(false, set.maxInterval_);	// not liquid!
+
+	unsigned int neg_inf = maxInterval_.start();
+	unsigned int pos_inf = maxInterval_.end();
+
+	switch (relation) {
+		case Interval::EQUALS:
+			return normalize();
+		case Interval::LESSTHAN:
+			if (pos_inf-2 < end().start()) return boost::optional<SpanInterval>();
+			return SpanInterval(end().start()+2, pos_inf, neg_inf, pos_inf, maxInterval_).normalize();
+		case Interval::GREATERTHAN:
+			if (neg_inf+2 > start().end()) return boost::optional<SpanInterval>();
+			return SpanInterval(neg_inf, pos_inf, neg_inf, start().end()-2, maxInterval_).normalize();
+		case Interval::MEETS:
+			if (pos_inf-1 < end().start() || pos_inf-1 < end().end())
+				return boost::optional<SpanInterval>();
+			return SpanInterval(end().start()+1, end().end()+1, neg_inf, pos_inf, maxInterval_).normalize();
+		case Interval::MEETSI:
+			if (neg_inf+1 > start().start() || neg_inf+1 > start().end())
+				return boost::optional<SpanInterval>();
+			return SpanInterval(neg_inf, pos_inf, start().start()-1, start().end()-1, maxInterval_).normalize();
+		case Interval::OVERLAPS:
+			if (pos_inf-1 < end().start() || pos_inf-1 < start().start()) return boost::optional<SpanInterval>();
+			return SpanInterval(start().start()+1, end().end(), end().start()+1, pos_inf, maxInterval_).normalize();
+		case Interval::OVERLAPSI:
+			if (neg_inf+1 > start().end() || neg_inf+1 > end().end()) return boost::optional<SpanInterval>();
+			return SpanInterval(neg_inf, start().end()-1, start().start(), end().end()-1, maxInterval_).normalize();
+		case Interval::STARTS:
+			if (pos_inf-1 < end().start()) return boost::optional<SpanInterval>();
+			return SpanInterval(start().start(), start().end(), end().start()+1, pos_inf, maxInterval_).normalize();
+		case Interval::STARTSI:
+			if (neg_inf+1 > end().end()) return boost::optional<SpanInterval>();
+			return SpanInterval(start().start(), start().end(), neg_inf, end().end()-1, maxInterval_).normalize();
+		case Interval::FINISHES:
+			if (neg_inf+1 > start().end()) return boost::optional<SpanInterval>();
+			return SpanInterval(neg_inf, start().end()-1, end().start(), end().end(), maxInterval_).normalize();
+		case Interval::FINISHESI:
+			if (pos_inf-1 < start().start()) return boost::optional<SpanInterval>();
+			return SpanInterval(start().start()+1, pos_inf, end().start(), end().end(), maxInterval_).normalize();
+		case Interval::DURING:
+			if (neg_inf+1 > start().end() || pos_inf-1 < end().start())
+				return boost::optional<SpanInterval>();
+			return SpanInterval(neg_inf, start().end()-1, end().start()+1, pos_inf, maxInterval_).normalize();
+		case Interval::DURINGI:
+			if (pos_inf-1 < start().start() || neg_inf+1 > end().end())
+				return boost::optional<SpanInterval>();
+			return SpanInterval(start().start()+1, pos_inf, neg_inf, end().end()-1, maxInterval_).normalize();
+		default:
+			std::runtime_error e("SpanInterval::siSatisfying() not implemented for relation!");
+			throw e;
+	}
+
+	//return result;
+}
+
+
 void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& collect) const {
 	/*
 	SpanInterval a(start().start(), remove.start().start()-1, end().start(), remove.end().start()-1);
@@ -188,25 +246,4 @@ SpanInterval intersection(const SpanInterval& a, const SpanInterval& b) {
 			std::min(a.start().end(), b.start().end()),
 			std::max(a.end().start(), b.end().start()),
 			std::min(a.end().end(), b.end().end()), a.maxInterval_);	// TODO: more sensible way to pick max interval
-}
-
-SpanInterval siSatisfying(Interval::INTERVAL_RELATION relation, const SpanInterval& si) {
-	//SISet result(false, set.maxInterval_);	// not liquid!
-
-	unsigned int neg_inf = si.maxInterval_.start();
-	unsigned int pos_inf = si.maxInterval_.end();
-
-	switch (relation) {
-		case Interval::EQUALS:
-			return si;
-		case Interval::LESSTHAN:
-			return SpanInterval(si.end().start()+2, pos_inf, neg_inf, pos_inf, si.maxInterval_);
-		case Interval::GREATERTHAN:
-			return SpanInterval(neg_inf, pos_inf, neg_inf, si.start().end()-2);
-		default:
-			std::runtime_error e("SpanInterval::siSatisfying() not implemented for relation!");
-			throw e;
-	}
-
-	//return result;
 }
