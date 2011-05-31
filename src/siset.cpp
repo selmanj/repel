@@ -191,3 +191,23 @@ std::string SISet::toString() const {
 	sstream << "}";
 	return sstream.str();
 }
+
+SISet intersection(const SISet& a, const SISet& b) {
+	SISet result;
+	if (a.forceLiquid() && b.forceLiquid()) {
+		result.setForceLiquid(true);
+	} else {
+		result.setForceLiquid(false);
+	}
+	// pairwise intersection - ugh
+	BOOST_FOREACH(SpanInterval siA, a.set_) {
+		BOOST_FOREACH(SpanInterval siB, b.set_) {
+			SpanInterval intersect = siA.intersection(siB);
+			if (!intersect.isEmpty()) {
+				intersect = intersect.normalize();
+				result.add(intersect);
+			}
+		}
+	}
+	return result;
+}

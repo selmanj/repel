@@ -27,7 +27,7 @@ public:
 
 	const std::set<SpanInterval>& set() const {return set_;};
 	bool forceLiquid() const {return forceLiquid_;};
-
+	// TODO make some of these friend functions
 	bool isDisjoint() const;
 	SISet compliment() const;
 	Interval maxInterval() const;
@@ -42,11 +42,15 @@ public:
 	void setForceLiquid(bool forceLiquid);
 	std::string toString() const;
 
+	friend SISet intersection(const SISet& a, const SISet& b);
+
 private:
 	bool forceLiquid_;
 	std::set<SpanInterval> set_;
 	Interval maxInterval_;
 };
+
+
 
 
 #endif /* SISET_H_ */

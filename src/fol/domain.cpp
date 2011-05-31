@@ -79,6 +79,9 @@ SISet Domain::liqSatisfied(const Sentence& s, const Model& m) const {
 	} else if (dynamic_cast<const Disjunction *>(&s) != 0) {
 		const Disjunction* d = dynamic_cast<const Disjunction *>(&s);
 		return liqSatisfiedDisjunction(*d, m);
+	} else if (dynamic_cast<const Conjunction *>(&s) != 0) {
+		const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
+		return liqSatisfiedConjunction(*c, m);
 	}
 	// made it this far, unimplemented!
 	std::runtime_error e("Domain::liqSatisfied not implemented yet!");
@@ -111,4 +114,11 @@ SISet Domain::liqSatisfiedDisjunction(const Disjunction& d, const Model& m) cons
 	SISet rightSat = liqSatisfied(*(d.right()), m);
 	leftSat.add(rightSat);
 	return leftSat;
+}
+
+SISet Domain::liqSatisfiedConjunction(const Conjunction& c, const Model& m) const {
+	SISet leftSat = liqSatisfied(*(c.left()), m);
+	SISet rightSat = liqSatisfied(*(c.right()), m);
+	// intersection now!
+	return intersection(leftSat, rightSat);
 }

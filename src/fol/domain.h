@@ -110,6 +110,7 @@ public:
 	SISet liqSatisfiedAtom(const Atom& a, const Model& m) const;
 	SISet liqSatisfiedNegation(const Negation& a, const Model& m) const;
 	SISet liqSatisfiedDisjunction(const Disjunction& d, const Model& m) const;
+	SISet liqSatisfiedConjunction(const Conjunction& c, const Model& m) const;
 
 
 private:

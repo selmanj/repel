@@ -58,6 +58,11 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	query = getAsSentence("[ !(P(a,b) -> Q(a,b)) ]");
 	trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:4]}");
+
+	// liq conjunction
+	query = getAsSentence("[ P(a,b) ^ Q(a,b) ]");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:10]}");
 }
 
 boost::shared_ptr<Sentence> getAsSentence(std::string str) {
