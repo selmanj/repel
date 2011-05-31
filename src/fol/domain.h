@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
+#include <boost/optional.hpp>
 #include "fol.h"
 #include "predcollector.h"
 #include "../siset.h"
@@ -45,7 +46,12 @@ public:
 		unsigned int smallest=UINT_MAX, largest=0;
 		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
 			SpanInterval interval = it->second;
-			interval = interval.normalize();
+
+			boost::optional<SpanInterval> norm = interval.normalize();
+			if (!norm) {
+				continue;
+			}
+			interval = norm.get();
 			smallest = std::min(interval.start().start(), smallest);
 			largest = std::max(interval.end().end(), largest);
 		}

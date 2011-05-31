@@ -7,9 +7,10 @@
 
 #include <algorithm>
 #include <exception>
+#include <stdexcept>
 #include <string>
 #include <sstream>
-#include "bad_normalize.h"
+#include <boost/optional.hpp>
 #include "interval.h"
 #include "spaninterval.h"
 
@@ -99,30 +100,14 @@ SpanInterval SpanInterval::toLiquid() const {
 }
 
 
-SpanInterval SpanInterval::normalize() const throw (bad_normalize) {
+boost::optional<SpanInterval> SpanInterval::normalize() const {
 	if (isEmpty()) {
-		bad_normalize bad;		// TODO: why two lines?  can't collapse into one?
-		throw bad;
+		return boost::optional<SpanInterval>();
 	}
 	int j = std::min(start_.end(), end_.end());
 	int k = std::max(end_.start(), start_.start());
 
-	return SpanInterval(start_.start(), j, k, end_.end(), maxInterval_);
-}
-
-void SpanInterval::normalize(std::set<SpanInterval>& collect) const {
-	try {
-		collect.insert(normalize());
-	} catch (bad_normalize& e) {
-		// do nothing
-	}
-}
-
-SpanInterval SpanInterval::intersection(const SpanInterval& other) const {
-	return SpanInterval(std::max(start().start(), other.start().start()),
-			std::min(start().end(), other.start().end()),
-			std::max(end().start(), other.end().start()),
-			std::min(end().end(), other.end().end()), maxInterval_);
+	return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, end_.end(), maxInterval_));
 }
 
 void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
@@ -139,19 +124,19 @@ void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
 	// I think the following ends up the same as the previous, just disjoint
 	if (start().start() != maxInterval_.start()) {
 		SpanInterval a(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.end(), maxInterval_);
-		a.normalize(collect);
+		if (a.normalize()) collect.insert(a.normalize().get());
 	}
 	if (end().start() != maxInterval_.start()) {
 		SpanInterval b(start().start(), start().end(), maxInterval_.start(), end().start()-1, maxInterval_);
-		b.normalize(collect);
+		if (b.normalize()) collect.insert(b.normalize().get());
 	}
 	if (end().end() != maxInterval_.end()) {
 		SpanInterval c(start().start(), start().end(), end().end()+1, maxInterval_.end(), maxInterval_);
-		c.normalize(collect);
+		if (c.normalize()) collect.insert(c.normalize().get());
 	}
 	if (start().end() != maxInterval_.end()) {
 		SpanInterval d(start().end()+1, maxInterval_.end(), maxInterval_.start(), maxInterval_.end(), maxInterval_);
-		d.normalize(collect);
+		if (d.normalize()) collect.insert(d.normalize().get());
 	}
 }
 
@@ -183,7 +168,7 @@ void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& 
 	std::set<SpanInterval> compliment;
 	remove.compliment(compliment);
 	for (std::set<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
-		collect.insert(this->intersection(*it));
+		collect.insert(intersection(*this, *it));
 	}
 }
 
@@ -198,3 +183,30 @@ std::string SpanInterval::toString() const {
 	return str.str();
 }
 
+SpanInterval intersection(const SpanInterval& a, const SpanInterval& b) {
+	return SpanInterval(std::max(a.start().start(), b.start().start()),
+			std::min(a.start().end(), b.start().end()),
+			std::max(a.end().start(), b.end().start()),
+			std::min(a.end().end(), b.end().end()), a.maxInterval_);	// TODO: more sensible way to pick max interval
+}
+
+SpanInterval siSatisfying(Interval::INTERVAL_RELATION relation, const SpanInterval& si) {
+	//SISet result(false, set.maxInterval_);	// not liquid!
+
+	unsigned int neg_inf = si.maxInterval_.start();
+	unsigned int pos_inf = si.maxInterval_.end();
+
+	switch (relation) {
+		case Interval::EQUALS:
+			return si;
+		case Interval::LESSTHAN:
+			return SpanInterval(si.end().start()+2, pos_inf, neg_inf, pos_inf, si.maxInterval_);
+		case Interval::GREATERTHAN:
+			return SpanInterval(neg_inf, pos_inf, neg_inf, si.start().end()-2);
+		default:
+			std::runtime_error e("SpanInterval::siSatisfying() not implemented for relation!");
+			throw e;
+	}
+
+	//return result;
+}

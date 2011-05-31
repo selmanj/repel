@@ -17,8 +17,8 @@ public:
 	SISet(bool forceLiquid=false,
 			const Interval& maxInterval=Interval(0, UINT_MAX))
 	: forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
-	SISet(const SpanInterval& si, bool forceLiquid=false,
-			const Interval& maxInterval=Interval(0, UINT_MAX));
+//	SISet(const SpanInterval& si, bool forceLiquid=false,
+//			const Interval& maxInterval=Interval(0, UINT_MAX));
 	template <class InputIterator>
 	SISet(InputIterator begin, InputIterator end,
 			bool forceLiquid=false,
@@ -43,7 +43,6 @@ public:
 	std::string toString() const;
 
 	friend SISet intersection(const SISet& a, const SISet& b);
-
 private:
 	bool forceLiquid_;
 	std::set<SpanInterval> set_;

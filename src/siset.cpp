@@ -13,6 +13,7 @@
 #include "siset.h"
 #include "spaninterval.h"
 
+/*
 SISet::SISet(const SpanInterval& si, bool forceLiquid,
 			const Interval& maxInterval)
 	: forceLiquid_(forceLiquid), maxInterval_(maxInterval) {
@@ -20,6 +21,7 @@ SISet::SISet(const SpanInterval& si, bool forceLiquid,
 	copy.setMaxInterval(maxInterval_);
 	set_.insert(copy);
 }
+*/
 
 SISet SISet::compliment() const {
 
@@ -47,9 +49,9 @@ SISet SISet::compliment() const {
 		std::set<SpanInterval> intersected;
 		for (std::set<SpanInterval>::const_iterator lIt = first.begin(); lIt != first.end(); lIt++) {
 			for (std::set<SpanInterval>::const_iterator sIt = second.begin(); sIt != second.end(); sIt++) {
-				SpanInterval intersection = lIt->intersection(*sIt);
-				if (!intersection.isEmpty()) {
-					intersected.insert(intersection);
+				SpanInterval intersect = intersection(*lIt, *sIt);
+				if (!intersect.isEmpty()) {
+					intersected.insert(intersect);
 				}
 			}
 		}
@@ -75,7 +77,7 @@ bool SISet::isDisjoint() const {
 			if (sIt == fIt) {
 				continue;
 			}
-			if (!fIt->intersection(*sIt).isEmpty()) {
+			if (!intersection(*fIt, *sIt).isEmpty()) {
 				return false;
 			}
 		}
@@ -97,7 +99,7 @@ void SISet::setMaxInterval(const Interval& maxInterval) {
 void SISet::add(const SpanInterval &s) {
 	SpanInterval sCopy = s;
 	sCopy.setMaxInterval(maxInterval_);
-	if (!sCopy.isEmpty()) {sCopy = sCopy.normalize();};
+	if (!sCopy.isEmpty()) {sCopy = sCopy.normalize().get();};
 	if (forceLiquid_ && !sCopy.isLiquid()) {
 		std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
 		throw e;
@@ -119,7 +121,7 @@ void SISet::makeDisjoint() {
 		for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
 			std::set<SpanInterval>::const_iterator sIt = fIt;
 			sIt++;
-			if (sIt != set_.end() && !fIt->intersection(*sIt).isEmpty()) {
+			if (sIt != set_.end() && !intersection(*fIt, *sIt).isEmpty()) {
 				// merge the two
 				unsigned int start = fIt->start().start();
 				unsigned int end = sIt->end().end();
@@ -137,7 +139,7 @@ void SISet::makeDisjoint() {
 				if (sIt == fIt) {
 					continue;
 				}
-				SpanInterval intersect = fIt->intersection(*sIt);
+				SpanInterval intersect = intersection(*fIt, *sIt);
 				if (!intersect.isEmpty()) {
 
 					// remove it from the second set
@@ -149,7 +151,7 @@ void SISet::makeDisjoint() {
 					set_.erase(toRemove);
 
 					BOOST_FOREACH(SpanInterval sp, leftover) {
-						if (!sp.isEmpty()) sp = sp.normalize();
+						if (!sp.isEmpty()) sp = sp.normalize().get();
 						if (!sp.isEmpty()) set_.insert(sp);
 					}
 				}
@@ -194,6 +196,7 @@ std::string SISet::toString() const {
 
 SISet intersection(const SISet& a, const SISet& b) {
 	SISet result;
+	result.setMaxInterval(a.maxInterval_);	// TODO: better way?
 	if (a.forceLiquid() && b.forceLiquid()) {
 		result.setForceLiquid(true);
 	} else {
@@ -202,12 +205,13 @@ SISet intersection(const SISet& a, const SISet& b) {
 	// pairwise intersection - ugh
 	BOOST_FOREACH(SpanInterval siA, a.set_) {
 		BOOST_FOREACH(SpanInterval siB, b.set_) {
-			SpanInterval intersect = siA.intersection(siB);
+			SpanInterval intersect = intersection(siA, siB);
 			if (!intersect.isEmpty()) {
-				intersect = intersect.normalize();
+				intersect = intersect.normalize().get();	// guaranteed to have a return value
 				result.add(intersect);
 			}
 		}
 	}
 	return result;
 }
+
