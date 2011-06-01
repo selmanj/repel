@@ -33,7 +33,8 @@ public:
 	template <class FactsForwardIterator, class FormForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd)
-			: maxInterval_(0,0) {
+			: maxInterval_(0,0), formulas_(formulasBegin, formulasEnd) {
+
 		// create a class for collecting predicate names
 		PredCollector predCollector;
 
@@ -92,20 +93,12 @@ public:
 	};
 	virtual ~Domain() {};
 
-	bool isLiquid(const std::string& predicate) const;
+	const std::vector<WSentence>& formulas() const {return formulas_;};
 	Model defaultModel() const {return observations_;};
 	Interval maxInterval() const {return maxInterval_;};
-	void setMaxInterval(const Interval& maxInterval) {
-		maxInterval_ = Interval(maxInterval);
-		Model resized;
-		for (std::map<const Atom, SISet>::iterator it = observations_.begin(); it != observations_.end(); it++) {
-			const Atom atom = it->first;
-			SISet set = it->second;
-			set.setMaxInterval(maxInterval);
-			resized.insert(std::pair<const Atom, SISet>(atom,set));
-		}
-		observations_.swap(resized);
-	}
+	void setMaxInterval(const Interval& maxInterval);
+	bool isLiquid(const std::string& predicate) const;
+	unsigned int score(const WSentence& s, const Model& m) const;
 
 	SISet satisfied(const Sentence& s, const Model& m) const;
 	SISet satisfiedAtom(const Atom& a, const Model& m) const;

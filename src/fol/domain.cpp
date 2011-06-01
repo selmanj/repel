@@ -4,9 +4,26 @@
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 
+void Domain::setMaxInterval(const Interval& maxInterval) {
+	maxInterval_ = Interval(maxInterval);
+	Model resized;
+	for (std::map<const Atom, SISet>::iterator it = observations_.begin(); it != observations_.end(); it++) {
+		const Atom atom = it->first;
+		SISet set = it->second;
+		set.setMaxInterval(maxInterval);
+		resized.insert(std::pair<const Atom, SISet>(atom,set));
+	}
+	observations_.swap(resized);
+}
+
 bool Domain::isLiquid(const std::string& predicate) const {
 	// TODO: implement this sometime!
 	return true;
+}
+
+unsigned int Domain::score(const WSentence& s, const Model& m) const {
+	SISet sat = satisfied(*(s.sentence()), m);
+	return sat.size() * s.weight();
 }
 
 SISet Domain::satisfied(const Sentence& s, const Model& m) const {

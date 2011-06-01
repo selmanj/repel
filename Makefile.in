@@ -62,7 +62,8 @@ am__EXEEXT_1 = test/spanintervaltest$(EXEEXT) \
 PROGRAMS = $(bin_PROGRAMS)
 am_pel_OBJECTS = pel.$(OBJEXT) interval.$(OBJEXT) \
 	spaninterval.$(OBJEXT) constant.$(OBJEXT) follexer.$(OBJEXT) \
-	foltoken.$(OBJEXT) variable.$(OBJEXT) siset.$(OBJEXT)
+	foltoken.$(OBJEXT) variable.$(OBJEXT) siset.$(OBJEXT) \
+	domain.$(OBJEXT)
 pel_OBJECTS = $(am_pel_OBJECTS)
 pel_LDADD = $(LDADD)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
@@ -218,7 +219,7 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CXXFLAGS = $(BOOST_CPPFLAGS)
 AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 dist_noinst_SCRIPTS = autogen.sh
-pel_SOURCES = src/pel.cpp src/interval.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp
+pel_SOURCES = src/pel.cpp src/interval.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp
@@ -490,6 +491,20 @@ siset.obj: src/siset.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o siset.obj `if test -f 'src/siset.cpp'; then $(CYGPATH_W) 'src/siset.cpp'; else $(CYGPATH_W) '$(srcdir)/src/siset.cpp'; fi`
 
+domain.o: src/fol/domain.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domain.o -MD -MP -MF $(DEPDIR)/domain.Tpo -c -o domain.o `test -f 'src/fol/domain.cpp' || echo '$(srcdir)/'`src/fol/domain.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domain.Tpo $(DEPDIR)/domain.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/domain.cpp' object='domain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domain.o `test -f 'src/fol/domain.cpp' || echo '$(srcdir)/'`src/fol/domain.cpp
+
+domain.obj: src/fol/domain.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domain.obj -MD -MP -MF $(DEPDIR)/domain.Tpo -c -o domain.obj `if test -f 'src/fol/domain.cpp'; then $(CYGPATH_W) 'src/fol/domain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/domain.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domain.Tpo $(DEPDIR)/domain.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/domain.cpp' object='domain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domain.obj `if test -f 'src/fol/domain.cpp'; then $(CYGPATH_W) 'src/fol/domain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/domain.cpp'; fi`
+
 atomtest.o: test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT atomtest.o -MD -MP -MF $(DEPDIR)/atomtest.Tpo -c -o atomtest.o `test -f 'test/atomtest.cpp' || echo '$(srcdir)/'`test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/atomtest.Tpo $(DEPDIR)/atomtest.Po
@@ -517,20 +532,6 @@ domaintest.obj: test/domaintest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/domaintest.cpp' object='domaintest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domaintest.obj `if test -f 'test/domaintest.cpp'; then $(CYGPATH_W) 'test/domaintest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/domaintest.cpp'; fi`
-
-domain.o: src/fol/domain.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domain.o -MD -MP -MF $(DEPDIR)/domain.Tpo -c -o domain.o `test -f 'src/fol/domain.cpp' || echo '$(srcdir)/'`src/fol/domain.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domain.Tpo $(DEPDIR)/domain.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/domain.cpp' object='domain.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domain.o `test -f 'src/fol/domain.cpp' || echo '$(srcdir)/'`src/fol/domain.cpp
-
-domain.obj: src/fol/domain.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domain.obj -MD -MP -MF $(DEPDIR)/domain.Tpo -c -o domain.obj `if test -f 'src/fol/domain.cpp'; then $(CYGPATH_W) 'src/fol/domain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/domain.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/domain.Tpo $(DEPDIR)/domain.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/domain.cpp' object='domain.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domain.obj `if test -f 'src/fol/domain.cpp'; then $(CYGPATH_W) 'src/fol/domain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/domain.cpp'; fi`
 
 follexertest.o: test/follexertest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT follexertest.o -MD -MP -MF $(DEPDIR)/follexertest.Tpo -c -o follexertest.o `test -f 'test/follexertest.cpp' || echo '$(srcdir)/'`test/follexertest.cpp

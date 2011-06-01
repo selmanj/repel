@@ -1,5 +1,5 @@
 # test formulas file, again not much good here
 
-10: P(?x,?y) -> S(?x, ?y)
-5: Q(?x) -> QQ(?x)
+10: P(a,b) -> P(b, c)
+5: P(a,b) ; Q(a) -> P(b,c)
 

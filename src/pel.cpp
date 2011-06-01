@@ -50,13 +50,19 @@ int main(int argc, char* argv[]) {
 	}
 
 	boost::shared_ptr<Domain> d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
-	Model observations = d->defaultModel();
+	Model model = d->defaultModel();
 
-	for (Model::const_iterator it = observations.begin(); it != observations.end(); it++) {
-		Atom atom = it->first;
-		SISet when = it->second;
-
-		std::cout << "Atom: " << atom.toString() << " @ " << when.toString() << std::endl;
+	unsigned int sum = 0;
+	// evaluate the weight of each formula in the domain
+	BOOST_FOREACH(const WSentence formula, d->formulas()) {
+		SISet satisfied = d->satisfied(*(formula.sentence()), model);
+		unsigned int weight = d->score(formula, model);
+		sum += weight;
+		std::cout << "formula: (" << formula.sentence()->toString() << ")" << std::endl;
+		std::cout << "\tsatisfied @ " << satisfied.toString() << std::endl;
+		std::cout << "\tscore contributed: " << weight << std::endl;
 	}
+	std::cout << "total score of model: " << sum << std::endl;
+
 	return 0;
 }
