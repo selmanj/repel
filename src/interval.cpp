@@ -128,3 +128,35 @@ std::string Interval::relationToString(INTERVAL_RELATION rel) {
 	}
 }
 
+Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel) {
+	switch (rel) {
+		case Interval::STARTS:
+			return Interval::STARTSI;
+		case Interval::STARTSI:
+			return Interval::STARTS;
+		case Interval::MEETS:
+			return Interval::MEETSI;
+		case Interval::MEETSI:
+			return Interval::MEETS;
+		case Interval::DURING:
+			return Interval::DURINGI;
+		case Interval::DURINGI:
+			return Interval::DURING;
+		case Interval::FINISHES:
+			return Interval::FINISHESI;
+		case Interval::FINISHESI:
+			return Interval::FINISHES;
+		case Interval::OVERLAPS:
+			return Interval::OVERLAPSI;
+		case Interval::OVERLAPSI:
+			return Interval::OVERLAPS;
+		case Interval::GREATERTHAN:
+			return Interval::LESSTHAN;
+		case Interval::LESSTHAN:
+			return Interval::GREATERTHAN;
+		case Interval::EQUALS:
+			throw std::runtime_error("no inverse interval for Interval::EQUALS");
+		default:
+			throw std::runtime_error("given an interval relation that we have no inverse for");
+	}
+}

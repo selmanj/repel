@@ -36,6 +36,10 @@ SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 		SISet set = satisfiedDiamond(*d, m);
 		//set.makeDisjoint();
 		return set;
+	} else if (dynamic_cast<const Conjunction*>(&s) != 0) {
+		const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
+		SISet set = satisfiedConjunction(*c, m);
+		return set;
 	}
 	// made it this far, unimplemented!
 	std::runtime_error e("Domain::satisfied not implemented yet!");
@@ -84,6 +88,23 @@ SISet Domain::satisfiedDiamond(const DiamondOp& d, const Model& m) const {
 		}
 	}
 	return newsat;
+}
+
+SISet Domain::satisfiedConjunction(const Conjunction& c, const Model& m) const {
+	SISet leftSat = satisfied(*(c.left()), m);
+	SISet rightSat = satisfied(*(c.right()), m);
+
+	SISet result(false, leftSat.maxInterval());
+
+	BOOST_FOREACH(SpanInterval i, leftSat.set()) {
+		BOOST_FOREACH(SpanInterval j, rightSat.set()) {
+			BOOST_FOREACH(Interval::INTERVAL_RELATION rel, c.relations()) {
+				result.add(composedOf(i, j, rel));
+			}
+		}
+	}
+
+	return result;
 }
 
 SISet Domain::liqSatisfied(const Sentence& s, const Model& m) const {

@@ -54,4 +54,5 @@ private:
 	unsigned int s_, e_;
 };
 
+Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel);
 #endif

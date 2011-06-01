@@ -112,6 +112,7 @@ public:
 	SISet satisfiedNegation(const Negation& n, const Model& m) const;
 	SISet satisfiedDisjunction(const Disjunction& d, const Model& m) const;
 	SISet satisfiedDiamond(const DiamondOp& d, const Model& m) const;
+	SISet satisfiedConjunction(const Conjunction& c, const Model& m) const;
 
 	SISet liqSatisfied(const Sentence& s, const Model& m) const;
 	SISet liqSatisfiedAtom(const Atom& a, const Model& m) const;

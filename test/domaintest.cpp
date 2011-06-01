@@ -71,6 +71,16 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	query = getAsSentence("<>{s,f} Q(a,b)");
 	trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(0, 14), (5, 15)], [(5, 15), (6, 1000)]}");
+
+	// conjunction
+	query = getAsSentence("P(a,b) ; Q(a,b)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	trueAt.makeDisjoint();
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(1, 10), (5, 10)], [(1, 10), (11, 15)]}");
+
+	query = getAsSentence("P(a,b) ^ Q(a,b)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:10]}");
 }
 
 boost::shared_ptr<Sentence> getAsSentence(std::string str) {

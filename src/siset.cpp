@@ -97,15 +97,16 @@ void SISet::setMaxInterval(const Interval& maxInterval) {
 }
 
 void SISet::add(const SpanInterval &s) {
+	if (s.isEmpty()) return;
 	SpanInterval sCopy = s;
 	sCopy.setMaxInterval(maxInterval_);
-	if (!sCopy.isEmpty()) {sCopy = sCopy.normalize().get();};
+	sCopy = sCopy.normalize().get();
 	if (forceLiquid_ && !sCopy.isLiquid()) {
 		std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
 		throw e;
 	}
 
-	if (!sCopy.isEmpty()) set_.insert(sCopy);
+	set_.insert(sCopy);
 }
 
 void SISet::add(const SISet &b) {
@@ -228,3 +229,25 @@ SISet span(const SpanInterval& a, const SpanInterval& b) {
 
 	return set;
 };
+
+SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVAL_RELATION rel) {
+	SISet empty(false, i.maxInterval());
+
+	if (rel == Interval::EQUALS) {
+		SpanInterval intersect = intersection(i, j);
+		SISet result(false, i.maxInterval());
+		result.add(intersect);
+		return result;
+	}
+
+	boost::optional<SpanInterval> iPrimeOpt = j.satisfiesRelation(inverseRelation(rel));
+	if (!iPrimeOpt) return empty;
+	SpanInterval iPrime = iPrimeOpt.get();
+	boost::optional<SpanInterval> jPrimeOpt = i.satisfiesRelation(rel);
+	if (!jPrimeOpt) return empty;
+	SpanInterval jPrime = jPrimeOpt.get();
+	SpanInterval iIntersect = intersection(iPrime, i);
+	SpanInterval jIntersect = intersection(jPrime, j);
+
+	return span(iIntersect, jIntersect);
+}

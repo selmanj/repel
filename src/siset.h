@@ -50,7 +50,7 @@ private:
 
 SISet intersection(const SISet& a, const SISet& b);
 SISet span(const SpanInterval& a, const SpanInterval& b);
-
+SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION);
 
 
 #endif /* SISET_H_ */
