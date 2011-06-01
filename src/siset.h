@@ -29,6 +29,7 @@ public:
 	bool isDisjoint() const;
 	SISet compliment() const;
 	Interval maxInterval() const;
+	unsigned int size() const;
 
 	// modifiers
 	void add(const SpanInterval &s);

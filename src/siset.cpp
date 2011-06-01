@@ -69,6 +69,18 @@ Interval SISet::maxInterval() const {
 	return maxInterval_;
 }
 
+unsigned int SISet::size() const {
+	// look, this doesn't mean much if the list isn't disjoint
+	SISet copy(*this);
+	copy.makeDisjoint();
+
+	unsigned int sum = 0;
+	BOOST_FOREACH(SpanInterval sp, copy.set()) {
+		sum += sp.size();
+	}
+	return sum;
+}
+
 // O(n^2) for every call :(  perhaps set a flag instead?
 bool SISet::isDisjoint() const {
 	for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {

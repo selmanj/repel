@@ -128,3 +128,13 @@ BOOST_AUTO_TEST_CASE( spanIntervalspan ) {
 		std::cout << "si = " << sp.toString() << std::endl;
 	}
 }
+
+BOOST_AUTO_TEST_CASE( spanIntervalSize ) {
+	SpanInterval sp1(5,10,5,10);
+	SpanInterval sp2(1,5,3,6);
+	SpanInterval sp3(5,7,1,2);
+
+	BOOST_CHECK_EQUAL(sp1.size(), 21);
+	BOOST_CHECK_EQUAL(sp2.size(), 17);
+	BOOST_CHECK_EQUAL(sp3.size(), 0);
+}

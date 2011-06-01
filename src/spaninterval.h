@@ -39,6 +39,7 @@ public:
 	bool operator<=(const SpanInterval& b) const;
 
 	bool isEmpty() const;
+	unsigned int size() const;
 	bool isLiquid() const;
 	SpanInterval toLiquid() const;
 	boost::optional<SpanInterval> normalize() const;

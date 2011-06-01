@@ -89,6 +89,25 @@ bool SpanInterval::isEmpty() const {
 	return false;
 }
 
+unsigned int SpanInterval::size() const {
+	if (isEmpty()) return 0;
+
+	SpanInterval si = normalize().get();
+
+	unsigned int i = si.start().start();
+	unsigned int j = si.start().end();
+	unsigned int k = si.end().start();
+	unsigned int l = si.end().end();
+
+	if (j <= k) {
+		return ((l-k)+1) * ((j-i)+1);
+	}
+	// I'm so sorry about the below formula; TODO: rewrite this nicer
+	return ((k-i)+1) * ((l-k)+1)
+			  + (j-k)*(l+1) - (j*(j+1))/2 + (k*(k+1))/2;
+
+}
+
 bool SpanInterval::isLiquid() const {
 	return (start().start() == end().start() && start().end() == end().end());
 }
