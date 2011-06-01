@@ -25,6 +25,8 @@ int main(int argc, char* argv[]) {
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	    ("help", "produce help message")
+	    ("max", po::value<unsigned int>(), "maximum value an interval endpoint can take")
+	    ("min", po::value<unsigned int>(), "minimum value an interval endpoint can take")
 	;
 
 	po::options_description hidden("Hidden options");
@@ -50,13 +52,21 @@ int main(int argc, char* argv[]) {
 	}
 
 	boost::shared_ptr<Domain> d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
+	if (vm.count("max") || vm.count("min")) {
+		Interval maxInt = d->maxInterval();
+		if (vm.count("max")) maxInt.setEnd(vm["max"].as<unsigned int>());
+		if (vm.count("min")) maxInt.setStart(vm["min"].as<unsigned int>());
+		d->setMaxInterval(maxInt);
+	}
+
 	Model model = d->defaultModel();
 
-	unsigned int sum = 0;
+	std::cout << "model size: " << model.size() << std::endl;
+	unsigned long sum = 0;
 	// evaluate the weight of each formula in the domain
 	BOOST_FOREACH(const WSentence formula, d->formulas()) {
 		SISet satisfied = d->satisfied(*(formula.sentence()), model);
-		unsigned int weight = d->score(formula, model);
+		unsigned long weight = d->score(formula, model);
 		sum += weight;
 		std::cout << "formula: (" << formula.sentence()->toString() << ")" << std::endl;
 		std::cout << "\tsatisfied @ " << satisfied.toString() << std::endl;

@@ -11,7 +11,10 @@ void Domain::setMaxInterval(const Interval& maxInterval) {
 		const Atom atom = it->first;
 		SISet set = it->second;
 		set.setMaxInterval(maxInterval);
-		resized.insert(std::pair<const Atom, SISet>(atom,set));
+		if (set.size() != 0) {
+			std::cout << "resized set for atom: " << atom.toString() << " is : " << set.toString() << std::endl;
+			resized.insert(std::pair<const Atom, SISet>(atom,set));
+		}
 	}
 	observations_.swap(resized);
 }
@@ -21,7 +24,7 @@ bool Domain::isLiquid(const std::string& predicate) const {
 	return true;
 }
 
-unsigned int Domain::score(const WSentence& s, const Model& m) const {
+unsigned long Domain::score(const WSentence& s, const Model& m) const {
 	SISet sat = satisfied(*(s.sentence()), m);
 	return sat.size() * s.weight();
 }
@@ -72,7 +75,7 @@ SISet Domain::satisfiedAtom(const Atom& a, const Model& m) const {
 			set.setForceLiquid(false);
 			return set;
 		} else {
-			return SISet(false);
+			return SISet(false, maxInterval_);
 		}
 	}
 	// grounding out of atoms currently not implemented yet!
@@ -154,7 +157,7 @@ SISet Domain::liqSatisfiedAtom(const Atom& a, const Model& m) const {
 		set.setForceLiquid(true);
 		return set;
 	} else {
-		return SISet(true);
+		return SISet(true, maxInterval_);
 	}
 }
 

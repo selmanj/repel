@@ -29,7 +29,7 @@ public:
 	Interval const& maxInterval() const {return maxInterval_;};
 	void setStart(const Interval& start) {start_ = start;};
 	void setEnd(const Interval& end) {end_ = end;};
-	void setMaxInterval(const Interval& maxInterval);
+	boost::optional<SpanInterval> setMaxInterval(const Interval& maxInterval) const;
 
 	bool operator==(const SpanInterval& b) const;
 	bool operator!=(const SpanInterval& b) const;

@@ -31,17 +31,25 @@ SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigne
 {
 }
 
-void SpanInterval::setMaxInterval(const Interval& maxInterval) {
-	maxInterval_ = maxInterval;
+boost::optional<SpanInterval> SpanInterval::setMaxInterval(const Interval& maxInterval) const {
+	if (isEmpty()) {
+		return boost::optional<SpanInterval>();
+	}
+	// ensure we are working with normalized version
+	SpanInterval copy(*this);
+	copy = copy.normalize().get();
+	// ensure that this interval can still exist
+	if (copy.start().end() < maxInterval.start() || copy.end().start() > maxInterval.end()) {
+		return boost::optional<SpanInterval>();
+	}
 	// i, j, k, l all must be within max interval
-	unsigned int i = std::min(std::max(start().start(), maxInterval_.start()), maxInterval_.end());
-	unsigned int j = std::min(std::max(start().end(), maxInterval_.start()), maxInterval_.end());
-	unsigned int k = std::min(std::max(end().start(), maxInterval_.start()), maxInterval_.end());
-	unsigned int l = std::min(std::max(end().end(), maxInterval_.start()), maxInterval_.end());
+	unsigned int i = std::min(std::max(copy.start().start(), maxInterval_.start()), maxInterval_.end());
+	unsigned int j = std::min(std::max(copy.start().end(), maxInterval_.start()), maxInterval_.end());
+	unsigned int k = std::min(std::max(copy.end().start(), maxInterval_.start()), maxInterval_.end());
+	unsigned int l = std::min(std::max(copy.end().end(), maxInterval_.start()), maxInterval_.end());
 
-	setStart(Interval(i,j));
-	setEnd(Interval(k,l));
-
+	copy = SpanInterval(i, j, k, l, maxInterval);
+	return copy.normalize();
 }
 
 bool SpanInterval::operator==(const SpanInterval& b) const {

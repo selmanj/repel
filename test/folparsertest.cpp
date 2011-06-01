@@ -112,5 +112,5 @@ BOOST_AUTO_TEST_CASE( weighted_formula_test ) {
 	form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
 
 	BOOST_CHECK_EQUAL(form.weight(), 0);
-	BOOST_CHECK_EQUAL(form.sentence()->toString(), "<>{m, mi} (p(x) ^ q(x) ^ r(x) ^ <> z(x))");
+	BOOST_CHECK_EQUAL(form.sentence()->toString(), "<>{m, mi} (p(x) ^{o} q(x) ; r(x) ; <> z(x))");
 }

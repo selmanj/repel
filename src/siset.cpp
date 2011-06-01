@@ -24,6 +24,16 @@ SISet::SISet(const SpanInterval& si, bool forceLiquid,
 */
 
 SISet SISet::compliment() const {
+	if (size() == 0) {
+		// compliment is max interval
+		SISet max(forceLiquid_, maxInterval_);
+		max.add(SpanInterval(maxInterval_.start(),
+								maxInterval_.end(),
+								maxInterval_.start(),
+								maxInterval_.end(),
+								maxInterval_));
+		return max;
+	}
 
 	// {A U B U C U.. }^c = A^c I B^c I ...
 	// {A U B U ..} intersect {C U D U } .. intersect D
@@ -102,8 +112,10 @@ void SISet::setMaxInterval(const Interval& maxInterval) {
 	std::set<SpanInterval> resized;
 	for (std::set<SpanInterval>::iterator it = set_.begin(); it != set_.end(); it++) {
 		SpanInterval si = *it;
-		si.setMaxInterval(maxInterval);
-		resized.insert(si);
+		boost::optional<SpanInterval> siOpt = si.setMaxInterval(maxInterval);
+		if (siOpt) {
+			resized.insert(siOpt.get());
+		}
 	}
 	set_.swap(resized);
 }

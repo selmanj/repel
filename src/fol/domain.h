@@ -98,7 +98,7 @@ public:
 	Interval maxInterval() const {return maxInterval_;};
 	void setMaxInterval(const Interval& maxInterval);
 	bool isLiquid(const std::string& predicate) const;
-	unsigned int score(const WSentence& s, const Model& m) const;
+	unsigned long score(const WSentence& s, const Model& m) const;
 
 	SISet satisfied(const Sentence& s, const Model& m) const;
 	SISet satisfiedAtom(const Atom& a, const Model& m) const;
