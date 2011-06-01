@@ -16,6 +16,7 @@
 #include <boost/foreach.hpp>
 #include <iostream>
 #include <set>
+#include <iterator>
 
 BOOST_AUTO_TEST_CASE( basic_test )
 {
@@ -94,6 +95,7 @@ BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
 	sp2 = sp1.satisfiesRelation(Interval::MEETS);
 	BOOST_CHECK(!sp2);
 
+
 	sp1 = SpanInterval(1,4,7,9, maxInterval);
 	sp2 = sp1.satisfiesRelation(Interval::OVERLAPS);
 	BOOST_CHECK(sp2);
@@ -110,4 +112,19 @@ BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
 	sp2 = sp1.satisfiesRelation(Interval::STARTSI);
 	BOOST_CHECK(sp2);
 	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(1, 4), (1, 8)]");
+}
+
+BOOST_AUTO_TEST_CASE( spanIntervalspan ) {
+	SpanInterval sp1(1,5,6,10);
+	SpanInterval sp2(3,7,9,11);
+
+	SISet set = span(sp1, sp2);
+	BOOST_FOREACH(SpanInterval sp, set.set()) {
+		std::cout << "si = " << sp.toString() << std::endl;
+	}
+	set.makeDisjoint();
+
+	BOOST_FOREACH(SpanInterval sp, set.set()) {
+		std::cout << "si = " << sp.toString() << std::endl;
+	}
 }

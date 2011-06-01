@@ -27,7 +27,6 @@ BOOST_AUTO_TEST_CASE( sat_test )
 
 	std::vector<WSentence> formulas;
 
-
 	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
 	d.setMaxInterval(Interval(0,1000));
 	boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(factvec.front().first);
@@ -42,7 +41,7 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	//lets try disjunction
 	query = getAsSentence("P(a,b) v Q(a,b)");
 	trueAt = d.satisfied(*query, d.defaultModel());
-	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:10], [(5, 10), (11, 15)], [11:15]}");
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:10], [5:15]}");
 
 	// a bit more complicated
 	query = getAsSentence("!(P(a,b) -> Q(a,b))");
@@ -63,6 +62,15 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	query = getAsSentence("[ P(a,b) ^ Q(a,b) ]");
 	trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:10]}");
+
+	// diamond op
+	query = getAsSentence("<>{mi} Q(a,b)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(0, 14), (4, 14)]}");
+
+	query = getAsSentence("<>{s,f} Q(a,b)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(0, 14), (5, 15)], [(5, 15), (6, 1000)]}");
 }
 
 boost::shared_ptr<Sentence> getAsSentence(std::string str) {

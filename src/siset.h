@@ -10,8 +10,6 @@
 #include <set>
 #include "spaninterval.h"
 
-class SIFactory;
-
 class SISet {
 public:
 	SISet(bool forceLiquid=false,
@@ -43,12 +41,15 @@ public:
 	std::string toString() const;
 
 	friend SISet intersection(const SISet& a, const SISet& b);
+	friend SISet span(const SpanInterval& a, const SpanInterval& b);
 private:
 	bool forceLiquid_;
 	std::set<SpanInterval> set_;
 	Interval maxInterval_;
 };
 
+SISet intersection(const SISet& a, const SISet& b);
+SISet span(const SpanInterval& a, const SpanInterval& b);
 
 
 

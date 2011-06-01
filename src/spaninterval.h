@@ -10,9 +10,11 @@
 
 #include "interval.h"
 
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <climits>
 #include <set>
+#include <vector>
 
 class SpanInterval {
 public:
@@ -24,6 +26,7 @@ public:
 
 	Interval const& start() const {return start_;};
 	Interval const& end() const {return end_;};
+	Interval const& maxInterval() const {return maxInterval_;};
 	void setStart(const Interval& start) {start_ = start;};
 	void setEnd(const Interval& end) {end_ = end;};
 	void setMaxInterval(const Interval& maxInterval);
@@ -49,12 +52,12 @@ public:
 
 	friend SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
 
-
 private:
 	Interval start_, end_;
 	Interval maxInterval_;
 
 };
 
+SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
 
 #endif /* SPANINTERVAL_H */

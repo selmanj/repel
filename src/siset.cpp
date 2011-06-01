@@ -69,7 +69,7 @@ Interval SISet::maxInterval() const {
 	return maxInterval_;
 }
 
-// O(n^2) :(  perhaps set a flag instead?
+// O(n^2) for every call :(  perhaps set a flag instead?
 bool SISet::isDisjoint() const {
 	for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
 		for (std::set<SpanInterval>::const_iterator sIt = fIt; sIt != set_.end(); sIt++) {
@@ -213,5 +213,18 @@ SISet intersection(const SISet& a, const SISet& b) {
 		}
 	}
 	return result;
-}
+};
 
+SISet span(const SpanInterval& a, const SpanInterval& b) {
+	unsigned int j = std::min(a.start().end(), b.start().end());
+	unsigned int k = std::max(a.end().start(), b.end().start());
+
+	SISet set(false, a.maxInterval());
+
+	set.add(SpanInterval(a.start().start(), j, k, a.end().end(), a.maxInterval()));
+	set.add(SpanInterval(a.start().start(), j, k, b.end().end(), a.maxInterval()));
+	set.add(SpanInterval(b.start().start(), j, k, a.end().end(), a.maxInterval()));
+	set.add(SpanInterval(b.start().start(), j, k, b.end().end(), a.maxInterval()));
+
+	return set;
+};

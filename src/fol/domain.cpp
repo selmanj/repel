@@ -17,19 +17,24 @@ SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 	} else if (dynamic_cast<const Negation*>(&s) != 0) {
 		const Negation* n = dynamic_cast<const Negation *>(&s);
 		SISet set = satisfiedNegation(*n, m);
-		set.makeDisjoint();
+		//set.makeDisjoint();
 		return set;
 	} else if (dynamic_cast<const Disjunction*>(&s) != 0) {
 		const Disjunction* d = dynamic_cast<const Disjunction *>(&s);
 		SISet set = satisfiedDisjunction(*d, m);
-		set.makeDisjoint();
+		//set.makeDisjoint();
 		return set;
 	} else if (dynamic_cast<const LiquidOp*>(&s) != 0) {
 		const LiquidOp* l = dynamic_cast<const LiquidOp *>(&s);
 		SISet set = liqSatisfied(*(l->sentence()), m);
 		// remove liquid restriction
 		set.setForceLiquid(false);
-		set.makeDisjoint();
+		//set.makeDisjoint();
+		return set;
+	} else if (dynamic_cast<const DiamondOp*>(&s) != 0) {
+		const DiamondOp* d = dynamic_cast<const DiamondOp *>(&s);
+		SISet set = satisfiedDiamond(*d, m);
+		//set.makeDisjoint();
 		return set;
 	}
 	// made it this far, unimplemented!
@@ -67,6 +72,18 @@ SISet Domain::satisfiedDisjunction(const Disjunction& d, const Model& m) const {
 	SISet rightSat = satisfied(*(d.right()), m);
 	leftSat.add(rightSat);
 	return leftSat;
+}
+
+SISet Domain::satisfiedDiamond(const DiamondOp& d, const Model& m) const {
+	SISet sat = satisfied(*(d.sentence()), m);
+	SISet newsat(false, sat.maxInterval());
+	BOOST_FOREACH(SpanInterval sp, sat.set()) {
+		BOOST_FOREACH(Interval::INTERVAL_RELATION rel, d.relations()) {
+			boost::optional<SpanInterval> spR = sp.satisfiesRelation(rel);
+			if (spR) newsat.add(spR.get());
+		}
+	}
+	return newsat;
 }
 
 SISet Domain::liqSatisfied(const Sentence& s, const Model& m) const {

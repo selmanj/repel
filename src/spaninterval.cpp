@@ -155,8 +155,6 @@ void SpanInterval::liqCompliment(std::set<SpanInterval>& collect) const {
 }
 
 boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation) const {
-	//SISet result(false, set.maxInterval_);	// not liquid!
-
 	unsigned int neg_inf = maxInterval_.start();
 	unsigned int pos_inf = maxInterval_.end();
 
