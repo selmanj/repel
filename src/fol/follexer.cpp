@@ -84,7 +84,8 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 			token.setType(FOLParse::VARIABLE);
 			token.setContents(var);
 			tokens.push_back(token);
-		} else if (c == '-' && input->peek() == '>') {
+		} else if ((c == '-' && input->peek() == '>')
+				|| (c == '=' && input->peek() == '>')) {
 			input->get();
 			// implies
 			token.setType(FOLParse::IMPLIES);
@@ -99,6 +100,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 		} else {
 			switch (c) {	// simple cases below
 			case '!':
+			case '~':
 				token.setType(FOLParse::NOT);
 				token.setContents("!");
 				tokens.push_back(token);
@@ -134,10 +136,15 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 				tokens.push_back(token);
 				break;
 			case '^':
+			case '&':
 				token.setType(FOLParse::AND);
 				token.setContents("^");
 				tokens.push_back(token);
 				break;
+			case '|':
+				token.setType(FOLParse::OR);
+				token.setContents("v");
+				tokens.push_back(token);
 			case ',':
 				token.setType(FOLParse::COMMA);
 				token.setContents(",");
