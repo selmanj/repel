@@ -81,7 +81,9 @@ public:
 			SpanInterval interval = it->second;
 
 			// reinforce the max interval
-			interval.setMaxInterval(maxInterval_);
+			boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval_);
+			if (!opt) continue;
+			interval = opt.get();
 			// TODO: we are hardwired for liquidity, come back and fix this later
 			SISet set(true, maxInterval_);
 
