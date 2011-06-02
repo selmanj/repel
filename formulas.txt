@@ -1,6 +1,23 @@
-# test formulas file, again not much good here
+# test formulas file
+#
+# format is: "weight: formula". 
+# Symbols:
+#   Atom: pred(constant, ..., constant)
+#     currently variables are not working (neither are types)
+#   Negation: ! or ~
+#   Disjunction: v or |
+#   Implication: -> or =>
+#   LiquidOp: [ <subformula ]
+#   Conjunction: ^{<relations>} or &{relations}
+#     with no relation given, defaults to = relation
+#     ";" is an alias for ^{m}
+#     multiple relations are separated by commas, ie P(x) ^{m,mi} Q(x)
+#   Diamond: <>{<relations>} <atom>
+#     note that diamondop has pretty high precedence so you may need ()s
+#     relations are specified as before
+#        
 
 10: P(a,b) -> P(b, c)
-5: P(a,b) ; Q(a) => P(b,c)
-1: Q(a) & P(a,b)
+5: P(a,b) ; Q(a) -> P(b,c)
+1: Q(a) ^ P(a,b)
 

@@ -1,4 +1,11 @@
-# test facts file, nothing much good here.
+# test facts file
+#
+# facts are given as "groundAtom @ interval".  currently interval MUST be
+# liquid.
+# 
+# the max interval is by default determined by the smallest/largest values 
+# mentioned here.  to override this, specify --min or --max on the command line
+
 
 P(a,b) @ [1:10]
 P(b,c) @ [1:5]
