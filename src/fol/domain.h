@@ -53,8 +53,8 @@ public:
 				continue;
 			}
 			interval = norm.get();
-			smallest = std::min(interval.start().start(), smallest);
-			largest = std::max(interval.end().end(), largest);
+			smallest = (std::min)(interval.start().start(), smallest);
+			largest = (std::max)(interval.end().end(), largest);
 		}
 		maxInterval_ = Interval(smallest, largest);
 

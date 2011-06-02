@@ -1,13 +1,14 @@
 #include "domain.h"
 #include "fol.h"
 #include "atom.h"
+
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 
 void Domain::setMaxInterval(const Interval& maxInterval) {
 	maxInterval_ = Interval(maxInterval);
 	Model resized;
-	for (std::map<const Atom, SISet>::iterator it = observations_.begin(); it != observations_.end(); it++) {
+	for (Model::iterator it = observations_.begin(); it != observations_.end(); it++) {
 		const Atom atom = it->first;
 		SISet set = it->second;
 		set.setMaxInterval(maxInterval);
