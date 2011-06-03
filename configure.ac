@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.50)
-AC_INIT(pel, 0.1, selman at eecs.oregonstate.edu)
+AC_INIT(pel, 0.2, selman at eecs.oregonstate.edu)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_SRCDIR([src/pel.cpp])
 AM_CONFIG_HEADER([config.h])
