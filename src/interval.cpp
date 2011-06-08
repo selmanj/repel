@@ -155,7 +155,7 @@ Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel) {
 		case Interval::LESSTHAN:
 			return Interval::GREATERTHAN;
 		case Interval::EQUALS:
-			throw std::runtime_error("no inverse interval for Interval::EQUALS");
+			return Interval::EQUALS;
 		default:
 			throw std::runtime_error("given an interval relation that we have no inverse for");
 	}

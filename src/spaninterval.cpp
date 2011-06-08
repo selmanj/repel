@@ -185,49 +185,73 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
 	unsigned int neg_inf = maxInterval_.start();
 	unsigned int pos_inf = maxInterval_.end();
 
+	// to make it easy on ourselves, normalize
+	if (!normalize()) { return boost::optional<SpanInterval>(); }
+	SpanInterval n = normalize().get();
+
+	// easy names - [[i,j], [k,l]]
+	const unsigned int i = n.start().start();
+	const unsigned int j = n.start().end();
+	const unsigned int k = n.end().start();
+	const unsigned int l = n.end().end();
+
 	switch (relation) {
 		case Interval::EQUALS:
-			return normalize();
+			return n;
 		case Interval::LESSTHAN:
-			if (pos_inf-2 < end().start()) return boost::optional<SpanInterval>();
-			return SpanInterval(end().start()+2, pos_inf, neg_inf, pos_inf, maxInterval_).normalize();
+			if (k == pos_inf || k == pos_inf-1) return boost::optional<SpanInterval>();
+			return SpanInterval(k+2, pos_inf, neg_inf, pos_inf, maxInterval_).normalize();
 		case Interval::GREATERTHAN:
-			if (neg_inf+2 > start().end()) return boost::optional<SpanInterval>();
-			return SpanInterval(neg_inf, pos_inf, neg_inf, start().end()-2, maxInterval_).normalize();
+			if (j == neg_inf || j == neg_inf+1) return boost::optional<SpanInterval>();
+			return SpanInterval(neg_inf, pos_inf, neg_inf, j-2, maxInterval_).normalize();
 		case Interval::MEETS:
-			if (pos_inf-1 < end().start() || pos_inf-1 < end().end())
+			if (k == pos_inf)
 				return boost::optional<SpanInterval>();
-			return SpanInterval(end().start()+1, end().end()+1, neg_inf, pos_inf, maxInterval_).normalize();
+			if (l == pos_inf)
+				return SpanInterval(k+1, pos_inf, neg_inf, pos_inf, maxInterval_).normalize();
+			return SpanInterval(k+1, l+1, neg_inf, pos_inf, maxInterval_).normalize();
 		case Interval::MEETSI:
-			if (neg_inf+1 > start().start() || neg_inf+1 > start().end())
+			if (j == neg_inf)
 				return boost::optional<SpanInterval>();
-			return SpanInterval(neg_inf, pos_inf, start().start()-1, start().end()-1, maxInterval_).normalize();
+			if (i == neg_inf)
+				return SpanInterval(neg_inf, pos_inf, neg_inf, j-1, maxInterval_).normalize();
+			return SpanInterval(neg_inf, pos_inf, i-1, j-1, maxInterval_).normalize();
 		case Interval::OVERLAPS:
-			if (pos_inf-1 < end().start() || pos_inf-1 < start().start()) return boost::optional<SpanInterval>();
-			return SpanInterval(start().start()+1, end().end(), end().start()+1, pos_inf, maxInterval_).normalize();
+			if (k == pos_inf || i == pos_inf) return boost::optional<SpanInterval>();
+			if (i == k) {
+				// special case here
+				if (k >= pos_inf-1 ) return boost::optional<SpanInterval>();
+				return SpanInterval(i+1, l, k+2, pos_inf, maxInterval_).normalize();
+			}
+			return SpanInterval(i+1, l, k+1, pos_inf, maxInterval_).normalize();
 		case Interval::OVERLAPSI:
-			if (neg_inf+1 > start().end() || neg_inf+1 > end().end()) return boost::optional<SpanInterval>();
-			return SpanInterval(neg_inf, start().end()-1, start().start(), end().end()-1, maxInterval_).normalize();
+			if (j == neg_inf || l == neg_inf) return boost::optional<SpanInterval>();
+			if (j == l) {
+				// special case here
+				if (j <= neg_inf+1) return boost::optional<SpanInterval>();
+				return SpanInterval(neg_inf, j-2, i, l-1, maxInterval_).normalize();
+			}
+			return SpanInterval(neg_inf, j-1, i, l-1, maxInterval_).normalize();
 		case Interval::STARTS:
-			if (pos_inf-1 < end().start()) return boost::optional<SpanInterval>();
-			return SpanInterval(start().start(), start().end(), end().start()+1, pos_inf, maxInterval_).normalize();
+			if (k == pos_inf) return boost::optional<SpanInterval>();
+			return SpanInterval(i, j, k+1, pos_inf, maxInterval_).normalize();
 		case Interval::STARTSI:
-			if (neg_inf+1 > end().end()) return boost::optional<SpanInterval>();
-			return SpanInterval(start().start(), start().end(), neg_inf, end().end()-1, maxInterval_).normalize();
+			if (l == neg_inf) return boost::optional<SpanInterval>();
+			return SpanInterval(i, j, neg_inf, l-1, maxInterval_).normalize();
 		case Interval::FINISHES:
-			if (neg_inf+1 > start().end()) return boost::optional<SpanInterval>();
-			return SpanInterval(neg_inf, start().end()-1, end().start(), end().end(), maxInterval_).normalize();
+			if (j == neg_inf) return boost::optional<SpanInterval>();
+			return SpanInterval(neg_inf, j-1, k, l, maxInterval_).normalize();
 		case Interval::FINISHESI:
-			if (pos_inf-1 < start().start()) return boost::optional<SpanInterval>();
-			return SpanInterval(start().start()+1, pos_inf, end().start(), end().end(), maxInterval_).normalize();
+			if (i == pos_inf) return boost::optional<SpanInterval>();
+			return SpanInterval(i+1, pos_inf, k, l, maxInterval_).normalize();
 		case Interval::DURING:
-			if (neg_inf+1 > start().end() || pos_inf-1 < end().start())
+			if (j == neg_inf || k == pos_inf)
 				return boost::optional<SpanInterval>();
-			return SpanInterval(neg_inf, start().end()-1, end().start()+1, pos_inf, maxInterval_).normalize();
+			return SpanInterval(neg_inf, j-1, k+1, pos_inf, maxInterval_).normalize();
 		case Interval::DURINGI:
-			if (pos_inf-1 < start().start() || neg_inf+1 > end().end())
+			if (i == pos_inf || l == neg_inf)
 				return boost::optional<SpanInterval>();
-			return SpanInterval(start().start()+1, pos_inf, neg_inf, end().end()-1, maxInterval_).normalize();
+			return SpanInterval(i+1, pos_inf, neg_inf, l-1, maxInterval_).normalize();
 		default:
 			std::runtime_error e("SpanInterval::siSatisfying() not implemented for relation!");
 			throw e;

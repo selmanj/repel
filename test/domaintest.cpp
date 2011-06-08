@@ -83,6 +83,75 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:10]}");
 }
 
+BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
+	std::stringstream facts;
+	facts << "A(a) @ [1:10]";
+	facts << "B(b) @ [2:10]";
+
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+	std::vector<FOL::EventPair> factvec;
+	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+	std::vector<WSentence> formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+
+	boost::shared_ptr<Sentence> query = getAsSentence("<>{mi} A(a)");
+	SISet trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:9]}");
+
+	query = getAsSentence("<>{mi} B(b)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:9]}");
+}
+
+BOOST_AUTO_TEST_CASE( conjunctionMeetsTest ) {
+	std::stringstream facts;
+	facts << "Q(a) @ [1:1]";
+	facts << "R(a) @ [3:3]";
+
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+	std::vector<FOL::EventPair> factvec;
+	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+	std::vector<WSentence> formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+
+	boost::shared_ptr<Sentence> query = getAsSentence("Q(a) ; R(a)");
+	SISet trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
+}
+
+BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
+	std::stringstream facts;
+	facts << "Q(a) @ [1:1]";
+	facts << "R(a) @ [1:2]";
+	facts << "S(a) @ [2:3]";
+
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+	std::vector<FOL::EventPair> factvec;
+	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+	std::vector<WSentence> formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+
+	boost::shared_ptr<Sentence> query = getAsSentence("R(a) ^{o} R(a)");
+	SISet trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
+
+	query = getAsSentence("R(a) ^{o} Q(a)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
+
+	query = getAsSentence("Q(a) ^{o} R(a)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
+
+	query = getAsSentence("Q(a) ^{o} Q(a)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
+
+	query = getAsSentence("R(a) ^{o} S(a)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(1, 1), (3, 3)]}");
+}
+
 boost::shared_ptr<Sentence> getAsSentence(std::string str) {
 	std::istringstream stream(str);
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);

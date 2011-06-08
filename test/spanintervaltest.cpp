@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
 	boost::optional<SpanInterval> sp2 = sp1.satisfiesRelation(Interval::MEETS);
 	BOOST_CHECK(sp2);
 	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(7, 11), (7, 1000)]");
-	sp1 = SpanInterval(999, 1000, 999, 1000, maxInterval);
+	sp1 = SpanInterval(999, 1000, 1000, 1000, maxInterval);
 	sp2 = sp1.satisfiesRelation(Interval::MEETS);
 	BOOST_CHECK(!sp2);
 

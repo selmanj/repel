@@ -270,8 +270,10 @@ SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVA
 	boost::optional<SpanInterval> jPrimeOpt = i.satisfiesRelation(rel);
 	if (!jPrimeOpt) return empty;
 	SpanInterval jPrime = jPrimeOpt.get();
-	SpanInterval iIntersect = intersection(iPrime, i);
-	SpanInterval jIntersect = intersection(jPrime, j);
 
-	return span(iIntersect, jIntersect);
+	boost::optional<SpanInterval> iIntersect = intersection(iPrime, i).normalize();
+	boost::optional<SpanInterval> jIntersect = intersection(jPrime, j).normalize();
+
+	if (!iIntersect || !jIntersect) return empty;
+	return span(iIntersect.get(), jIntersect.get());
 }
