@@ -24,9 +24,9 @@ public:
 	Interval();
 	Interval(unsigned int start, unsigned int end);
 	unsigned int start() const {return s_;};
-	unsigned int end() const {return e_;};
+	unsigned int finish() const {return e_;};
 	void setStart(unsigned int start) {s_ = start;};
-	void setEnd(unsigned int end) {e_ = end;};
+	void setFinish(unsigned int end) {e_ = end;};
 
 	bool operator==(const Interval& b) const;
 	bool operator!=(const Interval& b) const;
@@ -55,4 +55,7 @@ private:
 };
 
 Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel);
+bool relationHolds(const Interval& a, Interval::INTERVAL_RELATION rel, const Interval& b);
+Interval span(const Interval& a, const Interval& b);
+
 #endif

@@ -13,6 +13,7 @@
 
 /* include all the elements needed for FOL sentences */
 #include "atom.h"
+#include "boollit.h"
 #include "conjunction.h"
 #include "constant.h"
 #include "diamondop.h"

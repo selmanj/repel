@@ -37,9 +37,9 @@ BOOST_AUTO_TEST_CASE( interval_test )
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
 	SpanInterval interval = FOLParse::parseInterval(tokens.begin(), tokens.end());
 	BOOST_CHECK_EQUAL(interval.start().start(), 1);
-	BOOST_CHECK_EQUAL(interval.start().end(), 1);
-	BOOST_CHECK_EQUAL(interval.end().start(), 11);
-	BOOST_CHECK_EQUAL(interval.end().end(), 11);
+	BOOST_CHECK_EQUAL(interval.start().finish(), 1);
+	BOOST_CHECK_EQUAL(interval.finish().start(), 11);
+	BOOST_CHECK_EQUAL(interval.finish().finish(), 11);
 }
 
 BOOST_AUTO_TEST_CASE( event_test) 

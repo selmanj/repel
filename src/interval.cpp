@@ -11,7 +11,7 @@ Interval::Interval(unsigned int start, unsigned int end)
 }
 
 bool Interval::operator==(const Interval& b) const {
-	return (start() == b.start() && end() == b.end());
+	return (start() == b.start() && finish() == b.finish());
 }
 
 bool Interval::operator!=(const Interval& b) const {
@@ -27,8 +27,8 @@ bool Interval::operator<(const Interval& b) const {
 	if (operator==(b)) return false;
 	if (start() < b.start()) return true;
 	if (start() > b.start()) return false;
-	if (end() < b.end()) return true;
-	if (end() > b.end()) return false;
+	if (finish() < b.finish()) return true;
+	if (finish() > b.finish()) return false;
 	return false; // should never hit this point
 }
 
@@ -160,3 +160,42 @@ Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel) {
 			throw std::runtime_error("given an interval relation that we have no inverse for");
 	}
 }
+
+bool relationHolds(const Interval& a, Interval::INTERVAL_RELATION rel, const Interval& b) {
+	switch(rel) {
+		case Interval::STARTS:
+			return a.starts(b);
+		case Interval::STARTSI:
+			return a.startsI(b);
+		case Interval::DURING:
+			return a.during(b);
+		case Interval::DURINGI:
+			return a.duringI(b);
+		case Interval::FINISHES:
+			return a.finishes(b);
+		case Interval::FINISHESI:
+			return a.finishesI(b);
+		case Interval::OVERLAPS:
+			return a.overlaps(b);
+		case Interval::OVERLAPSI:
+			return a.overlapsI(b);
+		case Interval::MEETS:
+			return a.meets(b);
+		case Interval::MEETSI:
+			return a.meetsI(b);
+		case Interval::LESSTHAN:
+			return a.before(b);
+		case Interval::GREATERTHAN:
+			return a.after(b);
+		case Interval::EQUALS:
+			return a.equals(b);
+		default:
+			throw std::runtime_error("given an interval relation that we don't handle");
+	}
+}
+
+Interval span(const Interval& a, const Interval& b) {
+	return Interval((a.start() < b.start() ? a.start() : b.start()),
+			(a.finish() > b.finish() ? a.finish() : b.finish()));
+}
+

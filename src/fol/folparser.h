@@ -303,7 +303,7 @@ template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::NOT, its)) {
 		consumeTokenType(FOLParse::NOT, its);
-		boost::shared_ptr<Sentence> s = doParseFormula(its);
+		boost::shared_ptr<Sentence> s = doParseFormula_paren(its);
 
 		boost::shared_ptr<Sentence> neg(new Negation(s));
 		return neg;
@@ -395,6 +395,14 @@ boost::shared_ptr<Sentence> doParseFormula_paren(iters<ForwardIterator> &its) {
 		boost::shared_ptr<Sentence> s = doParseFormula(its);
 		consumeTokenType(FOLParse::CLOSE_PAREN, its);
 		return s;
+	} else if (peekTokenType(FOLParse::TRUE, its)) {
+		consumeTokenType(FOLParse::TRUE, its);
+		boost::shared_ptr<Sentence> s(new BoolLit(true));
+		return s;
+	} else if (peekTokenType(FOLParse::FALSE, its)) {
+		consumeTokenType(FOLParse::FALSE, its);
+		boost::shared_ptr<Sentence> s(new BoolLit(false));
+		return s;
 	} else {
 		return doParseAtom(its);
 	}
@@ -459,7 +467,7 @@ template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseStaticFormula_unary(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::NOT, its)) {
 		consumeTokenType(FOLParse::NOT, its);
-		boost::shared_ptr<Sentence> s(new Negation(doParseStaticFormula(its)));
+		boost::shared_ptr<Sentence> s(new Negation(doParseStaticFormula_paren(its)));
 		return s;
 	} else {
 		return doParseStaticFormula_paren(its);
@@ -473,6 +481,14 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 		consumeTokenType(FOLParse::OPEN_PAREN, its);
 		s = doParseStaticFormula(its);
 		consumeTokenType(FOLParse::CLOSE_PAREN, its);
+	} else if (peekTokenType(FOLParse::TRUE, its)) {
+		consumeTokenType(FOLParse::TRUE, its);
+		boost::shared_ptr<Sentence> s(new BoolLit(true));
+		return s;
+	} else if (peekTokenType(FOLParse::FALSE, its)) {
+		consumeTokenType(FOLParse::FALSE, its);
+		boost::shared_ptr<Sentence> s(new BoolLit(false));
+		return s;
 	} else {
 		s = doParseAtom(its);
 	}

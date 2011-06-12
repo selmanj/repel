@@ -61,29 +61,29 @@ am__EXEEXT_1 = test/spanintervaltest$(EXEEXT) \
 	test/atomtest$(EXEEXT) test/domaintest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 am_pel_OBJECTS = pel.$(OBJEXT) interval.$(OBJEXT) \
-	spaninterval.$(OBJEXT) constant.$(OBJEXT) follexer.$(OBJEXT) \
-	foltoken.$(OBJEXT) variable.$(OBJEXT) siset.$(OBJEXT) \
-	domain.$(OBJEXT)
+	spaninterval.$(OBJEXT) boollit.$(OBJEXT) constant.$(OBJEXT) \
+	follexer.$(OBJEXT) foltoken.$(OBJEXT) variable.$(OBJEXT) \
+	siset.$(OBJEXT) domain.$(OBJEXT)
 pel_OBJECTS = $(am_pel_OBJECTS)
 pel_LDADD = $(LDADD)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) interval.$(OBJEXT) \
-	siset.$(OBJEXT) spaninterval.$(OBJEXT) constant.$(OBJEXT) \
-	variable.$(OBJEXT) follexer.$(OBJEXT) foltoken.$(OBJEXT) \
-	domain.$(OBJEXT)
+am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) boollit.$(OBJEXT) \
+	interval.$(OBJEXT) siset.$(OBJEXT) spaninterval.$(OBJEXT) \
+	constant.$(OBJEXT) variable.$(OBJEXT) follexer.$(OBJEXT) \
+	foltoken.$(OBJEXT) domain.$(OBJEXT)
 test_domaintest_OBJECTS = $(am_test_domaintest_OBJECTS)
 test_domaintest_LDADD = $(LDADD)
 am_test_follexertest_OBJECTS = follexertest.$(OBJEXT) \
-	follexer.$(OBJEXT) foltoken.$(OBJEXT)
+	follexer.$(OBJEXT) foltoken.$(OBJEXT) boollit.$(OBJEXT)
 test_follexertest_OBJECTS = $(am_test_follexertest_OBJECTS)
 test_follexertest_LDADD = $(LDADD)
 am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
-	follexer.$(OBJEXT) foltoken.$(OBJEXT) constant.$(OBJEXT) \
-	variable.$(OBJEXT) spaninterval.$(OBJEXT) siset.$(OBJEXT) \
-	interval.$(OBJEXT)
+	follexer.$(OBJEXT) boollit.$(OBJEXT) foltoken.$(OBJEXT) \
+	constant.$(OBJEXT) variable.$(OBJEXT) spaninterval.$(OBJEXT) \
+	siset.$(OBJEXT) interval.$(OBJEXT)
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
@@ -219,13 +219,13 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CXXFLAGS = $(BOOST_CPPFLAGS)
 AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 dist_noinst_SCRIPTS = autogen.sh
-pel_SOURCES = src/pel.cpp src/interval.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
+pel_SOURCES = src/pel.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
-test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp
+test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
-test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
-test_domaintest_SOURCES = test/domaintest.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
+test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/boollit.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
+test_domaintest_SOURCES = test/domaintest.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -351,6 +351,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomtest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boollit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/constant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domaintest.Po@am__quote@
@@ -420,6 +421,20 @@ spaninterval.obj: src/spaninterval.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/spaninterval.cpp' object='spaninterval.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o spaninterval.obj `if test -f 'src/spaninterval.cpp'; then $(CYGPATH_W) 'src/spaninterval.cpp'; else $(CYGPATH_W) '$(srcdir)/src/spaninterval.cpp'; fi`
+
+boollit.o: src/fol/boollit.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT boollit.o -MD -MP -MF $(DEPDIR)/boollit.Tpo -c -o boollit.o `test -f 'src/fol/boollit.cpp' || echo '$(srcdir)/'`src/fol/boollit.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/boollit.Tpo $(DEPDIR)/boollit.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/boollit.cpp' object='boollit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o boollit.o `test -f 'src/fol/boollit.cpp' || echo '$(srcdir)/'`src/fol/boollit.cpp
+
+boollit.obj: src/fol/boollit.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT boollit.obj -MD -MP -MF $(DEPDIR)/boollit.Tpo -c -o boollit.obj `if test -f 'src/fol/boollit.cpp'; then $(CYGPATH_W) 'src/fol/boollit.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/boollit.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/boollit.Tpo $(DEPDIR)/boollit.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/boollit.cpp' object='boollit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o boollit.obj `if test -f 'src/fol/boollit.cpp'; then $(CYGPATH_W) 'src/fol/boollit.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/boollit.cpp'; fi`
 
 constant.o: src/fol/constant.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT constant.o -MD -MP -MF $(DEPDIR)/constant.Tpo -c -o constant.o `test -f 'src/fol/constant.cpp' || echo '$(srcdir)/'`src/fol/constant.cpp

@@ -28,9 +28,9 @@ SISet SISet::compliment() const {
 		// compliment is max interval
 		SISet max(forceLiquid_, maxInterval_);
 		max.add(SpanInterval(maxInterval_.start(),
-								maxInterval_.end(),
+								maxInterval_.finish(),
 								maxInterval_.start(),
-								maxInterval_.end(),
+								maxInterval_.finish(),
 								maxInterval_));
 		return max;
 	}
@@ -129,8 +129,39 @@ void SISet::add(const SpanInterval &s) {
 		std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
 		throw e;
 	}
+	if (forceLiquid_) {
+		// we have to merge this with pre-existing intervals
+		for (std::set<SpanInterval>::iterator it = set_.begin(); it != set_.end();) {
+			SpanInterval b = *it;
+			Interval sInt = sCopy.start();
+			Interval bInt = b.start();
+			if (sInt.meets(bInt) || sInt.meetsI(bInt)
+					|| sInt.overlaps(bInt) || sInt.overlapsI(bInt)
+					|| sInt.starts(bInt) || sInt.startsI(bInt)
+					|| sInt.finishes(bInt) || sInt.finishesI(bInt)
+					|| sInt.during(bInt) || sInt.duringI(bInt)) {
+				// they intersect, pull it out
+				std::set<SpanInterval>::iterator toErase(it);
+				it++;
+				set_.erase(toErase);
 
-	set_.insert(sCopy);
+				// now reset scopy to be the newly resized span interval
+				unsigned int i = (b.start().start() < sCopy.start().start()
+						? b.start().start() : sCopy.start().start());
+				unsigned int j = (b.start().finish() > sCopy.start().finish()
+						? b.start().finish() : sCopy.start().finish());
+
+				sCopy.setStart(Interval(i,j));
+				sCopy.setFinish(Interval(i,j));
+			} else {
+				it++;
+			}
+		}
+		// now insert our element into the list
+		set_.insert(sCopy);
+	} else {
+		set_.insert(sCopy);
+	}
 }
 
 void SISet::add(const SISet &b) {
@@ -149,7 +180,7 @@ void SISet::makeDisjoint() {
 			if (sIt != set_.end() && !intersection(*fIt, *sIt).isEmpty()) {
 				// merge the two
 				unsigned int start = fIt->start().start();
-				unsigned int end = sIt->end().end();
+				unsigned int end = sIt->finish().finish();
 				SpanInterval merged(start, end, start, end, maxInterval_);
 				set_.erase(sIt);	// invalidates sIt
 				set_.erase(fIt);	// invalidates fIt
@@ -241,15 +272,15 @@ SISet intersection(const SISet& a, const SISet& b) {
 };
 
 SISet span(const SpanInterval& a, const SpanInterval& b) {
-	unsigned int j = std::min(a.start().end(), b.start().end());
-	unsigned int k = std::max(a.end().start(), b.end().start());
+	unsigned int j = std::min(a.start().finish(), b.start().finish());
+	unsigned int k = std::max(a.finish().start(), b.finish().start());
 
 	SISet set(false, a.maxInterval());
 
-	set.add(SpanInterval(a.start().start(), j, k, a.end().end(), a.maxInterval()));
-	set.add(SpanInterval(a.start().start(), j, k, b.end().end(), a.maxInterval()));
-	set.add(SpanInterval(b.start().start(), j, k, a.end().end(), a.maxInterval()));
-	set.add(SpanInterval(b.start().start(), j, k, b.end().end(), a.maxInterval()));
+	set.add(SpanInterval(a.start().start(), j, k, a.finish().finish(), a.maxInterval()));
+	set.add(SpanInterval(a.start().start(), j, k, b.finish().finish(), a.maxInterval()));
+	set.add(SpanInterval(b.start().start(), j, k, a.finish().finish(), a.maxInterval()));
+	set.add(SpanInterval(b.start().start(), j, k, b.finish().finish(), a.maxInterval()));
 
 	return set;
 };
@@ -257,23 +288,50 @@ SISet span(const SpanInterval& a, const SpanInterval& b) {
 SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVAL_RELATION rel) {
 	SISet empty(false, i.maxInterval());
 
+//	std::cout << "composedOf called with i = " << i.toString() << ", j = " << j.toString() << ", rel = " << Interval::relationToString(rel) << std::endl;
 	if (rel == Interval::EQUALS) {
 		SpanInterval intersect = intersection(i, j);
 		SISet result(false, i.maxInterval());
 		result.add(intersect);
+//		std::cout << "returning " << result.toString() << std::endl;
 		return result;
 	}
 
 	boost::optional<SpanInterval> iPrimeOpt = j.satisfiesRelation(inverseRelation(rel));
 	if (!iPrimeOpt) return empty;
 	SpanInterval iPrime = iPrimeOpt.get();
+//	std::cout << "iPrime = " << iPrime.toString() << std::endl;
 	boost::optional<SpanInterval> jPrimeOpt = i.satisfiesRelation(rel);
 	if (!jPrimeOpt) return empty;
 	SpanInterval jPrime = jPrimeOpt.get();
+//	std::cout << "jPrime = " << jPrime.toString() << std::endl;
 
-	boost::optional<SpanInterval> iIntersect = intersection(iPrime, i).normalize();
-	boost::optional<SpanInterval> jIntersect = intersection(jPrime, j).normalize();
 
-	if (!iIntersect || !jIntersect) return empty;
-	return span(iIntersect.get(), jIntersect.get());
+	boost::optional<SpanInterval> iIntersectOpt = intersection(iPrime, i).normalize();
+	boost::optional<SpanInterval> jIntersectOpt = intersection(jPrime, j).normalize();
+
+	if (!iIntersectOpt || !jIntersectOpt) return empty;
+
+	SpanInterval iIntersect = iIntersectOpt.get();
+	SpanInterval jIntersect = jIntersectOpt.get();
+//	std::cout << "iIntersect = " << iIntersect.toString() << std::endl;
+//	std::cout << "jIntersect = " << jIntersect.toString() << std::endl;
+
+	// TODO this seems right but we are now iterating over pairs of intervals!
+	/*
+	SISet spanned;
+	for (SpanInterval::iterator iIt = iIntersect.begin(); iIt != iIntersect.end(); iIt++) {
+		for (SpanInterval::iterator jIt = jIntersect.begin(); jIt != jIntersect.end(); jIt++) {
+			if (relationHolds(*iIt, rel, *jIt)) {
+
+				Interval interval = span(*iIt, *jIt);
+				spanned.add(SpanInterval(interval.start(), interval.start(),
+						interval.finish(), interval.finish(), i.maxInterval()));
+			}
+		}
+	}
+	 */
+	SISet spanned = span(iIntersect, jIntersect);
+//	std::cout << "returning spanned = " << spanned.toString() << std::endl;
+	return spanned;
 }

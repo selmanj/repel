@@ -61,6 +61,9 @@ SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 		const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
 		SISet set = satisfiedConjunction(*c, m);
 		return set;
+	} else if (dynamic_cast<const BoolLit *>(&s) != 0) {
+		const BoolLit* b = dynamic_cast<const BoolLit *>(&s);
+		return satisfiedBoolLit(*b, m);
 	}
 	// made it this far, unimplemented!
 	std::runtime_error e("Domain::satisfied not implemented yet!");
@@ -128,6 +131,17 @@ SISet Domain::satisfiedConjunction(const Conjunction& c, const Model& m) const {
 	return result;
 }
 
+SISet Domain::satisfiedBoolLit(const BoolLit& b, const Model& m) const {
+	SISet toReturn(false, maxInterval_);
+	if (b.value()) {
+		// max interval
+		SpanInterval max(maxInterval_.start(), maxInterval_.finish(), maxInterval_.start(), maxInterval_.finish(), maxInterval_);
+		toReturn.add(max);
+	}
+	return toReturn;
+}
+
+
 SISet Domain::liqSatisfied(const Sentence& s, const Model& m) const {
 	if (dynamic_cast<const Atom *>(&s) != 0) {
 		const Atom* a = dynamic_cast<const Atom *>(&s);
@@ -141,6 +155,9 @@ SISet Domain::liqSatisfied(const Sentence& s, const Model& m) const {
 	} else if (dynamic_cast<const Conjunction *>(&s) != 0) {
 		const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
 		return liqSatisfiedConjunction(*c, m);
+	} else if (dynamic_cast<const BoolLit *>(&s) != 0) {
+		const BoolLit* b = dynamic_cast<const BoolLit *>(&s);
+		return liqSatisfiedBoolLit(*b, m);
 	}
 	// made it this far, unimplemented!
 	std::runtime_error e("Domain::liqSatisfied not implemented yet!");
@@ -180,4 +197,14 @@ SISet Domain::liqSatisfiedConjunction(const Conjunction& c, const Model& m) cons
 	SISet rightSat = liqSatisfied(*(c.right()), m);
 	// intersection now!
 	return intersection(leftSat, rightSat);
+}
+
+SISet Domain::liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const {
+	SISet toReturn(true, maxInterval_);
+	if (b.value()) {
+		// max interval
+		SpanInterval max(maxInterval_.start(), maxInterval_.finish(), maxInterval_.start(), maxInterval_.finish(), maxInterval_);
+		toReturn.add(max);
+	}
+	return toReturn;
 }

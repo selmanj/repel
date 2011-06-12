@@ -24,11 +24,11 @@ BOOST_AUTO_TEST_CASE( basic_test )
 		SpanInterval sp1(1,11,1,11);
 		SpanInterval sp2(5,10,5,10);
 		Interval start = sp1.start();
-		Interval end = sp1.end();
+		Interval end = sp1.finish();
 		BOOST_CHECK_EQUAL(start.start(), 1);
-		BOOST_CHECK_EQUAL(start.end(), 11);
+		BOOST_CHECK_EQUAL(start.finish(), 11);
 		BOOST_CHECK_EQUAL(end.start(), 1);
-		BOOST_CHECK_EQUAL(end.end(), 11);
+		BOOST_CHECK_EQUAL(end.finish(), 11);
 
 		std::set<SpanInterval> removed;
 		sp1.subtract(sp2,removed);
@@ -78,8 +78,7 @@ BOOST_AUTO_TEST_CASE( sisetliq_test ) {
 
 	set.add(sp1);
 	set.add(sp2);
-	BOOST_CHECK(!set.isDisjoint());
-	set.makeDisjoint();
+
 	BOOST_CHECK(set.isDisjoint());
 	std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
 	std::cout << "double compliment is " << set.compliment().compliment().toString() << std::endl;

@@ -21,14 +21,21 @@ SpanInterval::SpanInterval(unsigned int smallest, unsigned int largest)
 */
 
 SpanInterval::SpanInterval(const Interval& start, const Interval& end, const Interval& maxInterval)
-: start_(start), end_(end), maxInterval_(maxInterval)
+: start_(start), finish_(end), maxInterval_(maxInterval)
 {
 }
 
 SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo,
 		const Interval& maxInterval)
-: start_(startFrom, startTo), end_(endFrom, endTo), maxInterval_(maxInterval)
+: start_(startFrom, startTo), finish_(endFrom, endTo), maxInterval_(maxInterval)
 {
+}
+
+SpanInterval::iterator SpanInterval::begin() const {
+	return SpanIntervalIterator(*this);
+}
+SpanInterval::iterator SpanInterval::end() const {
+	return SpanIntervalIterator();
 }
 
 boost::optional<SpanInterval> SpanInterval::setMaxInterval(const Interval& maxInterval) const {
@@ -39,21 +46,21 @@ boost::optional<SpanInterval> SpanInterval::setMaxInterval(const Interval& maxIn
 	SpanInterval copy(*this);
 	copy = copy.normalize().get();
 	// ensure that this interval can still exist
-	if (copy.start().end() < maxInterval.start() || copy.end().start() > maxInterval.end()) {
+	if (copy.start().finish() < maxInterval.start() || copy.finish().start() > maxInterval.finish()) {
 		return boost::optional<SpanInterval>();
 	}
 	// i, j, k, l all must be within max interval
-	unsigned int i = std::min(std::max(copy.start().start(), maxInterval_.start()), maxInterval_.end());
-	unsigned int j = std::min(std::max(copy.start().end(), maxInterval_.start()), maxInterval_.end());
-	unsigned int k = std::min(std::max(copy.end().start(), maxInterval_.start()), maxInterval_.end());
-	unsigned int l = std::min(std::max(copy.end().end(), maxInterval_.start()), maxInterval_.end());
+	unsigned int i = std::min(std::max(copy.start().start(), maxInterval_.start()), maxInterval_.finish());
+	unsigned int j = std::min(std::max(copy.start().finish(), maxInterval_.start()), maxInterval_.finish());
+	unsigned int k = std::min(std::max(copy.finish().start(), maxInterval_.start()), maxInterval_.finish());
+	unsigned int l = std::min(std::max(copy.finish().finish(), maxInterval_.start()), maxInterval_.finish());
 
 	copy = SpanInterval(i, j, k, l, maxInterval);
 	return copy.normalize();
 }
 
 bool SpanInterval::operator==(const SpanInterval& b) const {
-	return (start() == b.start() && end() == b.end());
+	return (start() == b.start() && finish() == b.finish());
 }
 
 bool SpanInterval::operator!=(const SpanInterval& b) const {
@@ -69,12 +76,12 @@ bool SpanInterval::operator<(const SpanInterval& b) const {
 	if (*this == b) return false;
 	if (start().start() < b.start().start()) return true;
 	if (start().start() > b.start().start()) return false;
-	if (start().end() < b.start().end()) return true;
-	if (start().end() > b.start().end()) return false;
-	if (end().start() < b.end().start()) return true;
-	if (end().start() > b.end().start()) return false;
-	if (end().end() < b.end().end()) return true;
-	if (end().end() > b.end().end()) return false;
+	if (start().finish() < b.start().finish()) return true;
+	if (start().finish() > b.start().finish()) return false;
+	if (finish().start() < b.finish().start()) return true;
+	if (finish().start() > b.finish().start()) return false;
+	if (finish().finish() < b.finish().finish()) return true;
+	if (finish().finish() > b.finish().finish()) return false;
 	// return false as failure
 	return false;
 }
@@ -88,11 +95,11 @@ bool SpanInterval::operator<=(const SpanInterval& b) const {
 }
 
 bool SpanInterval::isEmpty() const {
-	unsigned int j = std::min(start_.end(), end_.end());
-	unsigned int k = std::max(end_.start(), start_.start());
+	unsigned int j = std::min(start_.finish(), finish_.finish());
+	unsigned int k = std::max(finish_.start(), start_.start());
 
 	if (start_.start() > j
-			|| end_.end() < k)
+			|| finish_.finish() < k)
 		return true;
 	return false;
 }
@@ -103,9 +110,9 @@ unsigned int SpanInterval::size() const {
 	SpanInterval si = normalize().get();
 
 	unsigned int i = si.start().start();
-	unsigned int j = si.start().end();
-	unsigned int k = si.end().start();
-	unsigned int l = si.end().end();
+	unsigned int j = si.start().finish();
+	unsigned int k = si.finish().start();
+	unsigned int l = si.finish().finish();
 
 	if (j <= k) {
 		return ((l-k)+1) * ((j-i)+1);
@@ -117,12 +124,12 @@ unsigned int SpanInterval::size() const {
 }
 
 bool SpanInterval::isLiquid() const {
-	return (start().start() == end().start() && start().end() == end().end());
+	return (start().start() == finish().start() && start().finish() == finish().finish());
 }
 
 SpanInterval SpanInterval::toLiquid() const {
-	unsigned int i = std::max(start().start(), end().start());
-	unsigned int j = std::min(start().end(), end().end());
+	unsigned int i = std::max(start().start(), finish().start());
+	unsigned int j = std::min(start().finish(), finish().finish());
 	return SpanInterval(i, j, i, j, maxInterval_);
 }
 
@@ -131,10 +138,10 @@ boost::optional<SpanInterval> SpanInterval::normalize() const {
 	if (isEmpty()) {
 		return boost::optional<SpanInterval>();
 	}
-	int j = std::min(start_.end(), end_.end());
-	int k = std::max(end_.start(), start_.start());
+	int j = std::min(start_.finish(), finish_.finish());
+	int k = std::max(finish_.start(), start_.start());
 
-	return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, end_.end(), maxInterval_));
+	return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, finish_.finish(), maxInterval_));
 }
 
 void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
@@ -150,19 +157,19 @@ void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
 	*/
 	// I think the following ends up the same as the previous, just disjoint
 	if (start().start() != maxInterval_.start()) {
-		SpanInterval a(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.end(), maxInterval_);
+		SpanInterval a(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.finish(), maxInterval_);
 		if (a.normalize()) collect.insert(a.normalize().get());
 	}
-	if (end().start() != maxInterval_.start()) {
-		SpanInterval b(start().start(), start().end(), maxInterval_.start(), end().start()-1, maxInterval_);
+	if (finish().start() != maxInterval_.start()) {
+		SpanInterval b(start().start(), start().finish(), maxInterval_.start(), finish().start()-1, maxInterval_);
 		if (b.normalize()) collect.insert(b.normalize().get());
 	}
-	if (end().end() != maxInterval_.end()) {
-		SpanInterval c(start().start(), start().end(), end().end()+1, maxInterval_.end(), maxInterval_);
+	if (finish().finish() != maxInterval_.finish()) {
+		SpanInterval c(start().start(), start().finish(), finish().finish()+1, maxInterval_.finish(), maxInterval_);
 		if (c.normalize()) collect.insert(c.normalize().get());
 	}
-	if (start().end() != maxInterval_.end()) {
-		SpanInterval d(start().end()+1, maxInterval_.end(), maxInterval_.start(), maxInterval_.end(), maxInterval_);
+	if (start().finish() != maxInterval_.finish()) {
+		SpanInterval d(start().finish()+1, maxInterval_.finish(), maxInterval_.start(), maxInterval_.finish(), maxInterval_);
 		if (d.normalize()) collect.insert(d.normalize().get());
 	}
 }
@@ -174,16 +181,16 @@ void SpanInterval::liqCompliment(std::set<SpanInterval>& collect) const {
 		SpanInterval a(maxInterval_.start(), end, maxInterval_.start(), end, maxInterval_);
 		collect.insert(a);
 	}
-	if (end().end() != maxInterval_.end()) {
-		unsigned int start = end().end()+1;
-		SpanInterval b(start, maxInterval_.end(), start, maxInterval_.end(), maxInterval_);
+	if (finish().finish() != maxInterval_.finish()) {
+		unsigned int start = finish().finish()+1;
+		SpanInterval b(start, maxInterval_.finish(), start, maxInterval_.finish(), maxInterval_);
 		collect.insert(b);
 	}
 }
 
 boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation) const {
 	unsigned int neg_inf = maxInterval_.start();
-	unsigned int pos_inf = maxInterval_.end();
+	unsigned int pos_inf = maxInterval_.finish();
 
 	// to make it easy on ourselves, normalize
 	if (!normalize()) { return boost::optional<SpanInterval>(); }
@@ -191,9 +198,9 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
 
 	// easy names - [[i,j], [k,l]]
 	const unsigned int i = n.start().start();
-	const unsigned int j = n.start().end();
-	const unsigned int k = n.end().start();
-	const unsigned int l = n.end().end();
+	const unsigned int j = n.start().finish();
+	const unsigned int k = n.finish().start();
+	const unsigned int l = n.finish().finish();
 
 	switch (relation) {
 		case Interval::EQUALS:
@@ -283,16 +290,16 @@ std::string SpanInterval::toString() const {
 	std::stringstream str;
 	str << "[";
 	if (isLiquid()) {
-		str << start().start() << ":" << start().end() << "]";
+		str << start().start() << ":" << start().finish() << "]";
 	} else {
-		str << "(" << start().start() << ", " << start().end() << "), (" << end().start() << ", " << end().end() << ")]";
+		str << "(" << start().start() << ", " << start().finish() << "), (" << finish().start() << ", " << finish().finish() << ")]";
 	}
 	return str.str();
 }
 
 SpanInterval intersection(const SpanInterval& a, const SpanInterval& b) {
 	return SpanInterval(std::max(a.start().start(), b.start().start()),
-			std::min(a.start().end(), b.start().end()),
-			std::max(a.end().start(), b.end().start()),
-			std::min(a.end().end(), b.end().end()), a.maxInterval_);	// TODO: more sensible way to pick max interval
+			std::min(a.start().finish(), b.start().finish()),
+			std::max(a.finish().start(), b.finish().start()),
+			std::min(a.finish().finish(), b.finish().finish()), a.maxInterval_);	// TODO: more sensible way to pick max interval
 }

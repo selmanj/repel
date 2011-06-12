@@ -54,7 +54,7 @@ public:
 			}
 			interval = norm.get();
 			smallest = (std::min)(interval.start().start(), smallest);
-			largest = (std::max)(interval.end().end(), largest);
+			largest = (std::max)(interval.finish().finish(), largest);
 		}
 		maxInterval_ = Interval(smallest, largest);
 
@@ -108,12 +108,14 @@ public:
 	SISet satisfiedDisjunction(const Disjunction& d, const Model& m) const;
 	SISet satisfiedDiamond(const DiamondOp& d, const Model& m) const;
 	SISet satisfiedConjunction(const Conjunction& c, const Model& m) const;
+	SISet satisfiedBoolLit(const BoolLit& b, const Model& m) const;
 
 	SISet liqSatisfied(const Sentence& s, const Model& m) const;
 	SISet liqSatisfiedAtom(const Atom& a, const Model& m) const;
 	SISet liqSatisfiedNegation(const Negation& a, const Model& m) const;
 	SISet liqSatisfiedDisjunction(const Disjunction& d, const Model& m) const;
 	SISet liqSatisfiedConjunction(const Conjunction& c, const Model& m) const;
+	SISet liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const;
 
 
 private:

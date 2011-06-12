@@ -53,6 +53,10 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[0:0], [11:1000]}");
 
+	query = getAsSentence("[ !Q(a,b) ^ P(a,b) ]");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:4]}");
+
 	// lets try liq disjunction
 	query = getAsSentence("[ !(P(a,b) -> Q(a,b)) ]");
 	trueAt = d.satisfied(*query, d.defaultModel());
@@ -62,6 +66,10 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	query = getAsSentence("[ P(a,b) ^ Q(a,b) ]");
 	trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:10]}");
+
+	query = getAsSentence("[ P(a,b) v Q(a,b) ]");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:15]}");
 
 	// diamond op
 	query = getAsSentence("<>{mi} Q(a,b)");
@@ -150,6 +158,35 @@ BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
 	query = getAsSentence("R(a) ^{o} S(a)");
 	trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(1, 1), (3, 3)]}");
+}
+
+BOOST_AUTO_TEST_CASE( trueFalseTest ) {
+	std::stringstream facts;
+	facts << "Q(a) @ [1:3]";
+	facts << "R(a) @ [3:5]";
+	facts << "S(a) @ [1:3]";
+
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+	std::vector<FOL::EventPair> factvec;
+	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+	std::vector<WSentence> formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+
+	boost::shared_ptr<Sentence> query;
+	SISet trueAt;
+
+	query = getAsSentence("true");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:5]}");
+
+	query = getAsSentence("false");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
+
+	query = getAsSentence("S(a) ; S(a)");
+	trueAt = d.satisfied(*query, d.defaultModel());
+	trueAt.makeDisjoint();
+	//BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
 }
 
 boost::shared_ptr<Sentence> getAsSentence(std::string str) {
