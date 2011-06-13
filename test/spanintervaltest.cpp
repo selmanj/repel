@@ -80,8 +80,6 @@ BOOST_AUTO_TEST_CASE( sisetliq_test ) {
 	set.add(sp2);
 
 	BOOST_CHECK(set.isDisjoint());
-	std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
-	std::cout << "double compliment is " << set.compliment().compliment().toString() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
@@ -93,7 +91,6 @@ BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
 	sp1 = SpanInterval(999, 1000, 1000, 1000, maxInterval);
 	sp2 = sp1.satisfiesRelation(Interval::MEETS);
 	BOOST_CHECK(!sp2);
-
 
 	sp1 = SpanInterval(1,4,7,9, maxInterval);
 	sp2 = sp1.satisfiesRelation(Interval::OVERLAPS);
