@@ -21,7 +21,7 @@ Moves findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence 
 		} else {
 			const Negation* n = dynamic_cast<const Negation *>(&s);
 			isNegation = true;
-			a = dynamic_cast<const Atom *>(&(*n->sentence()));
+			a = dynamic_cast<const Atom *>(&(*n->sentence()));		// joseph!  this is ugly!  TODO fix it
 			if (!a) {
 				throw std::runtime_error("negation applied to something that is not an atom!");
 			}
