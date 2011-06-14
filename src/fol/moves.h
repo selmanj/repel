@@ -44,7 +44,8 @@ namespace {
 			}
 			// now that those checks are out of the way, find where it's not satisfied
 			SISet sat = d.satisfied(*a, m);
-			//sat = sat.compliment();	// compliment is where its not satisfied at
+			// ensure sat stays liquid
+			sat.setForceLiquid(true);
 			// Our moves are single span intervals, so split them out into a list of moves
 			if (isNegation) {
 				// we want to delete span intervals where its true

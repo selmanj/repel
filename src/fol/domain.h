@@ -88,6 +88,10 @@ public:
 			SISet set(true, maxInterval_);
 
 			set.add(interval);
+			if (observations_.find(*atom) != observations_.end()) {
+				set.add(observations_.find(*atom)->second);
+				observations_.erase(*atom);
+			}
 			std::pair<Atom, SISet > pair(*atom, set);
 			observations_.insert(pair);
 		}
