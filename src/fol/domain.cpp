@@ -13,7 +13,6 @@ void Domain::setMaxInterval(const Interval& maxInterval) {
 		SISet set = it->second;
 		set.setMaxInterval(maxInterval);
 		if (set.size() != 0) {
-			std::cout << "resized set for atom: " << atom.toString() << " is : " << set.toString() << std::endl;
 			resized.insert(std::pair<const Atom, SISet>(atom,set));
 		}
 	}

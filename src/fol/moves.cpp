@@ -34,11 +34,11 @@ std::string Move::toString() const {
 
 
 
-Move findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
-	Move empty;
+std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
+	std::vector<Move> moves;
 	if (dynamic_cast<const LiquidOp*>(&s)) {
 		const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s);
-		return findMovesForLiquid(d, m, *liq);
+		moves = findMovesForLiquid(d, m, *liq->sentence());
 	}
-	return empty;
+	return moves;
 }

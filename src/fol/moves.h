@@ -29,6 +29,11 @@ struct Move {
 };
 
 namespace {
+	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s);
+	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c);
+	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis);
+	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s);
+
 	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s) {
 		Move move;
 		if (dynamic_cast<const Atom*>(&s) || dynamic_cast<const Negation*>(&s)) {
@@ -75,10 +80,10 @@ namespace {
 		return move;
 	}
 
-	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const LiquidOp &l) {
+	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c) {
 		Move move;
 		// find an interval to satisfy
-		SISet sat = d.satisfied(l,m);
+		SISet sat = d.liqSatisfiedConjunction(c, m);
 		sat.setForceLiquid(true);
 		sat = sat.compliment();
 
@@ -87,7 +92,6 @@ namespace {
 		SpanInterval si = set_at(sat.set(), idx);
 
 		// we can only have literals in our conjunction!  collect them
-		const Conjunction c = dynamic_cast<const Conjunction&>(*l.sentence());
 		class LiteralCollector : public SentenceVisitor {
 		public:
 			std::vector<const Sentence*> lits;
@@ -131,16 +135,32 @@ namespace {
 		return move;
 	}
 
-	Move findMovesForLiquid(const Domain& d, const Model& m, const LiquidOp &l) {
-		const Sentence& s = *l.sentence();
+	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis) {
+		std::vector<Move> moves;
+		std::vector<Move> movesL = findMovesForLiquid(d, m, *dis.left());
+		std::vector<Move> movesR = findMovesForLiquid(d, m, *dis.right());
+
+		moves.insert(moves.end(), movesL.begin(), movesL.end());
+		moves.insert(moves.end(), movesR.begin(), movesR.end());
+
+		return moves;
+	}
+
+	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s) {
+		std::vector<Move> moves;
 		if (dynamic_cast<const Negation *>(&s) || dynamic_cast<const Atom *>(&s))
-			return findMovesForLiquidLiteral(d, m, s);
-		if (dynamic_cast<const Conjunction *>(&s)) {
-			return findMovesForLiquidConjunction(d, m, l);
+			moves.push_back(findMovesForLiquidLiteral(d, m, s));
+		else if (dynamic_cast<const Conjunction *>(&s)) {
+			const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
+			moves.push_back(findMovesForLiquidConjunction(d, m, *c));
+		} else if (dynamic_cast<const Disjunction *>(&s)) {
+			const Disjunction* dis = dynamic_cast<const Disjunction *>(&s);
+			std::vector<Move> disMoves = findMovesForLiquidDisjunction(d, m, *dis);
+			moves.insert(moves.end(), disMoves.begin(), disMoves.end());
 		}
-		return Move();	// empty move
+		return moves;	// empty move
 	}
 }
 
-Move findMovesFor(const Domain& d, const Model& m, const Sentence &s);
+std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s);
 #endif
