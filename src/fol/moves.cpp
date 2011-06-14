@@ -3,48 +3,42 @@
 #include <vector>
 #include <utility>
 #include <boost/optional.hpp>
+#include <boost/foreach.hpp>
 #include <stdexcept>
+#include <utility>
+#include <iostream>
+#include <sstream>
 #include "fol.h"
 #include "domain.h"
 #include "sentence.h"
 
-Moves findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s) {
+std::string Moves::toString() const {
+	std::stringstream str;
 
-}
-
-Moves findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s) {
-	if (dynamic_cast<const Atom*>(&s) || dynamic_cast<const Negation*>(&s)) {
-		const Atom* a;
-		bool isNegation=false;
-		if (dynamic_cast<const Atom*>(&s)) {
-			a = dynamic_cast<const Atom *>(&s);
-		} else {
-			const Negation* n = dynamic_cast<const Negation *>(&s);
-			isNegation = true;
-			a = dynamic_cast<const Atom *>(&(*n->sentence()));		// joseph!  this is ugly!  TODO fix it
-			if (!a) {
-				throw std::runtime_error("negation applied to something that is not an atom!");
-			}
-		}
-		if (!a->isGrounded()) {
-			throw std::runtime_error("cannot handle atoms with variables at the moment!");
-		}
-		// now that those checks are out of the way, find where it's not satisfied
-		SISet sat = d.satisfied(s, m);
-		sat = sat.compliment();	// compliment is where its not satisfied at
-		// Our moves are single span intervals, so split them out into a list of moves
-
-
+	str << "toAdd: {";
+	for (std::vector<Moves::move>::const_iterator it = toAdd.begin(); it != toAdd.end(); it++){
+		if (it != toAdd.begin()) str << ", ";
+		str << it->get<0>().toString() << " @ " << it->get<1>().toString();
 	}
+	str << "}, ";
 
-	// find where it's satisfied
+	str << "toDel: {";
+	for (std::vector<Moves::move>::const_iterator it = toDel.begin(); it != toDel.end(); it++){
+		if (it != toDel.begin()) str << ", ";
+		str << it->get<0>().toString() << " @ " << it->get<1>().toString();
+	}
+	str << "}";
 
+	return str.str();
 }
 
-boost::optional<Moves> findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
+
+
+Moves findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
+	Moves empty;
 	if (dynamic_cast<const LiquidOp*>(&s)) {
 		const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s);
-		return findMovesFor(d, m, *(liq->sentence()));
+		return findMovesForLiquid(d, m, *(liq->sentence()));
 	}
-	return boost::optional<Moves>();
+	return empty;
 }

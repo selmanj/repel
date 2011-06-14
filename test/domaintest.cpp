@@ -9,11 +9,11 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <sstream>
+#include "testutilities.h"
 #include "../src/fol/domain.h"
 #include "../src/fol/fol.h"
 #include "../src/fol/folparser.h"
 
-boost::shared_ptr<Sentence> getAsSentence(std::string str);
 
 BOOST_AUTO_TEST_CASE( sat_test )
 {
@@ -189,10 +189,5 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
 	//BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
 }
 
-boost::shared_ptr<Sentence> getAsSentence(std::string str) {
-	std::istringstream stream(str);
-	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	return FOLParse::parseFormula(tokens.begin(),tokens.end());
-}
 
 

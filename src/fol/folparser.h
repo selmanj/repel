@@ -121,7 +121,7 @@ void doParseEvents(std::vector<FOL::EventPair>& store, iters<ForwardIterator> &i
 }
 
 template <class ForwardIterator>
-void doParseFormulaFile(std::vector<WSentence>& store, iters<ForwardIterator> &its) {
+void doParseFormulas(std::vector<WSentence>& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
@@ -520,9 +520,16 @@ void parseFormulaFile(const std::string &filename, std::vector<WSentence>& store
 	}
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&file);
 	iters<std::vector<FOLToken>::const_iterator> its(tokens.begin(), tokens.end());
-	doParseFormulaFile(store, its);
+	doParseFormulas(store, its);
 	file.close();
 };
+
+template <class ForwardIterator>
+void parseFormulas(const ForwardIterator &first,
+		const ForwardIterator &last, std::vector<WSentence>& store) {
+	iters<std::vector<FOLToken>::const_iterator> its(first, last);
+	doParseFormulas(store, its);
+}
 
 boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
 	std::vector<FOL::EventPair> events;

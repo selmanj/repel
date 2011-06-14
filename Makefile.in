@@ -87,7 +87,7 @@ am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
 	siset.$(OBJEXT) interval.$(OBJEXT)
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
-am_test_movestest_OBJECTS = domaintest.$(OBJEXT) boollit.$(OBJEXT) \
+am_test_movestest_OBJECTS = movestest.$(OBJEXT) boollit.$(OBJEXT) \
 	interval.$(OBJEXT) siset.$(OBJEXT) spaninterval.$(OBJEXT) \
 	constant.$(OBJEXT) variable.$(OBJEXT) follexer.$(OBJEXT) \
 	foltoken.$(OBJEXT) domain.$(OBJEXT) moves.$(OBJEXT)
@@ -235,7 +235,7 @@ test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/f
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
 test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/boollit.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
 test_domaintest_SOURCES = test/domaintest.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
-test_movestest_SOURCES = test/domaintest.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
+test_movestest_SOURCES = test/movestest.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -374,6 +374,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/foltoken.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/moves.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movestest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spaninterval.Po@am__quote@
@@ -589,6 +590,20 @@ folparsertest.obj: test/folparsertest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/folparsertest.cpp' object='folparsertest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o folparsertest.obj `if test -f 'test/folparsertest.cpp'; then $(CYGPATH_W) 'test/folparsertest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/folparsertest.cpp'; fi`
+
+movestest.o: test/movestest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT movestest.o -MD -MP -MF $(DEPDIR)/movestest.Tpo -c -o movestest.o `test -f 'test/movestest.cpp' || echo '$(srcdir)/'`test/movestest.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/movestest.Tpo $(DEPDIR)/movestest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/movestest.cpp' object='movestest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o movestest.o `test -f 'test/movestest.cpp' || echo '$(srcdir)/'`test/movestest.cpp
+
+movestest.obj: test/movestest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT movestest.obj -MD -MP -MF $(DEPDIR)/movestest.Tpo -c -o movestest.obj `if test -f 'test/movestest.cpp'; then $(CYGPATH_W) 'test/movestest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/movestest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/movestest.Tpo $(DEPDIR)/movestest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/movestest.cpp' object='movestest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o movestest.obj `if test -f 'test/movestest.cpp'; then $(CYGPATH_W) 'test/movestest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/movestest.cpp'; fi`
 
 moves.o: src/fol/moves.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT moves.o -MD -MP -MF $(DEPDIR)/moves.Tpo -c -o moves.o `test -f 'src/fol/moves.cpp' || echo '$(srcdir)/'`src/fol/moves.cpp

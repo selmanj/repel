@@ -43,6 +43,11 @@ public:
 	int arity() const {return terms.size();};
 	std::string name() const {return pred;};
 
+	Atom& operator=(const Atom& b) {							// TODO add this to all subclasses of sentence!
+		pred = b.pred;
+		terms = std::vector<boost::shared_ptr<Term> >(b.terms);
+		return *this;
+	}
 	//Term& operator[] (boost::ptr_vector<Term>::size_type n) {return terms[n];};
 	//const Term& operator[] (boost::ptr_vector<Term>::size_type n) const {return terms[n];};
 	// TODO make the at() function throw an exception
