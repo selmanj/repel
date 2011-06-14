@@ -38,7 +38,7 @@ Move findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
 	Move empty;
 	if (dynamic_cast<const LiquidOp*>(&s)) {
 		const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s);
-		return findMovesForLiquid(d, m, *(liq->sentence()));
+		return findMovesForLiquid(d, m, *liq);
 	}
 	return empty;
 }

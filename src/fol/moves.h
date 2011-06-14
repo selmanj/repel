@@ -8,6 +8,8 @@
 #include <iostream>
 #include <istream>
 #include <cstdlib>
+#include <algorithm>
+#include <iterator>
 
 #include "atom.h"
 #include "../siset.h"
@@ -73,14 +75,22 @@ namespace {
 		return move;
 	}
 
-	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c) {
+	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const LiquidOp &l) {
 		Move move;
+		// find an interval to satisfy
+		SISet sat = d.satisfied(l,m);
+		sat.setForceLiquid(true);
+		sat = sat.compliment();
+
+		if (sat.size() == 0) return move;
+		int idx = rand() % sat.set().size();
+		SpanInterval si = set_at(sat.set(), idx);
+
 		// we can only have literals in our conjunction!  collect them
+		const Conjunction c = dynamic_cast<const Conjunction&>(*l.sentence());
 		class LiteralCollector : public SentenceVisitor {
 		public:
-			LiteralCollector() : ignoreNextLiteral(false) {};
 			std::vector<const Sentence*> lits;
-			bool ignoreNextLiteral;
 
 			void accept(const Sentence& s) {
 				if (!dynamic_cast<const Negation*>(&s) && !dynamic_cast<const Atom*>(&s) ) {
@@ -92,25 +102,43 @@ namespace {
 					if (!dynamic_cast<const Atom*>(&(*n->sentence()))) {
 						throw std::runtime_error("negation can only be applied to an atom when finding moves");
 					}
+					// the last literal we inserted is actually negation - pop it off the end
+					lits.pop_back();
 					lits.push_back(&s);
-					ignoreNextLiteral = true;
 				} else {
-					if (ignoreNextLiteral) {
-						ignoreNextLiteral = false;
-						return;
-					}
+
 					lits.push_back(&s);
 				}
 			}
 		} litCollector;
 
-		c.visit(litCollector);
+		c.left()->visit(litCollector);
+		c.right()->visit(litCollector);
 
-
+		// find all the moves for each literal and combine it into one big move
+		BOOST_FOREACH(const Sentence *s, litCollector.lits) {
+			if (dynamic_cast<const Negation*>(s)) {
+				const Negation* n = dynamic_cast<const Negation*>(s);
+				const Atom* a = dynamic_cast<const Atom*>(&(*n->sentence()));
+				Move::change change = boost::make_tuple(*a, si);
+				move.toDel.push_back(change);
+			} else {
+				const Atom* a = dynamic_cast<const Atom*>(s);
+				Move::change change = boost::make_tuple(*a, si);
+				move.toAdd.push_back(change);
+			}
+		}
+		return move;
 	}
 
-	Move findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s) {
-		return findMovesForLiquidLiteral(d, m, s);
+	Move findMovesForLiquid(const Domain& d, const Model& m, const LiquidOp &l) {
+		const Sentence& s = *l.sentence();
+		if (dynamic_cast<const Negation *>(&s) || dynamic_cast<const Atom *>(&s))
+			return findMovesForLiquidLiteral(d, m, s);
+		if (dynamic_cast<const Conjunction *>(&s)) {
+			return findMovesForLiquidConjunction(d, m, l);
+		}
+		return Move();	// empty move
 	}
 }
 

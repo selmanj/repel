@@ -21,7 +21,7 @@
 #include "../src/fol/moves.h"
 #include "testutilities.h"
 
-BOOST_AUTO_TEST_CASE(liquidMovesTest) {
+BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
 	std::string facts("P(a,b) @ [1:5]\n"
 			"S(a) @ [1:2]\n"
 			"S(a) @ [4:4]\n");
@@ -52,4 +52,19 @@ BOOST_AUTO_TEST_CASE(liquidMovesTest) {
 
 	move = findMovesFor(d, d.defaultModel(), *form4.sentence());
 	BOOST_CHECK_EQUAL(move.toString(), "toAdd: {S(a) @ [5:5]}, toDel: {}");
+}
+
+BOOST_AUTO_TEST_CASE(liquidConjMovesTest) {
+	std::string facts("P(a,b) @ [1:5]\n"
+			"S(a) @ [1:2]\n");
+	std::string formulas("1: [P(a,b) & !S(a)]");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setMaxInterval(Interval(1,10));
+	WSentence form1 = d.formulas().at(0);
+	srand(0);
+
+	Move move;
+	move = findMovesFor(d, d.defaultModel(), *form1.sentence());
+	BOOST_CHECK_EQUAL(move.toString(), "toAdd: {P(a, b) @ [6:10]}, toDel: {S(a) @ [6:10]}" );
 }
