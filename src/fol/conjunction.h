@@ -37,6 +37,12 @@ public:
 
 	const std::set<Interval::INTERVAL_RELATION>& relations() const {return rels_;};
 
+	virtual void visit(SentenceVisitor& v) const {
+		left_->visit(v);
+		right_->visit(v);
+
+		v.accept(*this);
+	}
 private:
 
 	boost::shared_ptr<Sentence>  left_;
@@ -90,12 +96,7 @@ private:
 
 	virtual int doPrecedence() const { return 3; };
 
-	virtual void visit(SentenceVisitor& v) const {
-		left_->visit(v);
-		right_->visit(v);
 
-		v.accept(*this);
-	}
 };
 
 #endif

@@ -16,6 +16,7 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <boost/optional.hpp>
+#include <cstdio>
 #include "../src/fol/fol.h"
 #include "../src/fol/moves.h"
 #include "testutilities.h"
@@ -36,16 +37,19 @@ BOOST_AUTO_TEST_CASE(liquidMovesTest) {
 	WSentence form4 = d.formulas().at(3);
 
 
-	Moves moves;
-	moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
-	BOOST_CHECK_EQUAL(moves.toString(), "toAdd: {Q(a, b) @ [1:5]}, toDel: {}");
+	Move move;
 
-	moves = findMovesFor(d, d.defaultModel(), *form2.sentence());
-	BOOST_CHECK_EQUAL(moves.toString(), "toAdd: {}, toDel: {}");
+	// initialize seed
+	srand(0);
+	move = findMovesFor(d, d.defaultModel(), *form1.sentence());
+	BOOST_CHECK_EQUAL(move.toString(), "toAdd: {Q(a, b) @ [1:5]}, toDel: {}");
 
-	moves = findMovesFor(d, d.defaultModel(), *form3.sentence());
-	BOOST_CHECK_EQUAL(moves.toString(), "toAdd: {}, toDel: {P(a, b) @ [1:5]}");
+	move = findMovesFor(d, d.defaultModel(), *form2.sentence());
+	BOOST_CHECK_EQUAL(move.toString(), "toAdd: {}, toDel: {}");
 
-	moves = findMovesFor(d, d.defaultModel(), *form4.sentence());
-	BOOST_CHECK_EQUAL(moves.toString(), "toAdd: {S(a) @ [3:3], S(a) @ [5:5]}, toDel: {}");
+	move = findMovesFor(d, d.defaultModel(), *form3.sentence());
+	BOOST_CHECK_EQUAL(move.toString(), "toAdd: {}, toDel: {P(a, b) @ [1:5]}");
+
+	move = findMovesFor(d, d.defaultModel(), *form4.sentence());
+	BOOST_CHECK_EQUAL(move.toString(), "toAdd: {S(a) @ [5:5]}, toDel: {}");
 }

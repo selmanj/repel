@@ -7,25 +7,28 @@
 #include <boost/tuple/tuple.hpp>
 #include <iostream>
 #include <istream>
+#include <cstdlib>
 
 #include "atom.h"
 #include "../siset.h"
 #include "domain.h"
+#include "sentence.h"
+#include "../utils.h"
 
 class LiquidOp;
 class Sentence;
 
-struct Moves {
-	typedef boost::tuple <Atom, SpanInterval> move;
-	std::vector<move> toAdd;
-	std::vector<move> toDel;
+struct Move {
+	typedef boost::tuple <Atom, SpanInterval> change;
+	std::vector<change> toAdd;
+	std::vector<change> toDel;
 
 	std::string toString() const;
 };
 
 namespace {
-	Moves findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s) {
-		Moves moves;
+	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s) {
+		Move move;
 		if (dynamic_cast<const Atom*>(&s) || dynamic_cast<const Negation*>(&s)) {
 			const Atom* a;
 			bool isNegation=false;
@@ -46,30 +49,70 @@ namespace {
 			SISet sat = d.satisfied(*a, m);
 			// ensure sat stays liquid
 			sat.setForceLiquid(true);
-			// Our moves are single span intervals, so split them out into a list of moves
+			// Our moves are single span intervals, so choose one randomly
 			if (isNegation) {
 				// we want to delete span intervals where its true
-				BOOST_FOREACH(SpanInterval sp, sat.set()) {
-					Moves::move aMove = boost::make_tuple(*a, sp);
-					moves.toDel.push_back(aMove);
-				}
+
+				if (sat.size() == 0) return move;
+
+				int idx = rand() % sat.set().size();
+				SpanInterval si = set_at(sat.set(), idx);
+				Move::change change = boost::make_tuple(*a, si);
+				move.toDel.push_back(change);
 			} else {
 				// work with the compliment
 				SISet satComp = sat.compliment();
+				if (satComp.size() == 0) return move;
 				// we want to add span intervals where its false
-				BOOST_FOREACH(SpanInterval sp, satComp.set()) {
-					Moves::move aMove = boost::make_tuple(*a, sp);
-					moves.toAdd.push_back(aMove);
-				}
+				int idx = rand() % satComp.set().size();
+				SpanInterval si = set_at(satComp.set(), idx);
+				Move::change change = boost::make_tuple(*a, si);
+				move.toAdd.push_back(change);
 			}
 		}
-		return moves;
+		return move;
 	}
 
-	Moves findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s) {
+	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c) {
+		Move move;
+		// we can only have literals in our conjunction!  collect them
+		class LiteralCollector : public SentenceVisitor {
+		public:
+			LiteralCollector() : ignoreNextLiteral(false) {};
+			std::vector<const Sentence*> lits;
+			bool ignoreNextLiteral;
+
+			void accept(const Sentence& s) {
+				if (!dynamic_cast<const Negation*>(&s) && !dynamic_cast<const Atom*>(&s) ) {
+					throw std::runtime_error("must have only literals inside conjunction when finding moves!");
+				}
+				if (dynamic_cast<const Negation*>(&s)) {
+					const Negation* n = dynamic_cast<const Negation*>(&s);
+					// ensure we are being applied to a literal
+					if (!dynamic_cast<const Atom*>(&(*n->sentence()))) {
+						throw std::runtime_error("negation can only be applied to an atom when finding moves");
+					}
+					lits.push_back(&s);
+					ignoreNextLiteral = true;
+				} else {
+					if (ignoreNextLiteral) {
+						ignoreNextLiteral = false;
+						return;
+					}
+					lits.push_back(&s);
+				}
+			}
+		} litCollector;
+
+		c.visit(litCollector);
+
+
+	}
+
+	Move findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s) {
 		return findMovesForLiquidLiteral(d, m, s);
 	}
 }
 
-Moves findMovesFor(const Domain& d, const Model& m, const Sentence &s);
+Move findMovesFor(const Domain& d, const Model& m, const Sentence &s);
 #endif
