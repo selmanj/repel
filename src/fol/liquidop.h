@@ -10,6 +10,10 @@ public:
 	LiquidOp(const LiquidOp& neg) : s_(neg.s_) {}; // shallow copy
 	virtual ~LiquidOp() {};
 
+	LiquidOp& operator=(const LiquidOp& b) {
+		s_ = b.s_;
+		return *this;
+	};
 	boost::shared_ptr<Sentence> sentence() {return s_;};
 	boost::shared_ptr<const Sentence> sentence() const {return s_;};
 private:

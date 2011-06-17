@@ -12,6 +12,13 @@ public:
 	Disjunction(const Disjunction& a) : left_(a.left_), right_(a.right_) {};	// shallow copy
 	virtual ~Disjunction() {};
 
+	Disjunction& operator=(const Disjunction& b) {
+		left_ = b.left_;
+		right_ = b.right_;
+
+		return *this;
+	}
+
 	boost::shared_ptr<Sentence> left() {return left_;};
 	boost::shared_ptr<const Sentence> left() const {return left_;};
 	boost::shared_ptr<Sentence> right() {return right_;};

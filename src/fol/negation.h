@@ -11,6 +11,11 @@ public:
 	Negation(const Negation& neg) : s_(neg.s_) {}; // shallow copy
 	virtual ~Negation() {};
 
+	Negation& operator=(const Negation& n) {
+		s_ = n.s_;
+		return *this;
+	}
+
 	boost::shared_ptr<Sentence> sentence() {return s_;};
 	boost::shared_ptr<const Sentence> sentence() const {return s_;};
 

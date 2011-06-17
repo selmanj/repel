@@ -4,6 +4,19 @@
 
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
+#include <sstream>
+#include <vector>
+
+std::string modelToString(const Model& m) {
+	std::stringstream stream;
+
+	for (Model::const_iterator it = m.begin(); it != m.end(); it++) {
+		const Atom a = it->first;
+		SISet set = it->second;
+		stream << a.toString() << " @ " << set.toString() << std::endl;
+	}
+	return stream.str();
+}
 
 void Domain::setMaxInterval(const Interval& maxInterval) {
 	maxInterval_ = Interval(maxInterval);
@@ -27,6 +40,14 @@ bool Domain::isLiquid(const std::string& predicate) const {
 unsigned long Domain::score(const WSentence& s, const Model& m) const {
 	SISet sat = satisfied(*(s.sentence()), m);
 	return sat.size() * s.weight();
+}
+
+unsigned long Domain::score(const Model& m) const {
+	unsigned long sum = 0;
+	for (std::vector<WSentence>::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+		sum += score(*it, m);
+	}
+	return sum;
 }
 
 SISet Domain::satisfied(const Sentence& s, const Model& m) const {

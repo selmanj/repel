@@ -30,6 +30,14 @@ public:
 		: left_(a.left_), right_(a.right_), rels_(a.rels_) {};
 	virtual ~Conjunction() {};
 
+	Conjunction& operator=(const Conjunction& b) {
+		left_ = b.left_;
+		right_ = b.right_;
+		rels_ = b.rels_;
+
+		return *this;
+	}
+
 	boost::shared_ptr<Sentence> left() {return left_;};
 	boost::shared_ptr<const Sentence> left() const {return left_;};
 	boost::shared_ptr<Sentence> right() {return right_;};

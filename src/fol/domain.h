@@ -28,12 +28,14 @@ struct atomcmp {
 
 typedef std::map<Atom, SISet, atomcmp> Model;
 
+std::string modelToString(const Model& m);
+
 class Domain {
 public:
 	template <class FactsForwardIterator, class FormForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd)
-			: maxInterval_(0,0), formulas_(formulasBegin, formulasEnd) {
+			: dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(formulasBegin, formulasEnd) {
 
 		// create a class for collecting predicate names
 		PredCollector predCollector;
@@ -100,11 +102,17 @@ public:
 	virtual ~Domain() {};
 
 	const std::vector<WSentence>& formulas() const {return formulas_;};
+	const std::set<std::string>& observedPredicates() const {return obsPreds_;};
 	Model defaultModel() const {return observations_;};
 	Interval maxInterval() const {return maxInterval_;};
 	void setMaxInterval(const Interval& maxInterval);
+
 	bool isLiquid(const std::string& predicate) const;
+	bool dontModifyObsPreds() const {return dontModifyObsPreds_;};
+	void setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
+
 	unsigned long score(const WSentence& s, const Model& m) const;
+	unsigned long score(const Model& m) const;
 
 	SISet satisfied(const Sentence& s, const Model& m) const;
 	SISet satisfiedAtom(const Atom& a, const Model& m) const;
@@ -123,6 +131,8 @@ public:
 
 
 private:
+	bool dontModifyObsPreds_;
+
 	std::set<std::string> obsPreds_;
 	std::set<std::string> unobsPreds_;
 	std::set<std::string> constants_;

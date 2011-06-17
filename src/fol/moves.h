@@ -26,16 +26,19 @@ struct Move {
 	std::vector<change> toDel;
 
 	std::string toString() const;
+	bool isEmpty() const;
 };
 
 namespace {
-	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s);
-	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c);
-	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis);
-	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s);
+	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
+	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval &si);
+	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval &si);
+	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si);
 
-	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s) {
+	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si) {
 		Move move;
+		if (si.size() == 0) return move;
+
 		if (dynamic_cast<const Atom*>(&s) || dynamic_cast<const Negation*>(&s)) {
 			const Atom* a;
 			bool isNegation=false;
@@ -52,27 +55,17 @@ namespace {
 			if (!a->isGrounded()) {
 				throw std::runtime_error("cannot handle atoms with variables at the moment!");
 			}
-			// now that those checks are out of the way, find where it's not satisfied
-			SISet sat = d.satisfied(*a, m);
-			// ensure sat stays liquid
-			sat.setForceLiquid(true);
-			// Our moves are single span intervals, so choose one randomly
+			if (d.dontModifyObsPreds()
+					&& d.observedPredicates().find(a->name()) != d.observedPredicates().end()) {
+				// this predicate is an observed predicate; we can't change it.  return an empty move
+				return move;
+			}
 			if (isNegation) {
 				// we want to delete span intervals where its true
-
-				if (sat.size() == 0) return move;
-
-				int idx = rand() % sat.set().size();
-				SpanInterval si = set_at(sat.set(), idx);
 				Move::change change = boost::make_tuple(*a, si);
 				move.toDel.push_back(change);
 			} else {
-				// work with the compliment
-				SISet satComp = sat.compliment();
-				if (satComp.size() == 0) return move;
 				// we want to add span intervals where its false
-				int idx = rand() % satComp.set().size();
-				SpanInterval si = set_at(satComp.set(), idx);
 				Move::change change = boost::make_tuple(*a, si);
 				move.toAdd.push_back(change);
 			}
@@ -80,16 +73,8 @@ namespace {
 		return move;
 	}
 
-	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c) {
+	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval& si) {
 		Move move;
-		// find an interval to satisfy
-		SISet sat = d.liqSatisfiedConjunction(c, m);
-		sat.setForceLiquid(true);
-		sat = sat.compliment();
-
-		if (sat.size() == 0) return move;
-		int idx = rand() % sat.set().size();
-		SpanInterval si = set_at(sat.set(), idx);
 
 		// we can only have literals in our conjunction!  collect them
 		class LiteralCollector : public SentenceVisitor {
@@ -135,10 +120,10 @@ namespace {
 		return move;
 	}
 
-	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis) {
+	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval& si) {
 		std::vector<Move> moves;
-		std::vector<Move> movesL = findMovesForLiquid(d, m, *dis.left());
-		std::vector<Move> movesR = findMovesForLiquid(d, m, *dis.right());
+		std::vector<Move> movesL = findMovesForLiquid(d, m, *dis.left(), si);
+		std::vector<Move> movesR = findMovesForLiquid(d, m, *dis.right(), si);
 
 		moves.insert(moves.end(), movesL.begin(), movesL.end());
 		moves.insert(moves.end(), movesR.begin(), movesR.end());
@@ -146,21 +131,27 @@ namespace {
 		return moves;
 	}
 
-	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s) {
+	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si) {
 		std::vector<Move> moves;
-		if (dynamic_cast<const Negation *>(&s) || dynamic_cast<const Atom *>(&s))
-			moves.push_back(findMovesForLiquidLiteral(d, m, s));
-		else if (dynamic_cast<const Conjunction *>(&s)) {
+		if (dynamic_cast<const Negation *>(&s) || dynamic_cast<const Atom *>(&s)) {
+			Move move = findMovesForLiquidLiteral(d, m, s, si);
+			if (!move.isEmpty()) moves.push_back(move);
+		} else if (dynamic_cast<const Conjunction *>(&s)) {
 			const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
-			moves.push_back(findMovesForLiquidConjunction(d, m, *c));
+			Move move = findMovesForLiquidConjunction(d, m, *c, si);
+			if (!move.isEmpty()) moves.push_back(move);
 		} else if (dynamic_cast<const Disjunction *>(&s)) {
 			const Disjunction* dis = dynamic_cast<const Disjunction *>(&s);
-			std::vector<Move> disMoves = findMovesForLiquidDisjunction(d, m, *dis);
+			std::vector<Move> disMoves = findMovesForLiquidDisjunction(d, m, *dis, si);
 			moves.insert(moves.end(), disMoves.begin(), disMoves.end());
 		}
-		return moves;	// empty move
+		return moves;
 	}
 }
 
+bool canFindMovesFor(const Sentence &s);
 std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s);
+std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis);
+Model executeMove(const Domain& d, const Move& move, const Model& model);
+Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
 #endif
