@@ -10,7 +10,7 @@
 #endif
 
 #ifndef PACKAGE_STRING
-#define PACKAGE_STRING "0.3"
+#define PACKAGE_STRING "0.4"
 #endif
 
 #include <boost/program_options.hpp>
