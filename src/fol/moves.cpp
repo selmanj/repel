@@ -13,6 +13,7 @@
 #include "domain.h"
 #include "sentence.h"
 #include "../siset.h"
+#include "../log.h"
 
 std::string Move::toString() const {
 	std::stringstream str;
@@ -165,7 +166,8 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 			movesForSentences.push_back(i);
 		} else {
 			// TODO: use a logging warning instead of stderr
-			std::cerr << "WARNING: currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\"." << std::endl;
+			//std::cerr << "WARNING: currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\"." << std::endl;
+			LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\".";
 		}
 	}
 	if (movesForSentences.size()==0) {
@@ -180,6 +182,7 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 	Model bestModel = currentModel;
 
 	for (int iteration=1; iteration < numIterations+1; iteration++) {
+		LOG(LOG_DEBUG) << "currentModel: " << modelToString(currentModel);
 		// make a list of the current unsatisfied formulas we can calc moves for
 		std::vector<int> notFullySatisfied = movesForSentences;
 		for (std::vector<int>::iterator it = notFullySatisfied.begin(); it != notFullySatisfied.end(); ) {
@@ -203,6 +206,7 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 
 		// pick one at random
 		WSentence toImprove = d.formulas().at(notFullySatisfied[rand() % notFullySatisfied.size()]);
+		LOG(LOG_DEBUG) << "choosing sentence: " << toImprove.sentence()->toString() << " to improve.";
 		// find the set of moves that improve it
 		std::vector<Move> moves = findMovesFor(d, currentModel, *(toImprove.sentence()));
 		if (moves.size() == 0) {
@@ -210,30 +214,50 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 					<< " but couldn't find any (even though its violated)!  continuing..." << std::endl;
 			continue; // TODO: this shouldn't happen, right?
 		}
+		if (FileLog::globalLogLevel() <= LOG_DEBUG) {
+			std::ostringstream vecStream;
+			for (std::vector<Move>::const_iterator it = moves.begin(); it != moves.end(); it++) {
+				if (it != moves.begin()) vecStream << ", ";
+				vecStream << "(" << it->toString() << ")";
+			}
+			LOG(LOG_DEBUG) << "moves to consider: " << vecStream.str();
+		}
 		if (((double)rand()) / RAND_MAX < probOfRandomMove) {
 			// take a random move
 			Move aMove = moves[rand() % moves.size()];
+			LOG(LOG_DEBUG) << "taking random move: " << aMove.toString();
 			currentModel = executeMove(d, aMove, currentModel);
 		} else {
 			// find the models resulting from each move, and choose the highest scoring model as our next model
 			unsigned long bestLocalScore = 0;
 			std::vector<Model> bestLocalModels;
+			std::vector<Move> bestLocalMoves;
 			bestLocalModels.push_back(currentModel);
 			for (std::vector<Move>::const_iterator it=moves.begin(); it != moves.end(); it++) {
 				Model nextModel = executeMove(d, *it, currentModel);
 				unsigned long nextScore = d.score(nextModel);
 				if (nextScore > bestLocalScore) {
 					bestLocalModels.clear();
+					bestLocalMoves.clear();
 					bestLocalScore = nextScore;
 					bestLocalModels.push_back(nextModel);
+					bestLocalMoves.push_back(*it);
 				} else if (nextScore == bestLocalScore) {
 					bestLocalModels.push_back(nextModel);
+					bestLocalMoves.push_back(*it);
 				}
 			}
-			currentModel = bestLocalModels[rand() % bestLocalModels.size()];	// choose one at random
+			int idx = rand() % bestLocalModels.size();	// choose one at random
+			currentModel = bestLocalModels[idx];
+			LOG(LOG_DEBUG) << "choosing best local move: " << bestLocalMoves[idx].toString();
 		}
 		// evaluate and see if our model is better than any found so far
-		if (d.score(currentModel) > bestScore) bestModel = currentModel;
+		unsigned long newScore = d.score(currentModel);
+		if (newScore > bestScore) {
+			LOG(LOG_DEBUG) << "remembering this model as best scoring so far";
+			bestModel = currentModel;
+			bestScore = newScore;
+		}
 	}
 
 	return bestModel;

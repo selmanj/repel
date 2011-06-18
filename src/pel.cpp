@@ -19,14 +19,20 @@ namespace po = boost::program_options;
 #include "fol/fol.h"
 #include "fol/folparser.h"
 #include "fol/domain.h"
+#include "log.h"
+#include "fol/moves.h"
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	    ("help", "produce help message")
+	    ("version,v", "print version and exit")
 	    ("max", po::value<unsigned int>(), "maximum value an interval endpoint can take")
 	    ("min", po::value<unsigned int>(), "minimum value an interval endpoint can take")
+	    ("evalModel,e", "simply print the model weight of the facts file")
+	    ("prob,p", po::value<double>()->default_value(0.25), "probability of taking a random move")
+	    ("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
 	;
 
 	po::options_description hidden("Hidden options");
@@ -45,11 +51,26 @@ int main(int argc, char* argv[]) {
 	po::store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
 	po::notify(vm);
 
+	if (vm.count("version")) {
+		std::cout << PACKAGE_STRING << std::endl;
+		return 0;
+	}
+
 	if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
 	    std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
 		std::cout << desc << std::endl;
 	    return 1;
 	}
+
+
+
+	// setup our logging facilities
+	FILE* debugFile = fopen("debug.log", "w");
+	if (!debugFile) std::cerr << "unable to open debug.log for logging - logging to stderr";
+	else FilePolicy::stream() = debugFile;
+	FileLog::globalLogLevel() = LOG_DEBUG;
+
+	LOG(LOG_INFO) << "Opened log file for new session";
 
 	boost::shared_ptr<Domain> d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
 	if (vm.count("max") || vm.count("min")) {
@@ -61,18 +82,29 @@ int main(int argc, char* argv[]) {
 
 	Model model = d->defaultModel();
 
-	std::cout << "model size: " << model.size() << std::endl;
-	unsigned long sum = 0;
-	// evaluate the weight of each formula in the domain
-	BOOST_FOREACH(const WSentence formula, d->formulas()) {
-		SISet satisfied = d->satisfied(*(formula.sentence()), model);
-		unsigned long weight = d->score(formula, model);
-		sum += weight;
-		std::cout << "formula: (" << formula.sentence()->toString() << ")" << std::endl;
-		std::cout << "\tsatisfied @ " << satisfied.toString() << std::endl;
-		std::cout << "\tscore contributed: " << weight << std::endl;
-	}
-	std::cout << "total score of model: " << sum << std::endl;
+	LOG_PRINT(LOG_INFO) << "model size: " << model.size();
 
+	if (vm.count("evalModel")) {
+		LOG(LOG_INFO) << "evaluating model...";
+		unsigned long sum = 0;
+		// evaluate the weight of each formula in the domain
+		BOOST_FOREACH(const WSentence formula, d->formulas()) {
+			SISet satisfied = d->satisfied(*(formula.sentence()), model);
+			unsigned long weight = d->score(formula, model);
+			sum += weight;
+			LOG_PRINT(LOG_INFO) << "formula: (" << formula.sentence()->toString() << ")";
+			LOG_PRINT(LOG_INFO) << "\tsatisfied @ " << satisfied.toString();
+			LOG_PRINT(LOG_INFO) << "\tscore contributed: " << weight;
+		}
+		LOG_PRINT(LOG_INFO) << "total score of model: " << sum;
+	} else {
+		double p = vm["prob"].as<double>();
+		unsigned int iterations = vm["iterations"].as<unsigned int>();
+
+		LOG(LOG_INFO) << "searching for a maximum-weight model, with p=" << p << " and iterations=" << iterations;
+		Model defModel = d->defaultModel();
+		Model maxModel = maxWalkSat(*d, iterations, p, &defModel);
+		LOG_PRINT(LOG_INFO) << "Best model found: "<< modelToString(maxModel);
+	}
 	return 0;
 }

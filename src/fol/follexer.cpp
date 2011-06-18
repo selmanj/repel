@@ -25,7 +25,8 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 				if (c >= 'A' && c <= 'Z'
 						|| c >= 'a' && c <= 'z'
 						|| c >= '0' && c <= '9'
-						|| c == '_') {
+						|| c == '_'
+						|| c == '-') {
 					input->get();
 					ident.push_back(c);
 				} else {
