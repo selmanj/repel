@@ -9,6 +9,10 @@
 #include "../config.h"
 #endif
 
+#ifndef PACKAGE_STRING
+#define PACKAGE_STRING "0.3"
+#endif
+
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 #include <boost/foreach.hpp>

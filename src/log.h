@@ -10,6 +10,7 @@
 
 #include <sstream>
 #include <cstdio>
+#include <ctime>
 
 enum LOG_LEVEL {LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG};
 

@@ -395,12 +395,12 @@ boost::shared_ptr<Sentence> doParseFormula_paren(iters<ForwardIterator> &its) {
 		boost::shared_ptr<Sentence> s = doParseFormula(its);
 		consumeTokenType(FOLParse::CLOSE_PAREN, its);
 		return s;
-	} else if (peekTokenType(FOLParse::TRUE, its)) {
-		consumeTokenType(FOLParse::TRUE, its);
+	} else if (peekTokenType(FOLParse::TTRUE, its)) {
+		consumeTokenType(FOLParse::TTRUE, its);
 		boost::shared_ptr<Sentence> s(new BoolLit(true));
 		return s;
-	} else if (peekTokenType(FOLParse::FALSE, its)) {
-		consumeTokenType(FOLParse::FALSE, its);
+	} else if (peekTokenType(FOLParse::TFALSE, its)) {
+		consumeTokenType(FOLParse::TFALSE, its);
 		boost::shared_ptr<Sentence> s(new BoolLit(false));
 		return s;
 	} else {
@@ -481,12 +481,12 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 		consumeTokenType(FOLParse::OPEN_PAREN, its);
 		s = doParseStaticFormula(its);
 		consumeTokenType(FOLParse::CLOSE_PAREN, its);
-	} else if (peekTokenType(FOLParse::TRUE, its)) {
-		consumeTokenType(FOLParse::TRUE, its);
+	} else if (peekTokenType(FOLParse::TTRUE, its)) {
+		consumeTokenType(FOLParse::TTRUE, its);
 		boost::shared_ptr<Sentence> s(new BoolLit(true));
 		return s;
-	} else if (peekTokenType(FOLParse::FALSE, its)) {
-		consumeTokenType(FOLParse::FALSE, its);
+	} else if (peekTokenType(FOLParse::TFALSE, its)) {
+		consumeTokenType(FOLParse::TFALSE, its);
 		boost::shared_ptr<Sentence> s(new BoolLit(false));
 		return s;
 	} else {
