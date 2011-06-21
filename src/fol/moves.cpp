@@ -47,52 +47,104 @@ bool canFindMovesFor(const Sentence &s) {
 }
 
 std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis) {
+	LOG(LOG_DEBUG) << "inside findMovesForForm1()";
 	std::vector<Move> moves;
 	// TODO: ensure sentence s is of the proper form
 	const Sentence *head;
-	const Sentence *body;
+	const Negation *body;
 	if (dynamic_cast<const Negation*>(&(*dis.left()))) {
-		body = &(*dis.left());
+		body = dynamic_cast<const Negation*>(&(*dis.left()));
 		head = &(*dis.right());
 	} else {
-		body = &(*dis.right());
+		body = dynamic_cast<const Negation*>(&(*dis.right()));
 		head = &(*dis.left());
 	}
 
+	// we will assume the head side is a diamond op applied to a liquid op applied to a disjunction
+	const DiamondOp* headDia = dynamic_cast<const DiamondOp*>(head);
+	if (!headDia) {
+		LOG(LOG_ERROR) << "incorrect sentence given for findMovesForm1: "+ dis.toString();
+		return moves;
+	}
+	const LiquidOp* headLiq = dynamic_cast<const LiquidOp*>(&*headDia->sentence());
+	if (!headLiq) {
+		LOG(LOG_ERROR) << "incorrect sentence given for findMovesForm1: "+ dis.toString();
+		return moves;
+	}
+	const Disjunction* headDis = dynamic_cast<const Disjunction*>(&*headLiq->sentence());
+	if (!headDis) {
+		LOG(LOG_ERROR) << "incorrect sentence given for findMovesForm1: "+ dis.toString();
+		return moves;
+	}
+
+	// get the list of items in the disjunction
+	std::vector<const Sentence*> disItems = getDisjunctionArgs(*headDis);
+	size_t disSizeBefore = disItems.size();
+	assert(disSizeBefore >= 2);
+
+
+	// finally, ensure that our body exists in the disjunction items (and remove it)
+	for (std::vector<const Sentence *>::iterator it = disItems.begin(); it != disItems.end();) {
+		// TODO: acquire summer grifter
+		if (**it == *body->sentence()) {
+			it = disItems.erase(it);
+		} else {
+			it++;
+		}
+	}
+
+	if (disSizeBefore == disItems.size()) {
+		LOG(LOG_ERROR) << "incorrect sentence given for findMovesForm1: "+ dis.toString();
+		return moves;
+	}
+
+	boost::shared_ptr<Sentence> phi2;
+	if (disItems.size() > 1) {
+		boost::shared_ptr<Sentence> newDis = wrapInDisjunction(disItems);
+		phi2 = boost::shared_ptr<Sentence>(new LiquidOp(newDis));
+	} else {
+		boost::shared_ptr<Sentence> newItem(disItems[0]->clone());
+		phi2 = boost::shared_ptr<Sentence>(new LiquidOp(newItem));
+	}
+	std::cout << "PHI2 = " << phi2->toString() << std::endl;
+	//boost::shared_ptr<Disjunction> disWithoutPrecedent =
+
 	// find where this statement is not true
 	SISet falseAt = d.satisfied(dis, m).compliment();
-	std::cout << "false at :" << falseAt.toString() << std::endl;
+	//std::cout << "false at :" << falseAt.toString() << std::endl;
+	LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
 
 	// pick a span interval at random
 	SpanInterval toSatisfy = set_at(falseAt.set(), rand() % falseAt.set().size());
 	if (toSatisfy.finish().start() != toSatisfy.finish().finish()) {
-		std::cout << "WARN: found an interval where the endpoints are not the same in findMovesForForm1(): "
-				<< toSatisfy.toString() << std::endl;
+		LOG_PRINT(LOG_WARN) << "found an interval where the endpoints are not the same in findMovesForForm1()!: "
+				<< toSatisfy.toString();
 	}
-	unsigned int b = toSatisfy.finish().start();
-	// case 1:
-	{
-		if (b != d.maxInterval().finish()) {
-			SISet headTrueAt = d.satisfied(*head, m);
-			// find the point after b where head is true at
-			SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish(), d.maxInterval());
-			SISet toScan(true, d.maxInterval());
-			toScan.add(toIntersect);
-			toScan = intersection(headTrueAt, toScan);
+	if (headDia->relations().find(Interval::MEETS) != headDia->relations().end()) {
+		unsigned int b = toSatisfy.finish().start();
+		// case 1:  extend the precedent so that it meets with the next spot the consequent is true at
+		{
+			if (b != d.maxInterval().finish()) {
+				SISet headTrueAt = d.satisfied(*head, m);
+				// find the point after b where head is true at
+				SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish(), d.maxInterval());
+				SISet toScan(true, d.maxInterval());
+				toScan.add(toIntersect);
+				toScan = intersection(headTrueAt, toScan);
 
-			unsigned int t;
-			if (toScan.size() == 0) {
-				t = b+1;
-			} else {
-				t = set_at(toScan.set(), 0).start().start();
+				unsigned int t;
+				if (toScan.size() == 0) {
+					t = b+1;
+				} else {
+					t = set_at(toScan.set(), 0).start().start();
+				}
+				std::cout << "b = " << b << " t = " << t << std::endl;
+				// satisfy head over that interval
+				std::vector<Move> localMoves = findMovesForLiquid(d, m, *head, SpanInterval(b,t,b,t,d.maxInterval()));
+				moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 			}
-			std::cout << "b = " << b << " t = " << t << std::endl;
-			// satisfy head over that interval
-			std::vector<Move> localMoves = findMovesForLiquid(d, m, *head, SpanInterval(b,t,b,t,d.maxInterval()));
-			moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 		}
 	}
-
 	return moves;
 
 }
