@@ -106,12 +106,14 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 		boost::shared_ptr<Sentence> newItem(disItems[0]->clone());
 		phi2 = boost::shared_ptr<Sentence>(new LiquidOp(newItem));
 	}
+	const LiquidOp* phi2Liq = dynamic_cast<const LiquidOp*>(&*phi2);
+	assert(phi2Liq);
 	std::cout << "PHI2 = " << phi2->toString() << std::endl;
 	//boost::shared_ptr<Disjunction> disWithoutPrecedent =
 
 	// find where this statement is not true
 	SISet falseAt = d.satisfied(dis, m).compliment();
-	//std::cout << "false at :" << falseAt.toString() << std::endl;
+	std::cout << "false at :" << falseAt.toString() << std::endl;
 	LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
 
 	// pick a span interval at random
@@ -120,28 +122,56 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 		LOG_PRINT(LOG_WARN) << "found an interval where the endpoints are not the same in findMovesForForm1()!: "
 				<< toSatisfy.toString();
 	}
-	if (headDia->relations().find(Interval::MEETS) != headDia->relations().end()) {
+	if (headDia->relations().find(Interval::MEETSI) != headDia->relations().end()) {
 		unsigned int b = toSatisfy.finish().start();
-		// case 1:  extend the precedent so that it meets with the next spot the consequent is true at
+		// case 1 and 2:  extend the precedent (or consequent) so that it meets with the next spot the consequent is true at
 		{
+			SISet phi2TrueAt = d.satisfied(*phi2, m);
 			if (b != d.maxInterval().finish()) {
-				SISet headTrueAt = d.satisfied(*head, m);
-				// find the point after b where head is true at
+				// find the point after b where phi2 is true at
 				SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish(), d.maxInterval());
 				SISet toScan(true, d.maxInterval());
 				toScan.add(toIntersect);
-				toScan = intersection(headTrueAt, toScan);
+				toScan = intersection(phi2TrueAt, toScan);
 
 				unsigned int t;
-				if (toScan.size() == 0) {
-					t = b+1;
-				} else {
-					t = set_at(toScan.set(), 0).start().start();
+				if (toScan.size() != 0) {
+					t = set_at(toScan.set(), 0).start().start()-1;
+					std::cout << "b = " << b << " t = " << t << std::endl;
+					// satisfy precedent over that expinterval
+					std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(b,t,b,t,d.maxInterval()));
+					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 				}
-				std::cout << "b = " << b << " t = " << t << std::endl;
-				// satisfy head over that interval
-				std::vector<Move> localMoves = findMovesForLiquid(d, m, *head, SpanInterval(b,t,b,t,d.maxInterval()));
-				moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+				// option 2, add the consequent
+				if (toScan.size() == 0) {
+					std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b,b+1,b,b+1,d.maxInterval()));
+					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+				} else {
+					t = set_at(toScan.set(), 0).start().start()-1;
+					std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b,b+1,b,b+1,d.maxInterval()));
+					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+				}
+			}
+			if (b != d.maxInterval().start()) {
+				// option 3, delete precedent all the way until consequent is true
+				SpanInterval toIntersect(d.maxInterval().start(), b, d.maxInterval().start(), b, d.maxInterval());
+				SISet toScan(true, d.maxInterval());
+				toScan.add(toIntersect);
+				toScan = intersection(phi2TrueAt, toScan);
+
+				unsigned int t;
+				if (toScan.size() != 0) {
+					t = set_at(toScan.set(), toScan.set().size()-1).finish().finish();
+					std::cout << "now b = " << b << " t = " << t << std::endl;
+					// delete precedent over that interval
+					std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b,d.maxInterval()));
+					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+				} else {
+					// just delete it all the way to maxInterval.begin()
+					std::vector<Move> localMoves = findMovesForLiquid(d, m, *body,
+							SpanInterval(d.maxInterval().start(), b, d.maxInterval().start(), b, d.maxInterval()));
+					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+				}
 			}
 		}
 	}

@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTest2) {
 
 	Domain d = loadDomainWithStreams(facts, formulas);
 	d.setDontModifyObsPreds(false);
-	srand(7);
+	srand(2);
 
 	const Disjunction *s = dynamic_cast<const Disjunction *>(&(*d.formulas().at(0).sentence()));
 	std::vector<Move> moves = findMovesForForm1(d, d.defaultModel(), *s);
