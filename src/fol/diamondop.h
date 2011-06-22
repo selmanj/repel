@@ -12,6 +12,11 @@ public:
 		: s_(sentence) {
 			rels_ = std::set<Interval::INTERVAL_RELATION>(DiamondOp::defaultRelations().begin(), DiamondOp::defaultRelations().end());
 	}
+	DiamondOp(boost::shared_ptr<Sentence> sentence,
+			Interval::INTERVAL_RELATION relation)
+		: s_(sentence), rels_() {
+		rels_.insert(relation);
+	}
 	template <class InputIterator>
 	DiamondOp(boost::shared_ptr<Sentence> sentence,
 			InputIterator begin,
