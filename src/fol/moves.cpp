@@ -176,7 +176,7 @@ bool isFormula3Type(const Sentence &s, const Domain &d) {
 
 // TODO: not sure if below function works correctly when deleting phi1 as it may delete more than necessary... does this matter??
 std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis) {
-	LOG(LOG_DEBUG) << "inside findMovesForForm1()";
+	LOG(LOG_DEBUG) << "inside findMovesForForm1() with sentence: " << dis.toString();
 	std::vector<Move> moves;
 	// TODO: ensure sentence s is of the proper form
 	const Sentence *head;
@@ -237,7 +237,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 	}
 	const LiquidOp* phi2Liq = dynamic_cast<const LiquidOp*>(&*phi2);
 	assert(phi2Liq);
-	std::cout << "PHI2 = " << phi2->toString() << std::endl;
 	//boost::shared_ptr<Disjunction> disWithoutPrecedent =
 
 
@@ -252,7 +251,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 			boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
 			// find where this statement is not true
 			falseAt = d.satisfied(*disSingle, m).compliment();
-			std::cout << "false at :" << falseAt.toString() << std::endl;
 			LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
 		}
 		if (falseAt.size() != 0) {
@@ -273,7 +271,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 					unsigned int t;
 					if (toScan.size() != 0) {
 						t = set_at(toScan.set(), 0).start().start()-1;
-						std::cout << "b = " << b << " t = " << t << std::endl;
 						// satisfy precedent over that expinterval
 						std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(b,t,b,t,d.maxInterval()));
 						moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -298,7 +295,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 					unsigned int t;
 					if (toScan.size() != 0) {
 						t = set_at(toScan.set(), toScan.set().size()-1).finish().finish();
-						std::cout << "now b = " << b << " t = " << t << std::endl;
 						// delete precedent over that interval
 						std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b,d.maxInterval()));
 						moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -322,7 +318,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 			boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
 			// find where this statement is not true
 			falseAt = d.satisfied(*disSingle, m).compliment();
-			std::cout << "false at :" << falseAt.toString() << std::endl;
 			LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
 		}
 		if (falseAt.size() != 0) {
@@ -342,7 +337,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 					unsigned int t;
 					if (toScan.size() != 0) {
 						t = set_at(toScan.set(), toScan.set().size()-1).finish().finish()+1;
-						std::cout << "b = " << b << " t = " << t << std::endl;
 						// satisfy precedent over that expinterval
 						std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(t,b-1,t,b-1,d.maxInterval()));
 						moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -367,7 +361,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 					unsigned int t;
 					if (toScan.size() != 0) {
 						t = set_at(toScan.set(), 0).start().start()-1;
-						std::cout << "now b = " << b << " t = " << t << std::endl;
 						// delete precedent over that interval
 						std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(b,t,b,t,d.maxInterval()));
 						moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -390,7 +383,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 			boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
 			// find where this statement is not true
 			falseAt = d.satisfied(*disSingle, m).compliment();
-			std::cout << "false at :" << falseAt.toString() << std::endl;
 			LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
 		}
 		if (falseAt.size() != 0) {
@@ -410,7 +402,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 					unsigned int t;
 					if (toScan.size() != 0) {
 						t = set_at(toScan.set(), 0).finish().finish();
-						std::cout << "b = " << b << " t = " << t << std::endl;
 						// satisfy precedent over that expinterval
 						std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(b,t,b,t,d.maxInterval()));
 						moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -425,7 +416,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 					SISet toScan(true, d.maxInterval());
 					toScan.add(toIntersect);
 					toScan = intersection(phi2TrueAt, toScan);
-					std::cout << "toScan = " << toScan.toString() << std::endl;
 
 					unsigned int t;
 					if (toScan.size() == 0) {
@@ -433,7 +423,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 						t = 0;
 					} else {
 						t = set_at(toScan.set(), toScan.set().size()-1).finish().finish()+1;
-						std::cout << "t = " << t << std::endl;
 					}
 					std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b,d.maxInterval()));
 					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -459,8 +448,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 				boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
 				// find where this statement is not true
 				falseAt = d.satisfied(*disSingle, m).compliment();
-				std::cout << "false atss :" << falseAt.toString() << std::endl;
-				LOG(LOG_DEBUG) << "false atss :" << falseAt.toString();
+				LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
 			}
 			if (falseAt.size() != 0) {
 				// TODO: only two moves??
@@ -482,7 +470,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 				} else {
 					t = b-1;
 				}
-				std::cout << "b = " << b << " t = " << t << std::endl;
 				// satisfy phi2 over that interval
 				std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq, SpanInterval(t,b,t,b,d.maxInterval()));
 				moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -502,7 +489,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 
 std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis) {
 	std::vector<Move> moves;
-	LOG(LOG_DEBUG) << "inside findMovesForForm2()";
+	LOG(LOG_DEBUG) << "inside findMovesForForm2() with sentence: " << dis.toString();
 
 	// extract our precedent and consequent from dis
 	const Negation *precedent;
@@ -611,7 +598,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
 
 	// CASE 2: extend phiPrime to satisfy violation at b
 	if (toScan.size() == 0) {
-		t = b+2;
+		t = b+1;
 	}
 	std::vector<Move> localMoves = findMovesForLiquid(d, m, *phiPrime, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
 	moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -644,7 +631,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
 
 std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis) {
 	std::vector<Move> moves;
-	LOG(LOG_DEBUG) << "inside findMovesForForm3()";
+	LOG(LOG_DEBUG) << "inside findMovesForForm3() with sentence: " << dis.toString();
 
 	// extract our precedent and consequent from dis
 	const Negation *leftAsNeg = dynamic_cast<const Negation *>(&*dis.left());
