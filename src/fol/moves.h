@@ -149,7 +149,8 @@ namespace {
 	}
 }
 
-bool canFindMovesFor(const Sentence &s);
+bool canFindMovesFor(const Sentence &s, const Domain &d);
+bool isFormula1Type(const Sentence &s, const Domain &d);
 std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s);
 std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis);
 Model executeMove(const Domain& d, const Move& move, const Model& model);
