@@ -24,6 +24,10 @@ public:
 			InputIterator begin,
 			InputIterator end)
 		: left_(left), right_(right), rels_(begin, end) {};
+	Conjunction(const boost::shared_ptr<Sentence>& left,
+			const boost::shared_ptr<Sentence>& right,
+			Interval::INTERVAL_RELATION rel)
+		: left_(left), right_(right), rels_() {rels_.insert(rel);}
 	Conjunction(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right)
 		: left_(left), right_(right), rels_(defaultRelations()) {}
 	Conjunction(const Conjunction& a)

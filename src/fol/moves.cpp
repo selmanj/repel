@@ -44,6 +44,10 @@ bool canFindMovesFor(const Sentence &s, const Domain &d) {
 		return true;		// this isn't really fair: TODO write a better test on liquid ops
 	} else if (isFormula1Type(s, d)) {
 		return true;
+	} else if (isFormula2Type(s, d)) {
+		return true;
+	} else if (isFormula3Type(s, d)) {
+		return true;
 	}
 	return false;
 }
@@ -89,6 +93,88 @@ bool isFormula1Type(const Sentence &s, const Domain &d) {
 	return false;
 }
 
+bool isFormula2Type(const Sentence &s, const Domain &d) {
+	// ensure it's a disjunction
+	const Disjunction *disjunc = dynamic_cast<const Disjunction *>(&s);
+	if (!disjunc) return false;
+	// ensure one side is a negation and the other side is not
+	const Sentence *consequent;
+	const Negation *precedent;
+	if (dynamic_cast<const Negation*>(&*disjunc->left()) && !dynamic_cast<const Negation*>(&*disjunc->right())) {
+		precedent = dynamic_cast<const Negation*>(&*disjunc->left());
+		consequent = &*disjunc->right();
+	} else if (!dynamic_cast<const Negation*>(&*disjunc->left()) && dynamic_cast<const Negation*>(&*disjunc->right())) {
+		precedent = dynamic_cast<const Negation*>(&*disjunc->right());
+		consequent = &*disjunc->left();
+	} else {
+		return false;
+	}
+
+	// ensure precedent is a conjunction of meets
+	const Conjunction *precConj = dynamic_cast<const Conjunction*>(&*precedent->sentence());
+	if (!precConj) {
+		return false;
+	}
+	std::vector<const Sentence *> conjArgs = getMeetsConjunctionArgs(*precConj);
+	if (conjArgs.size() < 2) return false;
+	const Sentence *phik = conjArgs.back();
+
+	// now make sure the consequent is diamond operator applied to a liq item
+	const DiamondOp *diamondop = dynamic_cast<const DiamondOp *>(consequent);
+	if (!diamondop) return false;
+	const LiquidOp *liqCons = dynamic_cast<const LiquidOp*>(&*diamondop->sentence());
+	if (!liqCons) return false;
+	const Disjunction *disCons = dynamic_cast<const Disjunction*>(&*liqCons->sentence());
+	if (!disCons) return false;
+
+	// now make sure that phik appears in the body somewhere
+	std::vector<const Sentence *> args = getDisjunctionArgs(*disCons);
+	BOOST_FOREACH(const Sentence *subS, args) {
+		if (*subS == *phik) return true;
+	}
+	return false;
+}
+
+bool isFormula3Type(const Sentence &s, const Domain &d) {
+	// ensure it's a disjunction
+	const Disjunction *disjunc = dynamic_cast<const Disjunction *>(&s);
+	if (!disjunc) return false;
+
+	const Negation *leftAsNeg = dynamic_cast<const Negation *>(&*disjunc->left());
+	const Negation *rightAsNeg = dynamic_cast<const Negation *>(&*disjunc->right());
+
+	// ensure both sides are negation
+	const Negation *consequent;
+	const Negation *precedent;
+	// consequent has the conjunction subtype
+	if (dynamic_cast<const Conjunction *>(&*leftAsNeg->sentence())
+			&& (dynamic_cast<const LiquidOp *>(&*rightAsNeg->sentence()) || dynamic_cast<const Atom*>(&*rightAsNeg->sentence()))) {
+		precedent = rightAsNeg;
+		consequent = leftAsNeg;
+	} else if (dynamic_cast<const Conjunction *>(&*rightAsNeg->sentence())
+			&& (dynamic_cast<const LiquidOp *>(&*leftAsNeg->sentence()) || dynamic_cast<const Atom*>(&*leftAsNeg->sentence()))) {
+		precedent = leftAsNeg;
+		consequent = rightAsNeg;
+	} else {
+		return false;
+	}
+
+	// ensure precedent is either liquid or a liq atom (or negation)
+	if (!dynamic_cast<const LiquidOp*>(&*precedent->sentence())) {
+		// its ok!  it could be an atom that is liquid
+		const Atom *atom = dynamic_cast<const Atom*>(&*precedent->sentence());
+		if (atom && !d.isLiquid(atom->name())) return false;
+		else if (!atom) return false;
+	}
+
+	// now ensure consequent is a meets conjunction
+	const Conjunction *consConj = dynamic_cast<const Conjunction *>(&*consequent->sentence());
+	std::vector<const Sentence *> conjArgs = getMeetsConjunctionArgs(*consConj);
+	if (conjArgs.size() < 2) return false;
+	return true;
+}
+
+// TODO: not sure if below function works correctly when deleting phi1 as it may delete more than necessary... does this matter??
 std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis) {
 	LOG(LOG_DEBUG) << "inside findMovesForForm1()";
 	std::vector<Move> moves;
@@ -412,8 +498,305 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 		}
 
 	return moves;
+}
+
+std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis) {
+	std::vector<Move> moves;
+	LOG(LOG_DEBUG) << "inside findMovesForForm2()";
+
+	// extract our precedent and consequent from dis
+	const Negation *precedent;
+	const Sentence *consequent;
+	if (dynamic_cast<const Negation*>(&*dis.left())
+			&& !dynamic_cast<const Negation*>(&*dis.right())) {
+		precedent = dynamic_cast<const Negation*>(&*dis.left());
+		consequent = &*dis.right();
+	} else if (!dynamic_cast<const Negation*>(&*dis.left())
+			&& dynamic_cast<const Negation*>(&*dis.right())) {
+		precedent = dynamic_cast<const Negation*>(&*dis.right());
+		consequent = &*dis.left();
+	} else {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 2: " << dis.toString();
+		return moves;
+	}
+
+	const Conjunction *precConj = dynamic_cast<const Conjunction*>(&*precedent->sentence());
+	if (!precConj) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 2: " << dis.toString();
+		return moves;
+	}
+	// extract all the sentences used in the meets conjunction
+	std::vector<const Sentence *> meetsArgs = getMeetsConjunctionArgs(*precConj);
+
+	// phik is the last element in the vector
+	const Sentence *phik = meetsArgs.back();
+	LOG(LOG_DEBUG) << "phik = " << phik->toString();
+
+	// make sure the consequent is diamond ops applied to a liq disjunction, containing phik
+	const DiamondOp *consDiamond = dynamic_cast<const DiamondOp*>(consequent);
+	if (!consDiamond) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 2: " << dis.toString();
+		return moves;
+	}
+	if (consDiamond->relations().find(Interval::MEETSI) == consDiamond->relations().end()) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 2: " << dis.toString();
+		return moves;
+	}
+	const LiquidOp *consLiquid = dynamic_cast<const LiquidOp*>(&*consDiamond->sentence());
+	if (!consLiquid) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 2: " << dis.toString();
+		return moves;
+	}
+	const Disjunction *consDisj = dynamic_cast<const Disjunction*>(&*consLiquid->sentence());
+	if (!consDisj) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 2: " << dis.toString();
+		return moves;
+	}
+
+	// now extract the arguments
+	std::vector<const Sentence*> disjArgs = getDisjunctionArgs(*consDisj);
+	bool phikFound = false;
+	// double check that one of them is equal to phik (and remove it)
+	for(std::vector<const Sentence*>::iterator it = disjArgs.begin(); it != disjArgs.end();) {
+		if (**it == *phik) {
+			phikFound = true;
+			it = disjArgs.erase(it);
+		} else {
+			it++;
+		}
+	}
+	if (!phikFound) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 2: " << dis.toString();
+		return moves;
+	}
+	// finally, wrap the leftover arguments as phiPrime
+	boost::shared_ptr<Sentence> phiPrime;
+	if (disjArgs.size() == 1) {
+		phiPrime = boost::shared_ptr<Sentence>(disjArgs.front()->clone());
+	} else {
+		phiPrime = wrapInDisjunction(disjArgs);
+	}
+
+	/////// DONE PARSING OUT IMPORTANT PIECES /////////
+
+	// pick an interval to satisfy where this sentence is violated
+	SISet violations = d.satisfiedDisjunction(dis, m);
+	violations = violations.compliment();
+
+	if (violations.size() == 0) {
+		LOG_PRINT(LOG_WARN) << "no moves to calculate for sentence \"" << dis.toString() << "\" - this probably shouldn't happen...";
+		return moves;
+	}
+	// pick at random
+	SpanInterval toSatisfy = set_at(violations.set(), rand() % violations.set().size());
+	LOG(LOG_DEBUG) << "choosing to satisfy spaninterval " << toSatisfy.toString();
+
+	unsigned int b = toSatisfy.finish().finish();
+
+	// CASE 1: extend phik to satisfy violation at b
+	// find the next point of time that phiPrime is true at
+	SISet phiPrimeTrueAt = d.satisfied(*phiPrime, m);
+	// we only care about time points after b
+	SISet toIntersect(true, d.maxInterval());
+	toIntersect.add(SpanInterval(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish()));
+	SISet toScan = intersection(phiPrimeTrueAt, toIntersect);
+	unsigned int t;
+	if (toScan.size() != 0) {
+		// pick the first element
+		t = set_at(toScan.set(), 0).start().start()-1;
+		// choose local moves adding phik between b and t
+		std::vector<Move> localMoves = findMovesForLiquid(d, m, *phik, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
+		moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+	}
+
+	// CASE 2: extend phiPrime to satisfy violation at b
+	if (toScan.size() == 0) {
+		t = b+2;
+	}
+	std::vector<Move> localMoves = findMovesForLiquid(d, m, *phiPrime, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
+	moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+
+	// CASE 3: delete phik until met by phiPrime (optionally deleting all of phik
+	SISet phikTrueAt = d.satisfied(*phik, m);
+	toIntersect = SISet(true, d.maxInterval());
+	toIntersect.add(SpanInterval(d.maxInterval().start(), b, d.maxInterval().start(), b, d.maxInterval()));
+	toScan = intersection(phikTrueAt, toIntersect);
+	// choose the last element
+	unsigned int phikLowerBound = set_at(toScan.set(), toScan.set().size()-1).start().start();
+	if (phikLowerBound >= b) return moves;	// TODO probably shouldn't happen?
+
+	// now find where phiPrime is true within phikLowerBound and b
+	toIntersect = SISet(true, d.maxInterval());
+	toIntersect.add(SpanInterval(phikLowerBound, b, phikLowerBound, b, d.maxInterval()));
+	toScan = intersection(phiPrimeTrueAt, toIntersect);
+	if (toScan.size() == 0) {
+		t = phikLowerBound;
+	} else {
+		t = set_at(toScan.set(), toScan.set().size()-1).finish().finish()-1;
+	}
+	boost::shared_ptr<Sentence> phikCopy(phik->clone());
+	boost::shared_ptr<Sentence> negatedPhik(new Negation(phikCopy));
+	localMoves = findMovesForLiquid(d, m, *negatedPhik, SpanInterval(t,b,t,b, d.maxInterval()));
+	moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+
+	return moves;
+}
+
+std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis) {
+	std::vector<Move> moves;
+	LOG(LOG_DEBUG) << "inside findMovesForForm3()";
+
+	// extract our precedent and consequent from dis
+	const Negation *leftAsNeg = dynamic_cast<const Negation *>(&*dis.left());
+	const Negation *rightAsNeg = dynamic_cast<const Negation *>(&*dis.right());
+
+	if (!leftAsNeg || !rightAsNeg) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 3: " << dis.toString();
+		return moves;
+	}
+	const Negation *precedent;
+	const Negation *consequent;
+
+	// consequent has the conjunction subtype
+	if (dynamic_cast<const Conjunction *>(&*leftAsNeg->sentence())
+			&& (dynamic_cast<const LiquidOp *>(&*rightAsNeg->sentence()) || dynamic_cast<const Atom*>(&*rightAsNeg->sentence()))) {
+		precedent = rightAsNeg;
+		consequent = leftAsNeg;
+	} else if (dynamic_cast<const Conjunction *>(&*rightAsNeg->sentence())
+			&& (dynamic_cast<const LiquidOp *>(&*leftAsNeg->sentence()) || dynamic_cast<const Atom*>(&*leftAsNeg->sentence()))) {
+		precedent = leftAsNeg;
+		consequent = rightAsNeg;
+	} else {
+		LOG_PRINT(LOG_WARN) << "given a sentence that doesn't match form 3: " << dis.toString();
+		return moves;
+	}
+	// collect all the arguments of the conjunction
+	const Conjunction *consConj = dynamic_cast<const Conjunction *>(&*consequent->sentence());
+	std::vector<const Sentence *> consArgs = getMeetsConjunctionArgs(*consConj);
+
+	// find an interval to satisfy this over
+	SISet violations = d.satisfied(dis, m);
+	violations = violations.compliment();
+	if (violations.size() == 0) {
+		LOG_PRINT(LOG_WARN) << "given a sentence that has no violations for form 3! sentence: " << dis.toString();
+		return moves;
+	}
+	// choose randomly
+	SpanInterval toSatisfyOrig = set_at(violations.set(), rand() % violations.set().size());
+	// try to satisfy it over its liquid interval
+	SpanInterval toSatisfy = SpanInterval(toSatisfyOrig.start().start(), toSatisfyOrig.finish().finish(),
+							 toSatisfyOrig.start().start(), toSatisfyOrig.finish().finish(), toSatisfyOrig.maxInterval());
+	SISet toSatisfySet(true, d.maxInterval());
+	toSatisfySet.add(toSatisfy);
+
+	// CASE 1: create a move for deleting every single element of the conjunction
+	for(std::vector<const Sentence*>::iterator it = consArgs.begin(); it != consArgs.end(); it++) {
+		// find the elements before and after
+		std::vector<const Sentence*> eleBefore(consArgs.begin(), it);
+		std::vector<const Sentence*>::iterator next(it);
+		next++;
+		std::vector<const Sentence*> eleAfter(next, consArgs.end());
+
+		SISet beforeTrueAt(false, d.maxInterval());
+		bool elementsBefore=true;
+		if (eleBefore.size() == 1) {
+			beforeTrueAt = d.satisfied(*eleBefore[0], m);
+			beforeTrueAt = intersection(toSatisfySet, beforeTrueAt);
+		} else if (eleBefore.size() > 1) {
+			beforeTrueAt = d.satisfied(*wrapInMeetsConjunction(eleBefore), m);
+			beforeTrueAt = intersection(toSatisfySet, beforeTrueAt);
+		} else {
+			elementsBefore = false;
+		}
+		SISet afterTrueAt(false, d.maxInterval());
+		bool elementsAfter=true;
+		if (eleAfter.size() == 1) {
+			afterTrueAt = d.satisfied(*eleAfter[0], m);
+			afterTrueAt = intersection(toSatisfySet, afterTrueAt);
+		} else if (eleAfter.size() > 1) {
+			afterTrueAt = d.satisfied(*wrapInMeetsConjunction(eleAfter), m);
+			afterTrueAt = intersection(toSatisfySet, afterTrueAt);
+		} else {
+			elementsAfter = false;
+		}
+
+		SISet currTrueAt = d.satisfied(**it, m);
+
+		currTrueAt = intersection(currTrueAt, toSatisfySet);
+
+
+		// now, for each possible pairing, we will compute a move if it is valid
+		if (elementsBefore && elementsAfter) {
+			BOOST_FOREACH(SpanInterval spBefore, beforeTrueAt.set()) {
+				BOOST_FOREACH(SpanInterval spCurr, currTrueAt.set()) {
+					BOOST_FOREACH(SpanInterval spAfter, afterTrueAt.set()) {
+						boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS);
+						boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI);
+						if (spBeforeRelOpt && spAfterRelOpt) {
+							SpanInterval leftover = intersection(intersection(spBeforeRelOpt.get(), spAfterRelOpt.get()), spCurr);
+							if (leftover.size() > 0) {
+								// generate a move deleting it here
+								boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
+								boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
+								std::vector<Move> localMoves = findMovesForLiquid(d, m, *negatedIt, spCurr);
+								moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+							}
+						}
+					}
+				}
+			}
+		} else if (elementsBefore) {
+			BOOST_FOREACH(SpanInterval spBefore, beforeTrueAt.set()) {
+				BOOST_FOREACH(SpanInterval spCurr, currTrueAt.set()) {
+					boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS);
+					if (spBeforeRelOpt) {
+						SpanInterval leftover = intersection(spBeforeRelOpt.get(), spCurr);
+						if (leftover.size() > 0) {
+							// generate a move deleting it here
+							boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
+							boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
+							std::vector<Move> localMoves = findMovesForLiquid(d, m, *negatedIt, spCurr);
+							moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+
+						}
+					}
+				}
+			}
+		} else {
+			BOOST_FOREACH(SpanInterval spAfter, afterTrueAt.set()) {
+				BOOST_FOREACH(SpanInterval spCurr, currTrueAt.set()) {
+					boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI);
+					if (spAfterRelOpt) {
+						SpanInterval leftover = intersection(spAfterRelOpt.get(), spCurr);
+						if (leftover.size() > 0) {
+							// generate a move deleting it here
+							boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
+							boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
+							std::vector<Move> localMoves = findMovesForLiquid(d, m, *negatedIt, spCurr);
+							moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+
+						}
+					}
+				}
+			}
+		}
+	}
+	// NO we are still not done, now we consider deleting the head at the beginning/end
+	SpanInterval a(toSatisfyOrig.start().start(), toSatisfyOrig.start().finish(),
+					toSatisfyOrig.start().start(), toSatisfyOrig.start().finish(), d.maxInterval());
+	SpanInterval b(toSatisfyOrig.finish().start(), toSatisfyOrig.finish().finish(),
+					toSatisfyOrig.finish().start(), toSatisfyOrig.finish().finish(), d.maxInterval());
+	std::vector<Move> localMoves = findMovesForLiquid(d, m, *precedent, a);
+	moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+	localMoves = findMovesForLiquid(d, m, *precedent, b);
+	moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+
+
+	return moves;
+
 
 }
+
 
 std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
 	std::vector<Move> moves;
@@ -430,6 +813,10 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 		moves = findMovesForLiquid(d, m, *liq->sentence(), si);
 	} else if (isFormula1Type(s, d)) {
 		return findMovesForForm1(d, m, dynamic_cast<const Disjunction&>(s));
+	} else if (isFormula2Type(s, d)) {
+		return findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s));
+	} else if (isFormula3Type(s, d)) {
+		return findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));
 	} else {
 		LOG_PRINT(LOG_ERROR) << "given sentence \"" << s.toString() << "\" but it doesn't match any moves function we know about!";
 	}

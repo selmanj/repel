@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1mi) {
 	srand(2);
 
 	const Disjunction *s = dynamic_cast<const Disjunction *>(&(*d.formulas().at(0).sentence()));
-	std::vector<Move> moves = findMovesForForm1(d, d.defaultModel(), *s);
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *s);
 	BOOST_FOREACH(Move move, moves) {
 		std::cout << "move: " << move.toString() << std::endl;
 	}
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1m) {
 	srand(2);
 
 	const Disjunction *s = dynamic_cast<const Disjunction *>(&(*d.formulas().at(0).sentence()));
-	std::vector<Move> moves = findMovesForForm1(d, d.defaultModel(), *s);
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *s);
 	BOOST_FOREACH(Move move, moves) {
 		std::cout << "move: " << move.toString() << std::endl;
 	}
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1f) {
 	srand(2);
 
 	const Disjunction *s = dynamic_cast<const Disjunction *>(&(*d.formulas().at(0).sentence()));
-	std::vector<Move> moves = findMovesForForm1(d, d.defaultModel(), *s);
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *s);
 	BOOST_FOREACH(Move move, moves) {
 		std::cout << "finish move: " << move.toString() << std::endl;
 	}
@@ -169,8 +169,46 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1fi) {
 	srand(2);
 
 	const Disjunction *s = dynamic_cast<const Disjunction *>(&(*d.formulas().at(0).sentence()));
-	std::vector<Move> moves = findMovesForForm1(d, d.defaultModel(), *s);
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *s);
 	BOOST_FOREACH(Move move, moves) {
 		std::cout << "finish move: " << move.toString() << std::endl;
 	}
+}
+
+BOOST_AUTO_TEST_CASE(maxWalkSatTestForm2) {
+	std::string facts(	"P(a) @ [1:4]\n"
+						"P(b) @ [1:1]\n"
+						"P(b) @ [5:6]\n"
+						"P(c) @ [9:10]\n");
+	std::string formulas("100: P(a) ; P(b) -> <>{mi} [P(b) v P(c)]\n");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	srand(2);
+
+	const Disjunction *s = dynamic_cast<const Disjunction *>(&(*d.formulas().at(0).sentence()));
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *s);
+	BOOST_FOREACH(Move move, moves) {
+		std::cout << "form2 move: " << move.toString() << std::endl;
+	}
+}
+
+BOOST_AUTO_TEST_CASE(maxWalkSatTestForm3) {
+	std::string facts(	"P(a) @ [1:3]\n"
+						"P(b) @ [1:8]\n"
+						"P(c) @ [4:5]\n"
+						"P(d) @ [6:8]");
+
+	std::string formulas("100: P(b) -> !(P(a) ; P(c); P(d))\n");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	srand(2);
+
+	const Disjunction *s = dynamic_cast<const Disjunction *>(&(*d.formulas().at(0).sentence()));
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *s);
+	BOOST_FOREACH(Move move, moves) {
+		std::cout << "form3 move: " << move.toString() << std::endl;
+	}
+
 }
