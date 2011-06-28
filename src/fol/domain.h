@@ -33,6 +33,7 @@ std::string modelToString(const Model& m);
 
 class Domain {
 public:
+	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_() {}
 	template <class FactsForwardIterator, class FormForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd)
@@ -104,7 +105,7 @@ public:
 
 	const std::vector<WSentence>& formulas() const {return formulas_;};
 	const std::set<std::string>& observedPredicates() const {return obsPreds_;};
-	const NameGenerator& nameGenerator() const {return generator_;};
+	NameGenerator& nameGenerator() {return generator_;};
 	Model defaultModel() const {return observations_;};
 	Interval maxInterval() const {return maxInterval_;};
 	void setMaxInterval(const Interval& maxInterval);

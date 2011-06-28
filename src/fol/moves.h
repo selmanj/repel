@@ -16,6 +16,8 @@
 #include "domain.h"
 #include "sentence.h"
 #include "../utils.h"
+#include "../log.h"
+#include "fol.h"
 
 class LiquidOp;
 class Sentence;
@@ -34,7 +36,10 @@ namespace {
 	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval &si);
 	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval &si);
 	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si);
-	void convertToPELCNF_(boost::shared_ptr<Sentence>& curSentence, std::vector<WSentence>& additionalSentences);
+	boost::shared_ptr<Sentence> convertToPELCNF_(const boost::shared_ptr<Sentence>& curSentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d);
+	boost::shared_ptr<Atom> rewriteAsLiteral(boost::shared_ptr<Sentence> sentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d);
+	bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence);
+	bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence);
 
 	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si) {
 		Move move;
@@ -149,19 +154,126 @@ namespace {
 		return moves;
 	}
 
-	void convertToPELCNF_(boost::shared_ptr<Sentence>& curSentence, std::vector<WSentence>& additionalSentences) {
-		if (boost::dynamic_pointer_cast<Atom>(curSentence)) {
-			// if curSentence is an atom, we're good!
-			return;
-		} else if (boost::dynamic_pointer_cast<Negation>(curSentence)) {
-			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(curSentence);
-			boost::shared_ptr<Sentence> s = neg->sentence();
-			convertToPELCNF_(s, additionalSentences);
-			// TODO: finish here
+	boost::shared_ptr<Sentence> convertToPELCNF_(const boost::shared_ptr<Sentence>& curSentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d) {
+		if (isPELCNFLiteral(curSentence)) {
+			// if curSentence is a literal, we're good!
+			return curSentence;
+		} else if (boost::dynamic_pointer_cast<Disjunction>(curSentence)) {
+			if (isDisjunctionOfCNFLiterals(curSentence)) {
+				return curSentence;
+			}
+			boost::shared_ptr<Disjunction> dis = boost::dynamic_pointer_cast<Disjunction>(curSentence);
 
+			dis->left() = convertToPELCNF_(dis->left(), additionalSentences, d);
+			dis->right() = convertToPELCNF_(dis->right(), additionalSentences, d);
+
+			if (!isDisjunctionOfCNFLiterals(dis)) {
+				// if we made it here, something must have gone wrong!
+				LOG_PRINT(LOG_ERROR) << "got a disjunction but it wasn't a disjunction of lits! :" << dis->toString();
+				return dis;
+			}
+			return dis;
 		}
+		// OK, it needs to be fixed.  find the element immediately below this operation
+		if (boost::dynamic_pointer_cast<Negation>(curSentence)) {
+			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(curSentence);
+			assert(isPELCNFLiteral(neg->sentence()) || isDisjunctionOfCNFLiterals(neg->sentence()));
+
+			boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(neg->sentence(), additionalSentences, d);
+			neg->sentence() = newLit;
+			return neg;
+		}
+
+		LOG_PRINT(LOG_ERROR) << "got a sentence we don't know what to do with! :" << curSentence->toString();
+		return curSentence;
+
 	}
 
+	boost::shared_ptr<Atom> rewriteAsLiteral(boost::shared_ptr<Sentence> sentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d) {
+		// introduce a new atom that represents this non-lit
+		std::string newLitName = d.nameGenerator().getUniqueName();
+		boost::shared_ptr<Atom> newLit(new Atom(newLitName));
+		boost::shared_ptr<Sentence> newLitNegated(new Negation(newLit));
+
+		boost::shared_ptr<Sentence> newDisj1(new Disjunction(newLitNegated, sentence));
+		additionalSentences.push_back(newDisj1);
+
+		// make the opposing sentence, one for each literal in the disjunction
+		if (isDisjunctionOfCNFLiterals(sentence)) {
+			const Disjunction* dis = dynamic_cast<const Disjunction*>(&*sentence);
+			std::vector<const Sentence*> args = getDisjunctionArgs(*dis);
+			BOOST_FOREACH(const Sentence* sPtr, args) {
+				boost::shared_ptr<Sentence> negatedLit;
+				boost::shared_ptr<Sentence> sSharedPtr(sPtr->clone());
+				if (dynamic_cast<const Negation*>(sPtr)) {
+					// don't negate it, it's perfect!
+					negatedLit = boost::shared_ptr<Sentence>(sSharedPtr);
+				} else {
+					// wrap it in negation
+					negatedLit = boost::shared_ptr<Sentence>(new Negation(sSharedPtr));
+				}
+
+				boost::shared_ptr<Sentence> newDisj2(new Disjunction(newLit, negatedLit));
+				additionalSentences.push_back(newDisj2);
+			}
+		} else {
+			// again, only negate it if it needs it
+			boost::shared_ptr<Sentence> negatedLit = sentence;
+			if (!boost::dynamic_pointer_cast<Negation>(negatedLit)) {
+				negatedLit = boost::shared_ptr<Sentence>(new Negation(negatedLit));
+			}
+
+			boost::shared_ptr<Sentence> newDisj2(new Disjunction(newLit, negatedLit));
+			additionalSentences.push_back(newDisj2);
+		}
+		return newLit;
+
+	}
+
+	bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence) {
+		boost::shared_ptr<const Disjunction> dis = boost::dynamic_pointer_cast<const Disjunction>(sentence);
+		if (!dis) return false;
+		if (isPELCNFLiteral(dis->left()) || isDisjunctionOfCNFLiterals(dis->left())
+				&& (isPELCNFLiteral(dis->right()) || isDisjunctionOfCNFLiterals(dis->right()))) {
+			return true;
+		}
+		return false;
+	}
+
+	bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence) {
+		if (boost::dynamic_pointer_cast<const Atom>(sentence)
+				|| boost::dynamic_pointer_cast<const BoolLit>(sentence)) {
+			return true;
+		}
+		if (boost::dynamic_pointer_cast<const Negation>(sentence)) {
+			boost::shared_ptr<const Negation> neg = boost::dynamic_pointer_cast<const Negation>(sentence);
+			// TODO: necessary?
+			if (boost::dynamic_pointer_cast<const Negation>(neg->sentence())) {
+				return false;
+			}
+			return isPELCNFLiteral(neg->sentence());
+		}
+		if (boost::dynamic_pointer_cast<const DiamondOp>(sentence)) {
+			boost::shared_ptr<const DiamondOp> dia = boost::dynamic_pointer_cast<const DiamondOp>(sentence);
+			if (boost::dynamic_pointer_cast<const Atom>(dia->sentence())
+					|| boost::dynamic_pointer_cast<const BoolLit>(dia->sentence())) {
+				return true;
+			}
+			return false;
+		}
+		if (boost::dynamic_pointer_cast<const Conjunction>(sentence)) {
+			boost::shared_ptr<const Conjunction> con = boost::dynamic_pointer_cast<const Conjunction>(sentence);
+			if ((boost::dynamic_pointer_cast<const Atom>(con->left())
+				 || boost::dynamic_pointer_cast<const BoolLit>(con->left()))
+				&& (boost::dynamic_pointer_cast<const Atom>(con->right())
+				 || boost::dynamic_pointer_cast<const BoolLit>(con->right()))) {
+				return true;
+			}
+			return false;
+		}
+
+		return false;
+	}
 }
 
 bool canFindMovesFor(const Sentence &s, const Domain &d);
@@ -176,7 +288,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
 Model executeMove(const Domain& d, const Move& move, const Model& model);
 Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
 
-std::vector<WSentence> convertToPELCNF(const std::vector<WSentence>, const Domain &d);
+boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences, Domain &d);
 boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence);
 
 #endif

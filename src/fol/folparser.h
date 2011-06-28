@@ -304,7 +304,6 @@ boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::NOT, its)) {
 		consumeTokenType(FOLParse::NOT, its);
 		boost::shared_ptr<Sentence> s = doParseFormula_paren(its);
-
 		boost::shared_ptr<Sentence> neg(new Negation(s));
 		return neg;
 	} else if (peekTokenType(FOLParse::DIAMOND, its)) {
