@@ -182,6 +182,33 @@ namespace {
 			boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(neg->sentence(), additionalSentences, d);
 			neg->sentence() = newLit;
 			return neg;
+		} else if (boost::dynamic_pointer_cast<Conjunction>(curSentence)) {
+			boost::shared_ptr<Conjunction> con = boost::dynamic_pointer_cast<Conjunction>(curSentence);
+			con->left() = convertToPELCNF_(con->left(), additionalSentences, d);
+			con->right() = convertToPELCNF_(con->right(), additionalSentences, d);
+
+			// if left/right is not an atom/boolit, replace with a new atom
+			if (!boost::dynamic_pointer_cast<Atom>(con->left())
+					&& !boost::dynamic_pointer_cast<BoolLit>(con->left())) {
+				boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(con->left(), additionalSentences, d);
+				con->left() = newLit;
+			}
+			if (!boost::dynamic_pointer_cast<Atom>(con->right())
+								&& !boost::dynamic_pointer_cast<BoolLit>(con->right())) {
+				boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(con->right(), additionalSentences, d);
+				con->right() = newLit;
+			}
+			return con;
+		} else if (boost::dynamic_pointer_cast<DiamondOp>(curSentence)) {
+			boost::shared_ptr<DiamondOp> dia = boost::dynamic_pointer_cast<DiamondOp>(curSentence);
+			dia->sentence() = convertToPELCNF_(dia->sentence(), additionalSentences, d);
+
+			if (!boost::dynamic_pointer_cast<Atom>(dia->sentence())
+					|| !boost::dynamic_pointer_cast<BoolLit>(dia->sentence())) {
+				boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(dia->sentence(), additionalSentences, d);
+				dia->sentence() = newLit;
+			}
+			return dia;
 		}
 
 		LOG_PRINT(LOG_ERROR) << "got a sentence we don't know what to do with! :" << curSentence->toString();
@@ -204,12 +231,13 @@ namespace {
 			std::vector<const Sentence*> args = getDisjunctionArgs(*dis);
 			BOOST_FOREACH(const Sentence* sPtr, args) {
 				boost::shared_ptr<Sentence> negatedLit;
-				boost::shared_ptr<Sentence> sSharedPtr(sPtr->clone());
 				if (dynamic_cast<const Negation*>(sPtr)) {
-					// don't negate it, it's perfect!
-					negatedLit = boost::shared_ptr<Sentence>(sSharedPtr);
+					// don't negate it, just remove the negation
+					const Negation* negSPtr = dynamic_cast<const Negation*>(sPtr);
+					negatedLit = boost::shared_ptr<Sentence>(negSPtr->sentence()->clone());
 				} else {
 					// wrap it in negation
+					boost::shared_ptr<Sentence> sSharedPtr(sPtr->clone());
 					negatedLit = boost::shared_ptr<Sentence>(new Negation(sSharedPtr));
 				}
 
@@ -221,6 +249,9 @@ namespace {
 			boost::shared_ptr<Sentence> negatedLit = sentence;
 			if (!boost::dynamic_pointer_cast<Negation>(negatedLit)) {
 				negatedLit = boost::shared_ptr<Sentence>(new Negation(negatedLit));
+			} else {
+				boost::shared_ptr<Negation> negTmp = boost::dynamic_pointer_cast<Negation>(negatedLit);
+				negatedLit = negTmp->sentence();
 			}
 
 			boost::shared_ptr<Sentence> newDisj2(new Disjunction(newLit, negatedLit));
@@ -233,7 +264,7 @@ namespace {
 	bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence) {
 		boost::shared_ptr<const Disjunction> dis = boost::dynamic_pointer_cast<const Disjunction>(sentence);
 		if (!dis) return false;
-		if (isPELCNFLiteral(dis->left()) || isDisjunctionOfCNFLiterals(dis->left())
+		if ((isPELCNFLiteral(dis->left()) || isDisjunctionOfCNFLiterals(dis->left()))
 				&& (isPELCNFLiteral(dis->right()) || isDisjunctionOfCNFLiterals(dis->right()))) {
 			return true;
 		}
@@ -288,7 +319,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
 Model executeMove(const Domain& d, const Move& move, const Model& model);
 Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
 
-boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences, Domain &d);
+boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<const Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences, Domain &d);
 boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence);
 
 #endif

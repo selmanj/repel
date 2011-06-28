@@ -42,9 +42,9 @@ public:
 		return *this;
 	}
 
-	boost::shared_ptr<Sentence> left() {return left_;};
+	boost::shared_ptr<Sentence>& left() {return left_;};
 	boost::shared_ptr<const Sentence> left() const {return left_;};
-	boost::shared_ptr<Sentence> right() {return right_;};
+	boost::shared_ptr<Sentence>& right() {return right_;};
 	boost::shared_ptr<const Sentence> right() const {return right_;};
 
 	const std::set<Interval::INTERVAL_RELATION>& relations() const {return rels_;};

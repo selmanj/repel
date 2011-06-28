@@ -25,7 +25,7 @@ public:
 	DiamondOp(const DiamondOp& dia) : s_(dia.s_) , rels_(dia.rels_) {}; // shallow copy
 	virtual ~DiamondOp() {};
 
-	boost::shared_ptr<Sentence> sentence() {return s_;};
+	boost::shared_ptr<Sentence>& sentence() {return s_;};
 	boost::shared_ptr<const Sentence> sentence() const {return s_;};
 	const std::set<Interval::INTERVAL_RELATION>& relations() const {return rels_;};
 

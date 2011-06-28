@@ -75,53 +75,77 @@ BOOST_AUTO_TEST_CASE(simplePELCNF) {
 	s = getAsSentence("p(a)");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s, rewrite);
+	BOOST_CHECK(*s == *rewrite);
 	BOOST_CHECK_EQUAL(support.size(), 0);
 
 	s = getAsSentence("!p(a)");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s, rewrite);
+	BOOST_CHECK(*s == *rewrite);
 	BOOST_CHECK_EQUAL(support.size(), 0);
 
 	s = getAsSentence("!p(a) v p(b)");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s, rewrite);
+	BOOST_CHECK(*s == *rewrite);
 	BOOST_CHECK_EQUAL(support.size(), 0);
 
 	s = getAsSentence("<> p(a)");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s, rewrite);
+	BOOST_CHECK(*s == *rewrite);
 	BOOST_CHECK_EQUAL(support.size(), 0);
 
 	s = getAsSentence("!(<> p(a))");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s, rewrite);
+	BOOST_CHECK(*s == *rewrite);
 	BOOST_CHECK_EQUAL(support.size(), 0);
 
 	s = getAsSentence("p(a) ^ p(b)");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s, rewrite);
+	BOOST_CHECK(*s == *rewrite);
 	BOOST_CHECK_EQUAL(support.size(), 0);
 
 	s = getAsSentence("!(p(a) ^ p(b))");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s, rewrite);
+	BOOST_CHECK(*s == *rewrite);
 	BOOST_CHECK_EQUAL(support.size(), 0);
 
 	s = getAsSentence("!(p(a) v p(b)) v p(c)");
 	support.clear();
 	rewrite = convertToPELCNF(s, support, d);
-	BOOST_CHECK_EQUAL(s->toString(), "!__anonPred0() v p(c)");
+	BOOST_CHECK_EQUAL(rewrite->toString(), "!__anonPred0() v p(c)");
 	BOOST_CHECK_EQUAL(support.size(), 3);
 	BOOST_CHECK_EQUAL(support[0]->toString(), "!__anonPred0() v p(a) v p(b)");
 	BOOST_CHECK_EQUAL(support[1]->toString(), "__anonPred0() v !p(a)");
 	BOOST_CHECK_EQUAL(support[2]->toString(), "__anonPred0() v !p(b)");
 
+	s = getAsSentence("(p(a) ; p(b)) ^ p(c)");
+	support.clear();
+	rewrite = convertToPELCNF(s, support, d);
+	BOOST_CHECK_EQUAL(rewrite->toString(), "__anonPred1() ^ p(c)");
+	BOOST_CHECK_EQUAL(support.size(), 2);
+	BOOST_CHECK_EQUAL(support[0]->toString(), "!__anonPred1() v p(a) ; p(b)");
+	BOOST_CHECK_EQUAL(support[1]->toString(), "__anonPred1() v !(p(a) ; p(b))");
 
+	s = getAsSentence("<> !p(a)");
+	support.clear();
+	rewrite = convertToPELCNF(s, support, d);
+	BOOST_CHECK_EQUAL(rewrite->toString(), "<> __anonPred2()");
+	BOOST_CHECK_EQUAL(support.size(), 2);
+	BOOST_CHECK_EQUAL(support[0]->toString(), "!__anonPred2() v !p(a)");
+	BOOST_CHECK_EQUAL(support[1]->toString(), "__anonPred2() v p(a)");
+
+
+	s = getAsSentence("dribbling(man1) ; dribbling(man2) -> <>{mi} (dribbling(man2) v flag(ref))");
+	support.clear();
+	rewrite = convertToPELCNF(s, support, d);
+	BOOST_CHECK_EQUAL(rewrite->toString(), "!(dribbling(man1) ; dribbling(man2)) v <>{mi} __anonPred3()");
+	BOOST_CHECK_EQUAL(support.size(), 3);
+	BOOST_CHECK_EQUAL(support[0]->toString(), "!__anonPred3() v dribbling(man2) v flag(ref)");
+	BOOST_CHECK_EQUAL(support[1]->toString(), "__anonPred3() v !dribbling(man2)");
+	BOOST_CHECK_EQUAL(support[2]->toString(), "__anonPred3() v !flag(ref)");
 }

@@ -959,8 +959,10 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 	return bestModel;
 }
 
-boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences,  Domain &d) {
-	return convertToPELCNF_(sentence, supportSentences, d);
+boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<const Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences,  Domain &d) {
+	// make a copy so we can modify it
+	boost::shared_ptr<Sentence> copy(sentence->clone());
+	return convertToPELCNF_(copy, supportSentences, d);
 }
 
 boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence) {

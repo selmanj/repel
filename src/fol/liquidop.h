@@ -14,7 +14,7 @@ public:
 		s_ = b.s_;
 		return *this;
 	};
-	boost::shared_ptr<Sentence> sentence() {return s_;};
+	boost::shared_ptr<Sentence>& sentence() {return s_;};
 	boost::shared_ptr<const Sentence> sentence() const {return s_;};
 private:
 
