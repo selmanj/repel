@@ -59,7 +59,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 am__EXEEXT_1 = test/spanintervaltest$(EXEEXT) \
 	test/follexertest$(EXEEXT) test/folparsertest$(EXEEXT) \
 	test/atomtest$(EXEEXT) test/domaintest$(EXEEXT) \
-	test/movestest$(EXEEXT)
+	test/movestest$(EXEEXT) test/cnftest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 am_pel_OBJECTS = pel.$(OBJEXT) namegenerator.$(OBJEXT) moves.$(OBJEXT) \
 	interval.$(OBJEXT) spaninterval.$(OBJEXT) boollit.$(OBJEXT) \
@@ -71,6 +71,13 @@ am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
 am__dirstamp = $(am__leading_dot)dirstamp
+am_test_cnftest_OBJECTS = cnftest.$(OBJEXT) moves.$(OBJEXT) \
+	interval.$(OBJEXT) spaninterval.$(OBJEXT) domain.$(OBJEXT) \
+	siset.$(OBJEXT) boollit.$(OBJEXT) variable.$(OBJEXT) \
+	constant.$(OBJEXT) foltoken.$(OBJEXT) namegenerator.$(OBJEXT) \
+	follexer.$(OBJEXT)
+test_cnftest_OBJECTS = $(am_test_cnftest_OBJECTS)
+test_cnftest_LDADD = $(LDADD)
 am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) \
 	namegenerator.$(OBJEXT) boollit.$(OBJEXT) interval.$(OBJEXT) \
 	siset.$(OBJEXT) spaninterval.$(OBJEXT) constant.$(OBJEXT) \
@@ -110,13 +117,13 @@ CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(pel_SOURCES) $(test_atomtest_SOURCES) \
-	$(test_domaintest_SOURCES) $(test_follexertest_SOURCES) \
-	$(test_folparsertest_SOURCES) $(test_movestest_SOURCES) \
-	$(test_spanintervaltest_SOURCES)
+	$(test_cnftest_SOURCES) $(test_domaintest_SOURCES) \
+	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
+	$(test_movestest_SOURCES) $(test_spanintervaltest_SOURCES)
 DIST_SOURCES = $(pel_SOURCES) $(test_atomtest_SOURCES) \
-	$(test_domaintest_SOURCES) $(test_follexertest_SOURCES) \
-	$(test_folparsertest_SOURCES) $(test_movestest_SOURCES) \
-	$(test_spanintervaltest_SOURCES)
+	$(test_cnftest_SOURCES) $(test_domaintest_SOURCES) \
+	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
+	$(test_movestest_SOURCES) $(test_spanintervaltest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -231,13 +238,14 @@ AM_CXXFLAGS = $(BOOST_CPPFLAGS)
 AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
-PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest
+PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
 test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp src/fol/boollit.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
 test_domaintest_SOURCES = test/domaintest.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
 test_movestest_SOURCES = test/movestest.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
+test_cnftest_SOURCES = test/cnftest.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/domain.cpp src/siset.cpp src/fol/boollit.cpp src/fol/variable.cpp src/fol/constant.cpp src/fol/foltoken.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -343,6 +351,9 @@ test/$(am__dirstamp):
 test/atomtest$(EXEEXT): $(test_atomtest_OBJECTS) $(test_atomtest_DEPENDENCIES) test/$(am__dirstamp)
 	@rm -f test/atomtest$(EXEEXT)
 	$(CXXLINK) $(test_atomtest_OBJECTS) $(test_atomtest_LDADD) $(LIBS)
+test/cnftest$(EXEEXT): $(test_cnftest_OBJECTS) $(test_cnftest_DEPENDENCIES) test/$(am__dirstamp)
+	@rm -f test/cnftest$(EXEEXT)
+	$(CXXLINK) $(test_cnftest_OBJECTS) $(test_cnftest_LDADD) $(LIBS)
 test/domaintest$(EXEEXT): $(test_domaintest_OBJECTS) $(test_domaintest_DEPENDENCIES) test/$(am__dirstamp)
 	@rm -f test/domaintest$(EXEEXT)
 	$(CXXLINK) $(test_domaintest_OBJECTS) $(test_domaintest_LDADD) $(LIBS)
@@ -367,6 +378,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atomtest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boollit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cnftest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/constant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domaintest.Po@am__quote@
@@ -579,6 +591,20 @@ atomtest.obj: test/atomtest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/atomtest.cpp' object='atomtest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o atomtest.obj `if test -f 'test/atomtest.cpp'; then $(CYGPATH_W) 'test/atomtest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/atomtest.cpp'; fi`
+
+cnftest.o: test/cnftest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT cnftest.o -MD -MP -MF $(DEPDIR)/cnftest.Tpo -c -o cnftest.o `test -f 'test/cnftest.cpp' || echo '$(srcdir)/'`test/cnftest.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/cnftest.Tpo $(DEPDIR)/cnftest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/cnftest.cpp' object='cnftest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o cnftest.o `test -f 'test/cnftest.cpp' || echo '$(srcdir)/'`test/cnftest.cpp
+
+cnftest.obj: test/cnftest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT cnftest.obj -MD -MP -MF $(DEPDIR)/cnftest.Tpo -c -o cnftest.obj `if test -f 'test/cnftest.cpp'; then $(CYGPATH_W) 'test/cnftest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/cnftest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/cnftest.Tpo $(DEPDIR)/cnftest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/cnftest.cpp' object='cnftest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o cnftest.obj `if test -f 'test/cnftest.cpp'; then $(CYGPATH_W) 'test/cnftest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/cnftest.cpp'; fi`
 
 domaintest.o: test/domaintest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT domaintest.o -MD -MP -MF $(DEPDIR)/domaintest.Tpo -c -o domaintest.o `test -f 'test/domaintest.cpp' || echo '$(srcdir)/'`test/domaintest.cpp

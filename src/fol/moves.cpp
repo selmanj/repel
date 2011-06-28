@@ -958,3 +958,123 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 
 	return bestModel;
 }
+
+
+
+boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence) {
+	if (boost::dynamic_pointer_cast<Atom>(sentence)
+			|| boost::dynamic_pointer_cast<BoolLit>(sentence)) {
+		return sentence;	// do nothing!
+	}
+	if (boost::dynamic_pointer_cast<Negation>(sentence)) {
+		boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(sentence);
+		// now see if we can move the negation inwards
+
+		if (boost::dynamic_pointer_cast<Negation>(neg->sentence())) {
+			boost::shared_ptr<Negation> neg2 = boost::dynamic_pointer_cast<Negation>(neg->sentence());
+			// the negations cancel out!
+			return moveNegationsInward(neg2->sentence());
+		}
+		if (boost::dynamic_pointer_cast<Conjunction>(neg->sentence())) {
+			boost::shared_ptr<Conjunction> con = boost::dynamic_pointer_cast<Conjunction>(neg->sentence());
+			// ONLY can move it in if the conjunction is of the equals variety
+			std::set<Interval::INTERVAL_RELATION> justEquals;
+			justEquals.insert(Interval::EQUALS);
+			if (con->relations() == justEquals) {
+				boost::shared_ptr<Sentence> conLeft = con->left();
+				boost::shared_ptr<Sentence> conRight = con->right();
+
+				// wrap both left and right with a negation
+				boost::shared_ptr<Sentence> conLeftNeg(new Negation(conLeft));
+				boost::shared_ptr<Sentence> conRightNeg(new Negation(conRight));
+
+				// make sure they have negations moved in
+				conLeftNeg = moveNegationsInward(conLeftNeg);
+				conRightNeg = moveNegationsInward(conRightNeg);
+
+				// construct our disjunction
+				boost::shared_ptr<Sentence> disj(new Disjunction(conLeftNeg, conRightNeg));
+				return disj;
+			}
+		}
+		if (boost::dynamic_pointer_cast<Disjunction>(neg->sentence())) {
+			boost::shared_ptr<Disjunction> dis = boost::dynamic_pointer_cast<Disjunction>(neg->sentence());
+			// turn it into a conjunction
+			boost::shared_ptr<Sentence> disLeft = dis->left();
+			boost::shared_ptr<Sentence> disRight = dis->right();
+
+			// wrap both left and right with a negation
+			boost::shared_ptr<Sentence> disLeftNeg(new Negation(disLeft));
+			boost::shared_ptr<Sentence> disRightNeg(new Negation(disRight));
+
+			// make sure they have negations moved in
+			disLeftNeg = moveNegationsInward(disLeftNeg);
+			disRightNeg = moveNegationsInward(disRightNeg);
+
+			// construct conjunction
+			std::set<Interval::INTERVAL_RELATION> justEquals;
+			boost::shared_ptr<Sentence> con(new Conjunction(disLeftNeg, disRightNeg, Interval::EQUALS));
+			return con;
+		}
+		// can't move it in farther, just return our negation wrapped around it
+		boost::shared_ptr<Sentence> newCon = moveNegationsInward(neg->sentence());
+		if (newCon != neg->sentence()) {
+			boost::shared_ptr<Sentence> newNeg(new Negation(newCon));
+			return newNeg;
+		}
+		return neg;
+	}
+	if (boost::dynamic_pointer_cast<Disjunction>(sentence)) {
+		boost::shared_ptr<Disjunction> dis = boost::dynamic_pointer_cast<Disjunction>(sentence);
+		boost::shared_ptr<Sentence> disLeft = moveNegationsInward(dis->left());
+		boost::shared_ptr<Sentence> disRight = moveNegationsInward(dis->right());
+
+		if (disLeft == dis->left() & disRight == dis->right()) {
+			// just return the original sentence
+			return sentence;
+		}
+		// return a new disjunction obj
+		boost::shared_ptr<Sentence> newDis(new Disjunction(disLeft, disRight));
+		return newDis;
+	}
+	if (boost::dynamic_pointer_cast<Conjunction>(sentence)) {
+		boost::shared_ptr<Conjunction> con = boost::dynamic_pointer_cast<Conjunction>(sentence);
+		boost::shared_ptr<Sentence> conLeft = moveNegationsInward(con->left());
+		boost::shared_ptr<Sentence> conRight = moveNegationsInward(con->right());
+
+		if (conLeft == con->left() & conRight == con->right()) {
+			// just return the original sentence
+			return sentence;
+		}
+		// return a new conjunction obj
+		std::set<Interval::INTERVAL_RELATION> rels = con->relations();
+		boost::shared_ptr<Sentence> newCon(new Conjunction(conLeft, conRight, rels.begin(), rels.end()));
+		return newCon;
+	}
+	if (boost::dynamic_pointer_cast<DiamondOp>(sentence)) {
+		boost::shared_ptr<DiamondOp> dia = boost::dynamic_pointer_cast<DiamondOp>(sentence);
+		boost::shared_ptr<Sentence> diaSent = moveNegationsInward(dia->sentence());
+
+		if (diaSent == dia->sentence()) {
+			return sentence;
+		}
+		std::set<Interval::INTERVAL_RELATION> rels = dia->relations();
+		boost::shared_ptr<Sentence> newDia(new DiamondOp(diaSent, rels.begin(), rels.end()));
+		return newDia;
+	}
+	if (boost::dynamic_pointer_cast<LiquidOp>(sentence)) {
+		boost::shared_ptr<LiquidOp> liq = boost::dynamic_pointer_cast<LiquidOp>(sentence);
+		boost::shared_ptr<Sentence> liqSent = moveNegationsInward(liq->sentence());
+
+		if (liqSent == liq->sentence()) {
+			return sentence;
+		}
+		boost::shared_ptr<Sentence> newLiq(new LiquidOp(liqSent));
+		return newLiq;
+	}
+
+	// MADE IT THIS FAR, show an error!
+	LOG_PRINT(LOG_ERROR) << "unknown type: " << sentence->toString() << std::endl;
+	return sentence;
+
+}

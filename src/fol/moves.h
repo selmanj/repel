@@ -34,6 +34,7 @@ namespace {
 	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval &si);
 	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval &si);
 	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si);
+	void convertToPELCNF_(boost::shared_ptr<Sentence>& curSentence, std::vector<WSentence>& additionalSentences);
 
 	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si) {
 		Move move;
@@ -147,6 +148,20 @@ namespace {
 		}
 		return moves;
 	}
+
+	void convertToPELCNF_(boost::shared_ptr<Sentence>& curSentence, std::vector<WSentence>& additionalSentences) {
+		if (boost::dynamic_pointer_cast<Atom>(curSentence)) {
+			// if curSentence is an atom, we're good!
+			return;
+		} else if (boost::dynamic_pointer_cast<Negation>(curSentence)) {
+			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(curSentence);
+			boost::shared_ptr<Sentence> s = neg->sentence();
+			convertToPELCNF_(s, additionalSentences);
+			// TODO: finish here
+
+		}
+	}
+
 }
 
 bool canFindMovesFor(const Sentence &s, const Domain &d);
@@ -162,4 +177,6 @@ Model executeMove(const Domain& d, const Move& move, const Model& model);
 Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
 
 std::vector<WSentence> convertToPELCNF(const std::vector<WSentence>, const Domain &d);
+boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence);
+
 #endif

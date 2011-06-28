@@ -132,7 +132,6 @@ public:
 	SISet liqSatisfiedConjunction(const Conjunction& c, const Model& m) const;
 	SISet liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const;
 
-
 private:
 	bool dontModifyObsPreds_;
 
