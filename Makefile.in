@@ -61,20 +61,21 @@ am__EXEEXT_1 = test/spanintervaltest$(EXEEXT) \
 	test/atomtest$(EXEEXT) test/domaintest$(EXEEXT) \
 	test/movestest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
-am_pel_OBJECTS = pel.$(OBJEXT) moves.$(OBJEXT) interval.$(OBJEXT) \
-	spaninterval.$(OBJEXT) boollit.$(OBJEXT) constant.$(OBJEXT) \
-	follexer.$(OBJEXT) foltoken.$(OBJEXT) variable.$(OBJEXT) \
-	siset.$(OBJEXT) domain.$(OBJEXT)
+am_pel_OBJECTS = pel.$(OBJEXT) namegenerator.$(OBJEXT) moves.$(OBJEXT) \
+	interval.$(OBJEXT) spaninterval.$(OBJEXT) boollit.$(OBJEXT) \
+	constant.$(OBJEXT) follexer.$(OBJEXT) foltoken.$(OBJEXT) \
+	variable.$(OBJEXT) siset.$(OBJEXT) domain.$(OBJEXT)
 pel_OBJECTS = $(am_pel_OBJECTS)
 pel_LDADD = $(LDADD)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) boollit.$(OBJEXT) \
-	interval.$(OBJEXT) siset.$(OBJEXT) spaninterval.$(OBJEXT) \
-	constant.$(OBJEXT) variable.$(OBJEXT) follexer.$(OBJEXT) \
-	foltoken.$(OBJEXT) domain.$(OBJEXT)
+am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) \
+	namegenerator.$(OBJEXT) boollit.$(OBJEXT) interval.$(OBJEXT) \
+	siset.$(OBJEXT) spaninterval.$(OBJEXT) constant.$(OBJEXT) \
+	variable.$(OBJEXT) follexer.$(OBJEXT) foltoken.$(OBJEXT) \
+	domain.$(OBJEXT)
 test_domaintest_OBJECTS = $(am_test_domaintest_OBJECTS)
 test_domaintest_LDADD = $(LDADD)
 am_test_follexertest_OBJECTS = follexertest.$(OBJEXT) \
@@ -82,15 +83,16 @@ am_test_follexertest_OBJECTS = follexertest.$(OBJEXT) \
 test_follexertest_OBJECTS = $(am_test_follexertest_OBJECTS)
 test_follexertest_LDADD = $(LDADD)
 am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
-	follexer.$(OBJEXT) boollit.$(OBJEXT) foltoken.$(OBJEXT) \
-	constant.$(OBJEXT) variable.$(OBJEXT) spaninterval.$(OBJEXT) \
-	siset.$(OBJEXT) interval.$(OBJEXT)
+	namegenerator.$(OBJEXT) follexer.$(OBJEXT) boollit.$(OBJEXT) \
+	foltoken.$(OBJEXT) constant.$(OBJEXT) variable.$(OBJEXT) \
+	spaninterval.$(OBJEXT) siset.$(OBJEXT) interval.$(OBJEXT)
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
-am_test_movestest_OBJECTS = movestest.$(OBJEXT) boollit.$(OBJEXT) \
-	interval.$(OBJEXT) siset.$(OBJEXT) spaninterval.$(OBJEXT) \
-	constant.$(OBJEXT) variable.$(OBJEXT) follexer.$(OBJEXT) \
-	foltoken.$(OBJEXT) domain.$(OBJEXT) moves.$(OBJEXT)
+am_test_movestest_OBJECTS = movestest.$(OBJEXT) \
+	namegenerator.$(OBJEXT) boollit.$(OBJEXT) interval.$(OBJEXT) \
+	siset.$(OBJEXT) spaninterval.$(OBJEXT) constant.$(OBJEXT) \
+	variable.$(OBJEXT) follexer.$(OBJEXT) foltoken.$(OBJEXT) \
+	domain.$(OBJEXT) moves.$(OBJEXT)
 test_movestest_OBJECTS = $(am_test_movestest_OBJECTS)
 test_movestest_LDADD = $(LDADD)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
@@ -228,14 +230,14 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CXXFLAGS = $(BOOST_CPPFLAGS)
 AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 dist_noinst_SCRIPTS = autogen.sh
-pel_SOURCES = src/pel.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
+pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
-test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/follexer.cpp src/fol/boollit.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
-test_domaintest_SOURCES = test/domaintest.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
-test_movestest_SOURCES = test/movestest.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
+test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp src/fol/boollit.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
+test_domaintest_SOURCES = test/domaintest.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
+test_movestest_SOURCES = test/movestest.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -375,6 +377,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/moves.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movestest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namegenerator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spaninterval.Po@am__quote@
@@ -408,6 +411,20 @@ pel.obj: src/pel.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/pel.cpp' object='pel.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pel.obj `if test -f 'src/pel.cpp'; then $(CYGPATH_W) 'src/pel.cpp'; else $(CYGPATH_W) '$(srcdir)/src/pel.cpp'; fi`
+
+namegenerator.o: src/fol/namegenerator.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT namegenerator.o -MD -MP -MF $(DEPDIR)/namegenerator.Tpo -c -o namegenerator.o `test -f 'src/fol/namegenerator.cpp' || echo '$(srcdir)/'`src/fol/namegenerator.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/namegenerator.Tpo $(DEPDIR)/namegenerator.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/namegenerator.cpp' object='namegenerator.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o namegenerator.o `test -f 'src/fol/namegenerator.cpp' || echo '$(srcdir)/'`src/fol/namegenerator.cpp
+
+namegenerator.obj: src/fol/namegenerator.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT namegenerator.obj -MD -MP -MF $(DEPDIR)/namegenerator.Tpo -c -o namegenerator.obj `if test -f 'src/fol/namegenerator.cpp'; then $(CYGPATH_W) 'src/fol/namegenerator.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/namegenerator.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/namegenerator.Tpo $(DEPDIR)/namegenerator.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/namegenerator.cpp' object='namegenerator.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o namegenerator.obj `if test -f 'src/fol/namegenerator.cpp'; then $(CYGPATH_W) 'src/fol/namegenerator.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/namegenerator.cpp'; fi`
 
 moves.o: src/fol/moves.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT moves.o -MD -MP -MF $(DEPDIR)/moves.Tpo -c -o moves.o `test -f 'src/fol/moves.cpp' || echo '$(srcdir)/'`src/fol/moves.cpp

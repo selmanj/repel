@@ -160,4 +160,6 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
 
 Model executeMove(const Domain& d, const Move& move, const Model& model);
 Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
+
+std::vector<WSentence> convertToPELCNF(const std::vector<WSentence>, const Domain &d);
 #endif

@@ -19,6 +19,7 @@
 #include "fol.h"
 #include "predcollector.h"
 #include "../siset.h"
+#include "namegenerator.h"
 
 struct atomcmp {
 	bool operator()(const Atom& a, const Atom& b) const {
@@ -35,7 +36,7 @@ public:
 	template <class FactsForwardIterator, class FormForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd)
-			: dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(formulasBegin, formulasEnd) {
+			: dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(formulasBegin, formulasEnd), generator_() {
 
 		// create a class for collecting predicate names
 		PredCollector predCollector;
@@ -103,6 +104,7 @@ public:
 
 	const std::vector<WSentence>& formulas() const {return formulas_;};
 	const std::set<std::string>& observedPredicates() const {return obsPreds_;};
+	const NameGenerator& nameGenerator() const {return generator_;};
 	Model defaultModel() const {return observations_;};
 	Interval maxInterval() const {return maxInterval_;};
 	void setMaxInterval(const Interval& maxInterval);
@@ -110,6 +112,7 @@ public:
 	bool isLiquid(const std::string& predicate) const;
 	bool dontModifyObsPreds() const {return dontModifyObsPreds_;};
 	void setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
+
 
 	unsigned long score(const WSentence& s, const Model& m) const;
 	unsigned long score(const Model& m) const;
@@ -140,6 +143,8 @@ private:
 
 	std::vector<WSentence> formulas_;
 	Model observations_;
+
+	NameGenerator generator_;
 };
 
 #endif /* DOMAIN_H_ */
