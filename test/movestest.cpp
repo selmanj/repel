@@ -96,6 +96,36 @@ BOOST_AUTO_TEST_CASE(liquidDisjMovesTest) {
 
 }
 
+BOOST_AUTO_TEST_CASE(pelCNFAtomTest) {
+	std::string facts("P(a,b) @ [1:5]\n"
+			"S(a) @ [1:2]\n");
+	std::string formulas("1: S(a)");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	WSentence form1 = d.formulas().at(0);
+	srand(0);
+
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
+	BOOST_CHECK_EQUAL(moves.size(), 1);
+	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {S(a) @ [3:5]}, toDel: {}");
+}
+
+BOOST_AUTO_TEST_CASE(pelCNFNegAtomTest) {
+	std::string facts("P(a,b) @ [1:5]\n"
+			"S(a) @ [1:2]\n");
+	std::string formulas("1: !S(a)");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	WSentence form1 = d.formulas().at(0);
+	srand(0);
+
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
+	BOOST_CHECK_EQUAL(moves.size(), 1);
+	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {S(a) @ [1:2]}");
+}
+
 BOOST_AUTO_TEST_CASE(maxWalkSatTest) {
 	std::string facts(	"D_P(a) @ [1:5]\n"
 						"D_P(b) @ [4:7]\n");

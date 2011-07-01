@@ -785,6 +785,120 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
 }
 
 
+Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si) {
+	Move move;
+	if (si.size() == 0) return move;
+
+	if (dynamic_cast<const Atom*>(&s) || dynamic_cast<const Negation*>(&s)) {
+		const Atom* a;
+		bool isNegation=false;
+		if (dynamic_cast<const Atom*>(&s)) {
+			a = dynamic_cast<const Atom *>(&s);
+		} else {
+			const Negation* n = dynamic_cast<const Negation *>(&s);
+			isNegation = true;
+			a = dynamic_cast<const Atom *>(&(*n->sentence()));		// joseph!  this is ugly!  TODO fix it
+			if (!a) {
+				throw std::runtime_error("negation applied to something that is not an atom!");
+			}
+		}
+		if (!a->isGrounded()) {
+			throw std::runtime_error("cannot handle atoms with variables at the moment!");
+		}
+		if (d.dontModifyObsPreds()
+				&& d.observedPredicates().find(a->name()) != d.observedPredicates().end()) {
+			// this predicate is an observed predicate; we can't change it.  return an empty move
+			return move;
+		}
+		if (isNegation) {
+			// we want to delete span intervals where its true
+			Move::change change = boost::make_tuple(*a, si);
+			move.toDel.push_back(change);
+		} else {
+			// we want to add span intervals where its false
+			Move::change change = boost::make_tuple(*a, si);
+			move.toAdd.push_back(change);
+		}
+	}
+	return move;
+}
+
+Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval& si) {
+	Move move;
+
+	// we can only have literals in our conjunction!  collect them
+	class LiteralCollector : public SentenceVisitor {
+	public:
+		std::vector<const Sentence*> lits;
+
+		void accept(const Sentence& s) {
+			if (!dynamic_cast<const Negation*>(&s) && !dynamic_cast<const Atom*>(&s) ) {
+				throw std::runtime_error("must have only literals inside conjunction when finding moves!");
+			}
+			if (dynamic_cast<const Negation*>(&s)) {
+				const Negation* n = dynamic_cast<const Negation*>(&s);
+				// ensure we are being applied to a literal
+				if (!dynamic_cast<const Atom*>(&(*n->sentence()))) {
+					throw std::runtime_error("negation can only be applied to an atom when finding moves");
+				}
+				// the last literal we inserted is actually negation - pop it off the end
+				lits.pop_back();
+				lits.push_back(&s);
+			} else {
+
+				lits.push_back(&s);
+			}
+		}
+	} litCollector;
+
+	c.left()->visit(litCollector);
+	c.right()->visit(litCollector);
+
+	// find all the moves for each literal and combine it into one big move
+	BOOST_FOREACH(const Sentence *s, litCollector.lits) {
+		if (dynamic_cast<const Negation*>(s)) {
+			const Negation* n = dynamic_cast<const Negation*>(s);
+			const Atom* a = dynamic_cast<const Atom*>(&(*n->sentence()));
+			Move::change change = boost::make_tuple(*a, si);
+			move.toDel.push_back(change);
+		} else {
+			const Atom* a = dynamic_cast<const Atom*>(s);
+			Move::change change = boost::make_tuple(*a, si);
+			move.toAdd.push_back(change);
+		}
+	}
+	return move;
+}
+
+std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval& si) {
+	std::vector<Move> moves;
+	std::vector<Move> movesL = findMovesForLiquid(d, m, *dis.left(), si);
+	std::vector<Move> movesR = findMovesForLiquid(d, m, *dis.right(), si);
+
+	moves.insert(moves.end(), movesL.begin(), movesL.end());
+	moves.insert(moves.end(), movesR.begin(), movesR.end());
+
+	return moves;
+}
+
+std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si) {
+	std::vector<Move> moves;
+	if (dynamic_cast<const Negation *>(&s) || dynamic_cast<const Atom *>(&s)) {
+		Move move = findMovesForLiquidLiteral(d, m, s, si);
+		if (!move.isEmpty()) moves.push_back(move);
+	} else if (dynamic_cast<const Conjunction *>(&s)) {
+		const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
+		Move move = findMovesForLiquidConjunction(d, m, *c, si);
+		if (!move.isEmpty()) moves.push_back(move);
+	} else if (dynamic_cast<const Disjunction *>(&s)) {
+		const Disjunction* dis = dynamic_cast<const Disjunction *>(&s);
+		std::vector<Move> disMoves = findMovesForLiquidDisjunction(d, m, *dis, si);
+		moves.insert(moves.end(), disMoves.begin(), disMoves.end());
+	}
+	return moves;
+}
+
+
 std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
 	std::vector<Move> moves;
 	if (dynamic_cast<const LiquidOp*>(&s)) {
@@ -804,11 +918,112 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 		return findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s));
 	} else if (isFormula3Type(s, d)) {
 		return findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));
+	} else if (isPELCNFLiteral(s)) {
+		// pick an si to satisfy
+		SISet notSat = d.satisfied(s, m);
+		notSat = notSat.compliment();
+		if (notSat.size() == 0) return moves;
+
+		SpanInterval si = set_at(notSat.set(), rand() % notSat.set().size());
+		return findMovesForPELCNFLiteral(d, m, s, si);
 	} else {
 		LOG_PRINT(LOG_ERROR) << "given sentence \"" << s.toString() << "\" but it doesn't match any moves function we know about!";
 	}
 	return moves;
 }
+
+bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence) {
+	boost::shared_ptr<const Disjunction> dis = boost::dynamic_pointer_cast<const Disjunction>(sentence);
+	if (!dis) return false;
+	if ((isPELCNFLiteral(dis->left()) || isDisjunctionOfCNFLiterals(dis->left()))
+			&& (isPELCNFLiteral(dis->right()) || isDisjunctionOfCNFLiterals(dis->right()))) {
+		return true;
+	}
+	return false;
+}
+
+bool isPELCNFLiteral(const Sentence& sentence) {	// TODO: this is stupid and slow!  rewrite this!
+	boost::shared_ptr<Sentence> copy(sentence.clone());
+	return isPELCNFLiteral(copy);
+}
+
+bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence) {
+	if (boost::dynamic_pointer_cast<const Atom>(sentence)
+			|| boost::dynamic_pointer_cast<const BoolLit>(sentence)) {
+		return true;
+	}
+	if (boost::dynamic_pointer_cast<const Negation>(sentence)) {
+		boost::shared_ptr<const Negation> neg = boost::dynamic_pointer_cast<const Negation>(sentence);
+		// TODO: necessary?
+		if (boost::dynamic_pointer_cast<const Negation>(neg->sentence())) {
+			return false;
+		}
+		return isPELCNFLiteral(neg->sentence());
+	}
+	if (boost::dynamic_pointer_cast<const DiamondOp>(sentence)) {
+		boost::shared_ptr<const DiamondOp> dia = boost::dynamic_pointer_cast<const DiamondOp>(sentence);
+		if (boost::dynamic_pointer_cast<const Atom>(dia->sentence())
+				|| boost::dynamic_pointer_cast<const BoolLit>(dia->sentence())) {
+			return true;
+		}
+		return false;
+	}
+	if (boost::dynamic_pointer_cast<const Conjunction>(sentence)) {
+		boost::shared_ptr<const Conjunction> con = boost::dynamic_pointer_cast<const Conjunction>(sentence);
+		if ((boost::dynamic_pointer_cast<const Atom>(con->left())
+			 || boost::dynamic_pointer_cast<const BoolLit>(con->left()))
+			&& (boost::dynamic_pointer_cast<const Atom>(con->right())
+			 || boost::dynamic_pointer_cast<const BoolLit>(con->right()))) {
+			return true;
+		}
+		return false;
+	}
+
+	return false;
+}
+
+std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si) {
+	std::vector<Move> moves;
+	// check for simple literal - either an atom or a negation applied to an atom
+	if (const Atom* a = dynamic_cast<const Atom*>(&s)) {
+		// easy, just add it to si
+		Move move;
+		if (d.isLiquid(a->name()) && !si.isLiquid()) {
+			// need to add it to a liquid spaninterval
+			SpanInterval si2(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish(), si.maxInterval());
+			move.toAdd.push_back(boost::make_tuple(*a, si2));
+		} else {
+			move.toAdd.push_back(boost::make_tuple(*a, si));
+		}
+		moves.push_back(move);
+		return moves;
+	}
+	if (const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s)) {
+		// if it's a liquid operator, just use the moves for liquid operators
+		return findMovesForLiquid(d, m, s, si);
+	}
+	if (const Negation* n = dynamic_cast<const Negation*>(&s)) {
+		if (const Atom* a = dynamic_cast<const Atom*>(&*n->sentence())) {
+			// delete it from si
+			Move move;
+			if (d.isLiquid(a->name()) && !si.isLiquid()) {
+				SpanInterval si2(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish(), si.maxInterval());
+				move.toDel.push_back(boost::make_tuple(*a, si2));
+			} else {
+				move.toDel.push_back(boost::make_tuple(*a, si));
+			}
+			moves.push_back(move);
+			return moves;
+		}
+		// TODO: implement moves for ![phi]
+	}
+
+	// NO MOVE FOUND
+	LOG_PRINT(LOG_ERROR) << "inside findMovesForPELCNFLiteral: given a sentence we don't recognize! :" << s.toString();
+	throw std::runtime_error("unable to calculate moves");
+
+}
+
 
 Model executeMove(const Domain& d, const Move& move, const Model& model) {
 	Model currentModel = model;

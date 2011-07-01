@@ -31,128 +31,36 @@ struct Move {
 	bool isEmpty() const;
 };
 
+
+bool canFindMovesFor(const Sentence &s, const Domain &d);
+bool isFormula1Type(const Sentence &s, const Domain &d);
+bool isFormula2Type(const Sentence &s, const Domain &d);
+bool isFormula3Type(const Sentence &s, const Domain &d);
+std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s);
+std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis);
+std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis);
+std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis);
+
+Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
+Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval &si);
+std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval &si);
+std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si);
+
+bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence);
+bool isPELCNFLiteral(const Sentence& sentence);
+bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence);
+
+std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
+
+Model executeMove(const Domain& d, const Move& move, const Model& model);
+Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
+
+boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<const Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences, Domain &d);
+boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence);
+
 namespace {
-	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
-	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval &si);
-	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval &si);
-	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si);
 	boost::shared_ptr<Sentence> convertToPELCNF_(const boost::shared_ptr<Sentence>& curSentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d);
 	boost::shared_ptr<Atom> rewriteAsLiteral(boost::shared_ptr<Sentence> sentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d);
-	bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence);
-	bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence);
-
-	Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si) {
-		Move move;
-		if (si.size() == 0) return move;
-
-		if (dynamic_cast<const Atom*>(&s) || dynamic_cast<const Negation*>(&s)) {
-			const Atom* a;
-			bool isNegation=false;
-			if (dynamic_cast<const Atom*>(&s)) {
-				a = dynamic_cast<const Atom *>(&s);
-			} else {
-				const Negation* n = dynamic_cast<const Negation *>(&s);
-				isNegation = true;
-				a = dynamic_cast<const Atom *>(&(*n->sentence()));		// joseph!  this is ugly!  TODO fix it
-				if (!a) {
-					throw std::runtime_error("negation applied to something that is not an atom!");
-				}
-			}
-			if (!a->isGrounded()) {
-				throw std::runtime_error("cannot handle atoms with variables at the moment!");
-			}
-			if (d.dontModifyObsPreds()
-					&& d.observedPredicates().find(a->name()) != d.observedPredicates().end()) {
-				// this predicate is an observed predicate; we can't change it.  return an empty move
-				return move;
-			}
-			if (isNegation) {
-				// we want to delete span intervals where its true
-				Move::change change = boost::make_tuple(*a, si);
-				move.toDel.push_back(change);
-			} else {
-				// we want to add span intervals where its false
-				Move::change change = boost::make_tuple(*a, si);
-				move.toAdd.push_back(change);
-			}
-		}
-		return move;
-	}
-
-	Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjunction &c, const SpanInterval& si) {
-		Move move;
-
-		// we can only have literals in our conjunction!  collect them
-		class LiteralCollector : public SentenceVisitor {
-		public:
-			std::vector<const Sentence*> lits;
-
-			void accept(const Sentence& s) {
-				if (!dynamic_cast<const Negation*>(&s) && !dynamic_cast<const Atom*>(&s) ) {
-					throw std::runtime_error("must have only literals inside conjunction when finding moves!");
-				}
-				if (dynamic_cast<const Negation*>(&s)) {
-					const Negation* n = dynamic_cast<const Negation*>(&s);
-					// ensure we are being applied to a literal
-					if (!dynamic_cast<const Atom*>(&(*n->sentence()))) {
-						throw std::runtime_error("negation can only be applied to an atom when finding moves");
-					}
-					// the last literal we inserted is actually negation - pop it off the end
-					lits.pop_back();
-					lits.push_back(&s);
-				} else {
-
-					lits.push_back(&s);
-				}
-			}
-		} litCollector;
-
-		c.left()->visit(litCollector);
-		c.right()->visit(litCollector);
-
-		// find all the moves for each literal and combine it into one big move
-		BOOST_FOREACH(const Sentence *s, litCollector.lits) {
-			if (dynamic_cast<const Negation*>(s)) {
-				const Negation* n = dynamic_cast<const Negation*>(s);
-				const Atom* a = dynamic_cast<const Atom*>(&(*n->sentence()));
-				Move::change change = boost::make_tuple(*a, si);
-				move.toDel.push_back(change);
-			} else {
-				const Atom* a = dynamic_cast<const Atom*>(s);
-				Move::change change = boost::make_tuple(*a, si);
-				move.toAdd.push_back(change);
-			}
-		}
-		return move;
-	}
-
-	std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval& si) {
-		std::vector<Move> moves;
-		std::vector<Move> movesL = findMovesForLiquid(d, m, *dis.left(), si);
-		std::vector<Move> movesR = findMovesForLiquid(d, m, *dis.right(), si);
-
-		moves.insert(moves.end(), movesL.begin(), movesL.end());
-		moves.insert(moves.end(), movesR.begin(), movesR.end());
-
-		return moves;
-	}
-
-	std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si) {
-		std::vector<Move> moves;
-		if (dynamic_cast<const Negation *>(&s) || dynamic_cast<const Atom *>(&s)) {
-			Move move = findMovesForLiquidLiteral(d, m, s, si);
-			if (!move.isEmpty()) moves.push_back(move);
-		} else if (dynamic_cast<const Conjunction *>(&s)) {
-			const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
-			Move move = findMovesForLiquidConjunction(d, m, *c, si);
-			if (!move.isEmpty()) moves.push_back(move);
-		} else if (dynamic_cast<const Disjunction *>(&s)) {
-			const Disjunction* dis = dynamic_cast<const Disjunction *>(&s);
-			std::vector<Move> disMoves = findMovesForLiquidDisjunction(d, m, *dis, si);
-			moves.insert(moves.end(), disMoves.begin(), disMoves.end());
-		}
-		return moves;
-	}
 
 	boost::shared_ptr<Sentence> convertToPELCNF_(const boost::shared_ptr<Sentence>& curSentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d) {
 		if (isPELCNFLiteral(curSentence)) {
@@ -260,66 +168,7 @@ namespace {
 		return newLit;
 
 	}
-
-	bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence) {
-		boost::shared_ptr<const Disjunction> dis = boost::dynamic_pointer_cast<const Disjunction>(sentence);
-		if (!dis) return false;
-		if ((isPELCNFLiteral(dis->left()) || isDisjunctionOfCNFLiterals(dis->left()))
-				&& (isPELCNFLiteral(dis->right()) || isDisjunctionOfCNFLiterals(dis->right()))) {
-			return true;
-		}
-		return false;
-	}
-
-	bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence) {
-		if (boost::dynamic_pointer_cast<const Atom>(sentence)
-				|| boost::dynamic_pointer_cast<const BoolLit>(sentence)) {
-			return true;
-		}
-		if (boost::dynamic_pointer_cast<const Negation>(sentence)) {
-			boost::shared_ptr<const Negation> neg = boost::dynamic_pointer_cast<const Negation>(sentence);
-			// TODO: necessary?
-			if (boost::dynamic_pointer_cast<const Negation>(neg->sentence())) {
-				return false;
-			}
-			return isPELCNFLiteral(neg->sentence());
-		}
-		if (boost::dynamic_pointer_cast<const DiamondOp>(sentence)) {
-			boost::shared_ptr<const DiamondOp> dia = boost::dynamic_pointer_cast<const DiamondOp>(sentence);
-			if (boost::dynamic_pointer_cast<const Atom>(dia->sentence())
-					|| boost::dynamic_pointer_cast<const BoolLit>(dia->sentence())) {
-				return true;
-			}
-			return false;
-		}
-		if (boost::dynamic_pointer_cast<const Conjunction>(sentence)) {
-			boost::shared_ptr<const Conjunction> con = boost::dynamic_pointer_cast<const Conjunction>(sentence);
-			if ((boost::dynamic_pointer_cast<const Atom>(con->left())
-				 || boost::dynamic_pointer_cast<const BoolLit>(con->left()))
-				&& (boost::dynamic_pointer_cast<const Atom>(con->right())
-				 || boost::dynamic_pointer_cast<const BoolLit>(con->right()))) {
-				return true;
-			}
-			return false;
-		}
-
-		return false;
-	}
 }
 
-bool canFindMovesFor(const Sentence &s, const Domain &d);
-bool isFormula1Type(const Sentence &s, const Domain &d);
-bool isFormula2Type(const Sentence &s, const Domain &d);
-bool isFormula3Type(const Sentence &s, const Domain &d);
-std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s);
-std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis);
-std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis);
-std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis);
-
-Model executeMove(const Domain& d, const Move& move, const Model& model);
-Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
-
-boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<const Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences, Domain &d);
-boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence);
 
 #endif
