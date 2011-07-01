@@ -142,7 +142,7 @@ bool isFormula3Type(const Sentence &s, const Domain &d) {
 
 	const Negation *leftAsNeg = dynamic_cast<const Negation *>(&*disjunc->left());
 	const Negation *rightAsNeg = dynamic_cast<const Negation *>(&*disjunc->right());
-
+	if (!leftAsNeg || !rightAsNeg) return false;
 	// ensure both sides are negation
 	const Negation *consequent;
 	const Negation *precedent;
@@ -926,10 +926,27 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 
 		SpanInterval si = set_at(notSat.set(), rand() % notSat.set().size());
 		return findMovesForPELCNFLiteral(d, m, s, si);
+	} else if (isDisjunctionOfCNFLiterals(s)) {
+		// instead of choosing just one si, we'll try them all
+		SISet notSat = d.satisfied(s, m);
+		notSat = notSat.compliment();
+		if (notSat.size() == 0) return moves;
+
+		BOOST_FOREACH(SpanInterval si, notSat.set()) {
+			std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, dynamic_cast<const Disjunction&>(s), si);
+			moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+		}
+		return moves;
 	} else {
 		LOG_PRINT(LOG_ERROR) << "given sentence \"" << s.toString() << "\" but it doesn't match any moves function we know about!";
 	}
 	return moves;
+}
+
+bool isDisjunctionOfCNFLiterals(const Sentence& s) {
+	// TODO: rewrite this!  stupid and slow!
+	boost::shared_ptr<Sentence> copy(s.clone());
+	return isDisjunctionOfCNFLiterals(copy);
 }
 
 bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence) {
@@ -963,7 +980,8 @@ bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence) {
 	if (boost::dynamic_pointer_cast<const DiamondOp>(sentence)) {
 		boost::shared_ptr<const DiamondOp> dia = boost::dynamic_pointer_cast<const DiamondOp>(sentence);
 		if (boost::dynamic_pointer_cast<const Atom>(dia->sentence())
-				|| boost::dynamic_pointer_cast<const BoolLit>(dia->sentence())) {
+				|| boost::dynamic_pointer_cast<const BoolLit>(dia->sentence())
+				|| boost::dynamic_pointer_cast<const LiquidOp>(dia->sentence())) {	// TODO add liquidop
 			return true;
 		}
 		return false;
@@ -1015,15 +1033,82 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 			moves.push_back(move);
 			return moves;
 		}
+		if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&*n->sentence())) {
+			// TODO: implement code that handles multiple diamond operators!
+			if (dia->relations().size() > 1) {
+				LOG_PRINT(LOG_ERROR) << "currently cannot handle moves for diamond ops with multiple relations!";
+				throw std::runtime_error("unimplemented moves found");
+			}
+			if (dia->relations().size() == 0) return moves;
+			// OK, we've got !<>{r} (phi), whether phi is liquid or an atom it should be relatively the same
+			boost::optional<SpanInterval> si2Opt = si.satisfiesRelation(inverseRelation(*dia->relations().begin()));
+			if (!si2Opt) return moves;		// no moves available
+			SpanInterval si2 = si2Opt.get();
+			if (const Atom* a = dynamic_cast<const Atom*>(&*dia->sentence())) {
+				Move move;
+				if (d.isLiquid(a->name()) && !si2.isLiquid()) {
+					SpanInterval si3(si2.start().start(), si2.finish().finish(), si2.start().start(), si2.finish().finish(), si2.maxInterval());
+					move.toDel.push_back(boost::make_tuple(*a, si3));
+				} else {
+					move.toDel.push_back(boost::make_tuple(*a, si2));
+				}
+				moves.push_back(move);
+				return moves;
+			} else if (const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&*dia->sentence())) {
+				// normally we can't do this, but slip a negation inside the liquid op since its equivalent
+				boost::shared_ptr<Sentence> insideLiq(liq->sentence()->clone());
+				boost::shared_ptr<Sentence> negInsideLiq(new Negation(insideLiq));
+				// by adding this negation we need to ensure it's moved in
+				negInsideLiq = moveNegationsInward(negInsideLiq);
+		//		boost::shared_ptr<Sentence> newLiq(new LiquidOp(negInsideLiq));
+				// satisfy this liq operation now
+				std::vector<Move> localMoves = findMovesForLiquid(d, m, *negInsideLiq, si2);
+				moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
+				return moves;
+			}
+		}
 		// TODO: implement moves for ![phi]
 	}
-
+	if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&s)) {
+		if (dia->relations().size() > 1) {
+			// calculate the moves for each one
+			BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
+				boost::shared_ptr<Sentence> diaSentenceCopy(dia->sentence()->clone());
+				boost::shared_ptr<Sentence> diaCopy(new DiamondOp(diaSentenceCopy, rel));
+				std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *diaCopy, si);
+				moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+			}
+			return moves;
+		}
+		// TODO: implement moves for diamond operator
+	}
 	// NO MOVE FOUND
 	LOG_PRINT(LOG_ERROR) << "inside findMovesForPELCNFLiteral: given a sentence we don't recognize! :" << s.toString();
 	throw std::runtime_error("unable to calculate moves");
 
 }
 
+std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m, const Disjunction &dis, const SpanInterval& si) {
+	std::vector<Move> moves;
+	// consider satisfying either the left, or the right
+	if (const Disjunction *disLeft  = dynamic_cast<const Disjunction*>(&*dis.left())) {
+		std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, *disLeft, si);
+		moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
+	} else {
+		std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *dis.left(), si);
+		moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
+	}
+
+	if (const Disjunction *disRight  = dynamic_cast<const Disjunction*>(&*dis.right())) {
+		std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, *disRight, si);
+		moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
+	} else {
+		std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *dis.right(), si);
+		moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
+	}
+
+	return moves;
+}
 
 Model executeMove(const Domain& d, const Move& move, const Model& model) {
 	Model currentModel = model;

@@ -46,12 +46,13 @@ Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjun
 std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval &si);
 std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si);
 
+bool isDisjunctionOfCNFLiterals(const Sentence& sentence);
 bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence);
 bool isPELCNFLiteral(const Sentence& sentence);
 bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence);
 
 std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
-
+std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m, const Disjunction &dis, const SpanInterval& si);
 Model executeMove(const Domain& d, const Move& move, const Model& model);
 Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
 

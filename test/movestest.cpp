@@ -126,6 +126,49 @@ BOOST_AUTO_TEST_CASE(pelCNFNegAtomTest) {
 	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {S(a) @ [1:2]}");
 }
 
+BOOST_AUTO_TEST_CASE(pelCNFDisjunctionTest) {
+	std::string facts("P(a,b) @ [1:5]\n"
+			"S(a) @ [1:2]\n");
+	std::string formulas("1: P(a,b) v S(a)");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setMaxInterval(Interval(1,10));
+	d.setDontModifyObsPreds(false);
+	WSentence form1 = d.formulas().at(0);
+	srand(0);
+
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
+	BOOST_CHECK_EQUAL(moves.size(), 6);
+	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {S(a) @ [1:10]}, toDel: {}");
+	BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {P(a, b) @ [1:10]}, toDel: {}");
+	BOOST_CHECK_EQUAL(moves[2].toString(), "toAdd: {S(a) @ [3:10]}, toDel: {}");
+	BOOST_CHECK_EQUAL(moves[3].toString(), "toAdd: {P(a, b) @ [3:10]}, toDel: {}");
+	BOOST_CHECK_EQUAL(moves[4].toString(), "toAdd: {S(a) @ [6:10]}, toDel: {}");
+	BOOST_CHECK_EQUAL(moves[5].toString(), "toAdd: {P(a, b) @ [6:10]}, toDel: {}");
+
+}
+
+BOOST_AUTO_TEST_CASE(pelCNFDiamondTestTest) {
+	std::string facts("Huddle(a)  @ [2:2]\n"
+			"Dig(a) @ [4:5]\n"
+			"Spike(a) @ [6:6]\n");
+	std::string formulas("1: Huddle(a) -> !(<>{>} [Dig(a) v Spike(a)])");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	WSentence form1 = d.formulas().at(0);
+	srand(0);
+
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
+	BOOST_CHECK_EQUAL(moves.size(), 2);
+	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {Dig(a) @ [4:6], Spike(a) @ [4:6]}");
+	BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {}, toDel: {Huddle(a) @ [2:2]}");
+
+
+
+}
+
+
 BOOST_AUTO_TEST_CASE(maxWalkSatTest) {
 	std::string facts(	"D_P(a) @ [1:5]\n"
 						"D_P(b) @ [4:7]\n");
