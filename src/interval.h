@@ -2,7 +2,7 @@
 #define INTERVAL_H
 
 #include <string>
-
+#include <boost/optional.hpp>
 class Interval {
 public:
 	enum INTERVAL_RELATION {
@@ -56,6 +56,7 @@ private:
 
 Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel);
 bool relationHolds(const Interval& a, Interval::INTERVAL_RELATION rel, const Interval& b);
+boost::optional<Interval> intersection(const Interval& a, const Interval& b);
 Interval span(const Interval& a, const Interval& b);
 
 #endif

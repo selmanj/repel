@@ -3,6 +3,8 @@
  *
  */
 #include <stdexcept>
+#include <boost/optional.hpp>
+
 #include "interval.h"
 
 Interval::Interval(unsigned int start, unsigned int end)
@@ -159,6 +161,14 @@ Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel) {
 		default:
 			throw std::runtime_error("given an interval relation that we have no inverse for");
 	}
+}
+
+boost::optional<Interval> intersection(const Interval& a, const Interval& b) {
+	if (a.finish() >= b.start() && a.start() <= b.finish())
+		return Interval(b.start(), (a.finish() < b.finish() ? a.finish() : b.finish()));
+	if (a.start() <= b.finish() && a.start() >= b.start())
+		return Interval(a.start(), (a.finish() < b.finish() ? a.finish() : b.finish()));
+	return boost::optional<Interval>();
 }
 
 bool relationHolds(const Interval& a, Interval::INTERVAL_RELATION rel, const Interval& b) {

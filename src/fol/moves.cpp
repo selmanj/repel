@@ -1067,6 +1067,42 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 				return moves;
 			}
 		}
+		if (const Conjunction* con = dynamic_cast<const Conjunction*>(&*n->sentence())) {
+			// TODO: implement code that handles multiple conjunction operators
+			if (con->relations().size() > 1) {
+				LOG_PRINT(LOG_ERROR) << "currently cannot handle conjunctions with multiple relations! :" << s.toString();
+				throw std::runtime_error("can't find moves inside findMovesForPELCNFLiteral for a conjunction with multiple relations");
+			}
+			if (con->relations().size() == 0) return moves;
+			// TODO: handle more than just the case where it is two atoms (ie liquid ops)
+			const Atom* leftAtom = dynamic_cast<const Atom*>(&*con->left());
+			const Atom* rightAtom = dynamic_cast<const Atom*>(&*con->right());
+
+			if (!leftAtom || !rightAtom) {
+				LOG_PRINT(LOG_ERROR) << "conjunction operator can only be applied to simple atoms right now! :" << s.toString();
+				throw std::runtime_error("unimplemented moves for conjunction operator");
+			}
+
+			// find where leftAtom is true, intersected with si
+			SISet toIntersect(false, si.maxInterval());
+			toIntersect.add(si);
+			SISet leftTrueAt = d.satisfiedAtom(*leftAtom, m);
+			leftTrueAt = intersection(leftTrueAt, toIntersect);
+			SISet rightTrueAt = d.satisfiedAtom(*rightAtom, m);
+			rightTrueAt = intersection(rightTrueAt, toIntersect);
+
+			if (con->relations().find(Interval::LESSTHAN) != con->relations().end()) {
+				// three cases: 1 delete any spanintervals that start at si
+				BOOST_FOREACH(SpanInterval leftSi, leftTrueAt.set()) {
+					if (intersection(leftSi, si).size() > 0) {
+						/*********************************************************************************************/
+					}
+				}
+			} else {
+				LOG_PRINT(LOG_ERROR) << "currently don't support the relation given: " << s.toString();
+				throw std::runtime_error("unimplemented moves for conjunction operator");
+			}
+		}
 		// TODO: implement moves for ![phi]
 	}
 	if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&s)) {
@@ -1082,6 +1118,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 		}
 		// TODO: implement moves for diamond operator
 	}
+
 	// NO MOVE FOUND
 	LOG_PRINT(LOG_ERROR) << "inside findMovesForPELCNFLiteral: given a sentence we don't recognize! :" << s.toString();
 	throw std::runtime_error("unable to calculate moves");
