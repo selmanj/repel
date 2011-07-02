@@ -17,10 +17,55 @@
 #     relations are specified as before
 #        
 
-1: [D-P(a) -> P(a)]
-1: [D-P(b) -> P(b)]
-1: [D-S(a) -> S(a)]
-5: [P(a) & !P(b) v !P(a) & P(b)]
-2: P(b) -> <>{mi} [P(a) v P(b)]
-10: (P(a); P(b)) -> <>{mi} [P(b) v Q(b)]
-5: S(a) -> !(P(a); P(b))
+# for now, we will use simple versions of the original formulas
+1: [ D-Spike(backLeft) -> Spike(backLeft) ]
+1: [ D-Dig(backLeft) -> Dig(backLeft) ]
+1: [ D-Serve(backLeft) -> Serve(backLeft) ]
+1: [ D-BallContact(them) -> BallContact(them) ]
+1: [ D-BallContact(backLeft) -> BallContact(backLeft) ]
+1: [ D-BallGoingIn() -> BallGoingIn() ]
+1: [ D-BallGoingOut() -> BallGoingOut() ]
+1: [ D-Huddle() -> Huddle() ]
+# after some tests, needed the following ones for sure!
+1: [ BallContact(them) -> D-BallContact(them) ]
+1: [ BallContact(backLeft) -> D-BallContact(backLeft) ]
+
+
+# etc... for now we'll just deal with the backLeft player
+
+# one pose at a time (note to self, add \ to allow formulas to span multiple lines
+10: [ ( Spike(backLeft) ^ !Dig(backLeft) ^ !Serve(backLeft)) v (!Spike(backLeft) ^ Dig(backLeft) ^ !Serve(backLeft)) v (!Spike(backLeft) ^ !Dig(backLeft) ^ Serve(backLeft)) v (!Spike(backLeft) ^ !Dig(backLeft) ^ !Serve(backLeft))]
+
+# serving starts the round
+# TODO: can't have ! next to a diamond??
+10: Serve(backLeft) -> !(<>{<} [Spike(backLeft) v Set(backLeft) v Serve(backLeft) v Dig(backLeft) v Block(backLeft) v Squat(backLeft)])
+
+# huddling ends it
+10: Huddle(backLeft) -> !(<>{>} [Spike(backLeft) v Set(backLeft) v Serve(backLeft) v Dig(backLeft) v Block(backLeft) v Squat(backLeft)])
+
+# Ball going in must be followed by ballgoing out (and vice versa)
+10: BallGoingIn() ^{<} BallGoingIn() -> <>{d} BallGoingOut()
+10: BallGoingOut() ^{<} BallGoingOut() -> <>{d} BallGoingIn()
+
+# if the ball changes sides, SOMEONE must have contacted it
+10: !(BallGoingIn() ^{<} BallGoingOut()) v (<>{d} BallGoingOut()) v BallContact(backLeft)
+10: !(BallGoingOut() ^{<} BallGoingIn()) v (<>{d} BallGoingIn()) v BallContact(them)
+
+
+# Lets make a nice liquid predicate that indicates which side the ball is on
+# below only works if ballgoingout not liquid
+10: !(BallGoingIn() ^{<} BallGoingOut()) v (<>{d} BallGoingOut()) v BallOnSide(us)
+10: !(BallGoingOut() ^{<} BallGoingIn()) v (<>{d} BallGoingIn()) v BallOnSide(them)
+
+# Ball can only be on one side at once
+10: [(BallOnSide(us) ^ !BallOnSide(them)) v (!BallOnSide(us) ^ BallOnSide(them))]
+
+# each ballonside interval is met by the opposing one
+10: BallOnSide(us) -> <>{mi} [BallOnSide(us) v BallOnSide(them)]
+10: BallOnSide(them) -> <>{mi} [BallOnSide(them) v BallOnSide(us)]
+
+# If the ball is not on our side, we cannot make contact with it
+10: [BallOnSide(them) -> !BallContact(backLeft)]
+10: [BallContact(backLeft) -> BallOnSide(us)]
+
+

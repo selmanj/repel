@@ -15,6 +15,7 @@
 #include "../interval.h"
 #include "fol.h"
 #include "constant.h"
+#include "../log.h"
 
 // anonymous namespace for helper functions
 namespace {
@@ -191,6 +192,11 @@ boost::shared_ptr<Atom> doParseGroundAtom(iters<ForwardIterator> &its) {
 	boost::shared_ptr<Atom> a(new Atom(predName));
 
 	consumeTokenType(FOLParse::OPEN_PAREN, its);
+	if (peekTokenType(FOLParse::CLOSE_PAREN, its)) {
+		// ok, empty atom, finish parsing
+		consumeTokenType(FOLParse::CLOSE_PAREN, its);
+		return a;
+	}
 	boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
 	a->push_back(c); // ownership transfered to atom
 	while (peekTokenType(FOLParse::COMMA, its)) {
@@ -211,9 +217,13 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::IDENT, its)) {
 		boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
 		a->push_back(c);
-	} else {
+	} else if (peekTokenType(FOLParse::VARIABLE, its)){
 		boost::shared_ptr<Variable> v(new Variable(consumeVariable(its)));
 		a->push_back(v);
+	} else {
+		// atom with no args
+		consumeTokenType(FOLParse::CLOSE_PAREN, its);
+		return a;
 	}
 	while (peekTokenType(FOLParse::COMMA, its)) {
 		consumeTokenType(FOLParse::COMMA, its);

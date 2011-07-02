@@ -12,6 +12,7 @@
 #include <boost/foreach.hpp>
 #include "siset.h"
 #include "spaninterval.h"
+#include "log.h"
 
 /*
 SISet::SISet(const SpanInterval& si, bool forceLiquid,
@@ -216,8 +217,14 @@ void SISet::makeDisjoint() {
 	}
 	// don't trust myself - remove this later as an optimization step
 	if (!isDisjoint()) {
-		std::runtime_error error("inside SISet::makeDisjoint() - set was attempted to make disjoint but isn't!");
-		throw error;
+		LOG_PRINT(LOG_ERROR) << "set is supposed to be disjoint, but isnt!  set: " << this->toString() << ", forceliquid: " << forceLiquid_;
+		makeDisjoint();
+		if (!isDisjoint()) {
+			LOG_PRINT(LOG_ERROR) << "set is still not disjoint,  set: " << this->toString() << ", forceliquid: " << forceLiquid_;
+
+			std::runtime_error error("inside SISet::makeDisjoint() - set was attempted to make disjoint but isn't!");
+			throw error;
+		}
 	}
 }
 
@@ -318,7 +325,7 @@ SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVA
 //	std::cout << "jIntersect = " << jIntersect.toString() << std::endl;
 
 	// TODO this seems right but we are now iterating over pairs of intervals!
-	/*
+/*
 	SISet spanned;
 	for (SpanInterval::iterator iIt = iIntersect.begin(); iIt != iIntersect.end(); iIt++) {
 		for (SpanInterval::iterator jIt = jIntersect.begin(); jIt != jIntersect.end(); jIt++) {
@@ -330,7 +337,9 @@ SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVA
 			}
 		}
 	}
-	 */
+    */
+
+
 	SISet spanned = span(iIntersect, jIntersect);
 //	std::cout << "returning spanned = " << spanned.toString() << std::endl;
 	return spanned;

@@ -48,6 +48,8 @@ bool canFindMovesFor(const Sentence &s, const Domain &d) {
 		return true;
 	} else if (isFormula3Type(s, d)) {
 		return true;
+	} else if (isPELCNFLiteral(s) || isDisjunctionOfCNFLiterals(s)) {
+		return true;
 	}
 	return false;
 }
@@ -115,6 +117,10 @@ bool isFormula2Type(const Sentence &s, const Domain &d) {
 	if (!precConj) {
 		return false;
 	}
+	std::set<Interval::INTERVAL_RELATION> justMeets;
+	justMeets.insert(Interval::MEETS);
+	if (precConj->relations() != justMeets) return false;
+
 	std::vector<const Sentence *> conjArgs = getMeetsConjunctionArgs(*precConj);
 	if (conjArgs.size() < 2) return false;
 	const Sentence *phik = conjArgs.back();
@@ -169,6 +175,10 @@ bool isFormula3Type(const Sentence &s, const Domain &d) {
 
 	// now ensure consequent is a meets conjunction
 	const Conjunction *consConj = dynamic_cast<const Conjunction *>(&*consequent->sentence());
+	std::set<Interval::INTERVAL_RELATION> justMeets;
+	justMeets.insert(Interval::MEETS);
+	if (consConj->relations() != justMeets) return false;
+
 	std::vector<const Sentence *> conjArgs = getMeetsConjunctionArgs(*consConj);
 	if (conjArgs.size() < 2) return false;
 	return true;
@@ -832,7 +842,8 @@ Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjun
 		std::vector<const Sentence*> lits;
 
 		void accept(const Sentence& s) {
-			if (!dynamic_cast<const Negation*>(&s) && !dynamic_cast<const Atom*>(&s) ) {
+			if (!dynamic_cast<const Negation*>(&s) && !dynamic_cast<const Atom*>(&s) && !dynamic_cast<const Conjunction*>(&s)) {
+				LOG_PRINT(LOG_DEBUG) << "can only have literals inside conjunction when working with moves: " << s.toString();
 				throw std::runtime_error("must have only literals inside conjunction when finding moves!");
 			}
 			if (dynamic_cast<const Negation*>(&s)) {
@@ -844,8 +855,7 @@ Move findMovesForLiquidConjunction(const Domain& d, const Model& m, const Conjun
 				// the last literal we inserted is actually negation - pop it off the end
 				lits.pop_back();
 				lits.push_back(&s);
-			} else {
-
+			} else if (dynamic_cast<const Atom*>(&s)) {
 				lits.push_back(&s);
 			}
 		}
@@ -927,8 +937,10 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 		SpanInterval si = set_at(notSat.set(), rand() % notSat.set().size());
 		return findMovesForPELCNFLiteral(d, m, s, si);
 	} else if (isDisjunctionOfCNFLiterals(s)) {
+
 		// instead of choosing just one si, we'll try them all
 		SISet notSat = d.satisfied(s, m);
+		std::cout << "satisfied at : " << notSat.toString() << std::endl;
 		notSat = notSat.compliment();
 		if (notSat.size() == 0) return moves;
 
@@ -1085,19 +1097,42 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 
 			// find where leftAtom is true, intersected with si
 			SISet toIntersect(false, si.maxInterval());
-			toIntersect.add(si);
-			SISet leftTrueAt = d.satisfiedAtom(*leftAtom, m);
+			toIntersect.add(SpanInterval(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish(), si.maxInterval()));
+			SISet leftTrueAt = d.satisfied(*leftAtom, m);
 			leftTrueAt = intersection(leftTrueAt, toIntersect);
-			SISet rightTrueAt = d.satisfiedAtom(*rightAtom, m);
+			SISet rightTrueAt = d.satisfied(*rightAtom, m);
 			rightTrueAt = intersection(rightTrueAt, toIntersect);
 
 			if (con->relations().find(Interval::LESSTHAN) != con->relations().end()) {
-				// three cases: 1 delete any spanintervals that start at si
-				BOOST_FOREACH(SpanInterval leftSi, leftTrueAt.set()) {
-					if (intersection(leftSi, si).size() > 0) {
-						/*********************************************************************************************/
+				{
+					// two cases: 1 delete any spanintervals that start at si
+					Move move;
+					BOOST_FOREACH(SpanInterval leftSi, leftTrueAt.set()) {
+						boost::optional<Interval> interOpt = intersection(leftSi.start(), si.start());
+						if (interOpt) {
+							Interval inter = interOpt.get();
+							// remove that part of the spanning interval
+							SpanInterval siToRemove(inter.start(), leftSi.finish().finish(), inter.start(), leftSi.finish().finish(), leftSi.maxInterval());
+							move.toDel.push_back(boost::make_tuple(*leftAtom, siToRemove));
+						}
 					}
+					if (!move.isEmpty()) moves.push_back(move);
 				}
+				{
+					// case 2: delete any spanintervals that end at si
+					Move move;
+					BOOST_FOREACH(SpanInterval rightSi, rightTrueAt.set()) {
+						boost::optional<Interval> interOpt = intersection(rightSi.start(), si.finish());
+						if (interOpt) {
+							Interval inter = interOpt.get();
+							// remove that part of the spanning interval
+							SpanInterval siToRemove(rightSi.start().start(), inter.finish(), rightSi.start().start(), inter.finish(), rightSi.maxInterval());
+							move.toDel.push_back(boost::make_tuple(*rightAtom, siToRemove));
+						}
+					}
+					if (!move.isEmpty()) moves.push_back(move);
+				}
+				return moves;
 			} else {
 				LOG_PRINT(LOG_ERROR) << "currently don't support the relation given: " << s.toString();
 				throw std::runtime_error("unimplemented moves for conjunction operator");
@@ -1106,6 +1141,12 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 		// TODO: implement moves for ![phi]
 	}
 	if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&s)) {
+		const Atom* a = dynamic_cast<const Atom*>(&*dia->sentence());
+
+		if (!a) {
+			LOG_PRINT(LOG_ERROR) << "must be an atom inside the diamond op! :" << s.toString();
+			throw std::runtime_error("unable to calculate moves");
+		}
 		if (dia->relations().size() > 1) {
 			// calculate the moves for each one
 			BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
@@ -1117,6 +1158,21 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 			return moves;
 		}
 		// TODO: implement moves for diamond operator
+		if (dia->relations().size() == 0) return moves;
+		if (dia->relations().find(Interval::DURING) != dia->relations().end()) {
+			boost::optional<SpanInterval> durIntOpt = si.satisfiesRelation(Interval::DURINGI);
+			if (!durIntOpt) return moves;
+			SpanInterval durInt = durIntOpt.get();
+			// how to choose where to add it?  ideally we'd choose a transition point
+			// TODO: choose transition points!!!
+
+			// instead we will choose a random point in the interval and add it there
+			unsigned int point = durInt.start().start() + (rand() % durInt.start().size());
+			Move move;
+			move.toAdd.push_back(boost::make_tuple(*a, SpanInterval(point, point, point, point, si.maxInterval())));
+			moves.push_back(move);
+			return moves;
+		}
 	}
 
 	// NO MOVE FOUND

@@ -25,6 +25,7 @@ public:
 	Interval(unsigned int start, unsigned int end);
 	unsigned int start() const {return s_;};
 	unsigned int finish() const {return e_;};
+	unsigned int size() const {return finish()-start()+1;};
 	void setStart(unsigned int start) {s_ = start;};
 	void setFinish(unsigned int end) {e_ = end;};
 

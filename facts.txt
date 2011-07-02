@@ -7,9 +7,12 @@
 # mentioned here.  to override this, specify --min or --max on the command line
 
 
-D-P(a) @ [1:10]
-D-P(b) @ [9:20]
-D-P(a) @ [25:30]
-D-S(a) @ [31:40]
-D-P(a) @ [33:35]
-D-P(b) @ [35:36]
+D-Serve(backLeft) @ [3:6]
+D-BallContact(backLeft) @ [5:5]
+D-BallGoingOut() @ [9:9]
+D-BallContact(them) @ [15:15]
+D-BallGoingIn() @ [27:27]
+D-Spike(backLeft) @ [30:38]
+D-BallContact(backLeft) @ [35:35]
+D-BallGoingOut() @ [37:37]
+D-Huddle() @ [55:70]

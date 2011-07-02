@@ -163,9 +163,30 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondTestTest) {
 	BOOST_CHECK_EQUAL(moves.size(), 2);
 	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {Dig(a) @ [4:6], Spike(a) @ [4:6]}");
 	BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {}, toDel: {Huddle(a) @ [2:2]}");
+}
 
+BOOST_AUTO_TEST_CASE(pelCNFDiamondConjTest) {
+	std::string facts(	"GoingUp(a) @ [1:1]\n"
+						"GoingDown(a) @ [3:3]\n"
+						"GoingDown(a) @ [5:5]\n"
+						"GoingUp(a) @ [8:8]\n"
+	);
+	std::string formulas("1: GoingDown(a) ^{<} GoingDown(a) -> <>{d} GoingUp(a)");
 
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	WSentence form1 = d.formulas().at(0);
+	SISet sat = d.satisfied(*form1.sentence(), d.defaultModel());
+	std::cout << "sat = " << sat.toString() << std::endl;
+	std::cout << "sat compliment is = " << sat.compliment().toString() << std::endl;
 
+	srand(0);
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
+	BOOST_REQUIRE_EQUAL(moves.size(), 3);
+
+	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {GoingUp(a) @ [4:4]}, toDel: {}");
+	BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {}, toDel: {GoingDown(a) @ [3:3]}");
+	BOOST_CHECK_EQUAL(moves[2].toString(), "toAdd: {}, toDel: {GoingDown(a) @ [5:5]}");
 }
 
 
