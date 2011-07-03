@@ -923,11 +923,11 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 		const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s);
 		moves = findMovesForLiquid(d, m, *liq->sentence(), si);
 	} else if (isFormula1Type(s, d)) {
-		return findMovesForForm1(d, m, dynamic_cast<const Disjunction&>(s));
+		moves = findMovesForForm1(d, m, dynamic_cast<const Disjunction&>(s));
 	} else if (isFormula2Type(s, d)) {
-		return findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s));
+		moves = findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s));
 	} else if (isFormula3Type(s, d)) {
-		return findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));
+		moves = findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));
 	} else if (isPELCNFLiteral(s)) {
 		// pick an si to satisfy
 		SISet notSat = d.satisfied(s, m);
@@ -935,7 +935,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 		if (notSat.size() == 0) return moves;
 
 		SpanInterval si = set_at(notSat.set(), rand() % notSat.set().size());
-		return findMovesForPELCNFLiteral(d, m, s, si);
+		moves = findMovesForPELCNFLiteral(d, m, s, si);
 	} else if (isDisjunctionOfCNFLiterals(s)) {
 
 		// instead of choosing just one si, we'll try them all
@@ -948,10 +948,21 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 			std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, dynamic_cast<const Disjunction&>(s), si);
 			moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 		}
-		return moves;
+
 	} else {
 		LOG_PRINT(LOG_ERROR) << "given sentence \"" << s.toString() << "\" but it doesn't match any moves function we know about!";
 	}
+	// ensure that if we aren't allowed to modify observation predicates, we don't!
+	if (d.dontModifyObsPreds()) {
+		for (std::vector<Move>::iterator it = moves.begin(); it != moves.end();) {
+			if (moveContainsObservationPreds(d, *it)) {
+				it = moves.erase(it);
+			} else {
+				it++;
+			}
+		}
+	}
+
 	return moves;
 }
 

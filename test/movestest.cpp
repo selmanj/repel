@@ -70,6 +70,7 @@ BOOST_AUTO_TEST_CASE(liquidConjMovesTest) {
 
 	Domain d = loadDomainWithStreams(facts, formulas);
 	d.setMaxInterval(Interval(1,10));
+	d.setDontModifyObsPreds(false);
 	WSentence form1 = d.formulas().at(0);
 	srand(0);
 
