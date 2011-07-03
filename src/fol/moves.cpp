@@ -1477,15 +1477,21 @@ boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence
 }
 
 bool moveContainsObservationPreds(const Domain& d, const Move &m) {
-  BOOST_FOREACH(Move::change ch, m.toAdd()) {
-    if (d.observedPredicates().find(ch.get<0>()) != d.observedPredicates().end()) {
-      return true;
-    }
-  }
-  BOOST_FOREACH(Move::change ch, m.toDel()) {
-    if (d.observedPredicates().find(ch.get<0>()) != d.observedPredicates().end()) {
-      return true;
-    }
-  }
-  return false;
+	for (std::vector<Move::change>::const_iterator it = m.toAdd.begin();
+			it != m.toAdd.end();
+			it++) {
+	    if (d.observedPredicates().find(it->get<0>().name()) != d.observedPredicates().end()) {
+	      return true;
+	    }
+	}
+
+	for (std::vector<Move::change>::const_iterator it = m.toDel.begin();
+			it != m.toDel.end();
+			it++) {
+	    if (d.observedPredicates().find(it->get<0>().name()) != d.observedPredicates().end()) {
+	      return true;
+	    }
+	}
+
+	return false;
 }
