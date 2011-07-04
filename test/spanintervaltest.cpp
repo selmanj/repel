@@ -134,3 +134,57 @@ BOOST_AUTO_TEST_CASE( spanIntervalSize ) {
 	BOOST_CHECK_EQUAL(sp2.size(), 17);
 	BOOST_CHECK_EQUAL(sp3.size(), 0);
 }
+
+BOOST_AUTO_TEST_CASE ( subtractTest) {
+	SpanInterval sp1(1,10,1,10);
+	SpanInterval sp2(5,5,5,5);
+
+	std::set<SpanInterval> result;
+	sp1.subtract(sp2, result);
+
+	std::vector<SpanInterval> rVec(result.begin(), result.end());
+
+	BOOST_REQUIRE_EQUAL(rVec.size(),3);
+	BOOST_CHECK_EQUAL(rVec[0].toString(), "[(1, 4), (1, 10)]");
+	BOOST_CHECK_EQUAL(rVec[1].toString(), "[(5, 5), (6, 10)]");
+	BOOST_CHECK_EQUAL(rVec[2].toString(), "[6:10]");
+
+}
+
+BOOST_AUTO_TEST_CASE ( siSetSubtractTest) {
+	SpanInterval sp1(1,10,1,10);
+	SpanInterval sp2(11,15,13,15);
+	SpanInterval sp3(5,5,5,5);
+	SpanInterval sp4(11,15,13,14);
+
+	SISet set1;
+	SISet set2;
+
+	set1.add(sp1);
+	set1.add(sp2);
+	set2.add(sp3);
+	set2.add(sp4);
+
+	set1.subtract(set2);
+
+	BOOST_CHECK_EQUAL(set1.toString(), "{[(1, 4), (1, 10)], [(5, 5), (6, 10)], [6:10], [(11, 14), (15, 15)], [15:15]}");
+}
+
+BOOST_AUTO_TEST_CASE( siSetComplimentTest) {
+	// [(1, 9), (1, 20)], [(1, 18), (20, 20)], [(10, 10), (10, 19)], [11:20]
+	Interval maxInt = Interval(1,20);
+	SpanInterval sp1(1,9,1,20, maxInt);
+	SpanInterval sp2(1,18,20,20, maxInt);
+	SpanInterval sp3(10,10,10,19, maxInt);
+	SpanInterval sp4(11,20,11,20, maxInt);
+	SISet set(false, maxInt);
+
+	set.add(sp1);
+	set.add(sp2);
+	set.add(sp3);
+	set.add(sp4);
+	set.makeDisjoint();
+	BOOST_CHECK_EQUAL(set.toString(), "{[(1, 9), (1, 20)], [(10, 10), (10, 19)], [(10, 18), (20, 20)], [(11, 18), (11, 19)], [19:20]}");
+	SISet compliment = set.compliment();
+	BOOST_CHECK_EQUAL(compliment.toString(), "{}");
+}

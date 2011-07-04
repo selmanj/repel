@@ -267,7 +267,6 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
 	//return result;
 }
 
-
 void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& collect) const {
 	/*
 	SpanInterval a(start().start(), remove.start().start()-1, end().start(), remove.end().start()-1);
@@ -282,7 +281,8 @@ void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& 
 	std::set<SpanInterval> compliment;
 	remove.compliment(compliment);
 	for (std::set<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
-		collect.insert(intersection(*this, *it));
+		SpanInterval intersect = intersection(*this, *it);
+		if (intersect.size() > 0) collect.insert(intersect);
 	}
 }
 

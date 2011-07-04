@@ -87,6 +87,10 @@ int main(int argc, char* argv[]) {
 	Model model = d->defaultModel();
 
 	LOG_PRINT(LOG_INFO) << "model size: " << model.size();
+	LOG(LOG_DEBUG) << "observation predicates: ";
+	BOOST_FOREACH(std::string name, d->observedPredicates()) {
+		LOG(LOG_DEBUG) << "\t" << name;
+	}
 
 	if (vm.count("evalModel")) {
 		LOG(LOG_INFO) << "evaluating model...";

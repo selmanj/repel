@@ -1,6 +1,7 @@
 #include "domain.h"
 #include "fol.h"
 #include "atom.h"
+#include "../log.h"
 
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
@@ -39,6 +40,7 @@ bool Domain::isLiquid(const std::string& predicate) const {
 
 unsigned long Domain::score(const WSentence& s, const Model& m) const {
 	SISet sat = satisfied(*(s.sentence()), m);
+	if (!sat.isDisjoint()) sat.makeDisjoint();
 	return sat.size() * s.weight();
 }
 

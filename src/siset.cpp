@@ -189,6 +189,21 @@ void SISet::makeDisjoint() {
 			}
 		}
 	} else {
+		std::set<SpanInterval> setCopy;
+
+		BOOST_FOREACH(SpanInterval siToAdd, set_) {
+			SISet sisetToAdd(false, maxInterval_);
+			sisetToAdd.add(siToAdd);
+			// subtract whats already stored and only add if there is some left over
+			BOOST_FOREACH(SpanInterval siAlreadyIn, setCopy) {
+
+				sisetToAdd.subtract(siAlreadyIn);
+			}
+			setCopy.insert(sisetToAdd.set().begin(), sisetToAdd.set().end());
+		}
+		set_ = setCopy;
+
+		/*
 		// scan over all pairs, looking for intersections
 		for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
 			for (std::set<SpanInterval>::const_iterator sIt = fIt; sIt != set_.end(); sIt++) {
@@ -214,17 +229,13 @@ void SISet::makeDisjoint() {
 				}
 			}
 		}
+		*/
 	}
 	// don't trust myself - remove this later as an optimization step
 	if (!isDisjoint()) {
 		LOG_PRINT(LOG_ERROR) << "set is supposed to be disjoint, but isnt!  set: " << this->toString() << ", forceliquid: " << forceLiquid_;
-		makeDisjoint();
-		if (!isDisjoint()) {
-			LOG_PRINT(LOG_ERROR) << "set is still not disjoint,  set: " << this->toString() << ", forceliquid: " << forceLiquid_;
-
-			std::runtime_error error("inside SISet::makeDisjoint() - set was attempted to make disjoint but isn't!");
-			throw error;
-		}
+		std::runtime_error error("inside SISet::makeDisjoint() - set was attempted to make disjoint but isn't!");
+		throw error;
 	}
 }
 
@@ -243,6 +254,52 @@ void SISet::setForceLiquid(bool forceLiquid) {
 	forceLiquid_ = forceLiquid;
 };
 
+void SISet::subtract(const SpanInterval& si) {
+	std::set<SpanInterval> newSet;
+
+	if (set_.size() == 0) return;
+
+	BOOST_FOREACH(SpanInterval siInSet, set_) {
+		if (intersection(siInSet, si).size() > 0) {
+			siInSet.subtract(si, newSet);
+		} else {
+			newSet.insert(siInSet);
+		}
+	}
+	set_ = newSet;
+}
+
+void SISet::subtract(const SISet& sis) {
+	//LOG_PRINT(LOG_DEBUG) << "called SISet::subtract with *this=" << this->toString() << " and sis=" << sis.toString();
+	std::list<SISet> toIntersect;
+
+	if (set_.size() == 0) return;
+
+	BOOST_FOREACH(SpanInterval b, sis.set_) {
+		SISet copy(*this);
+	//	LOG_PRINT(LOG_DEBUG) << "copy size:" << copy.set_.size();
+		copy.subtract(b);
+	//	LOG_PRINT(LOG_DEBUG) << "this \\ b (where b = "<< b.toString() <<") = " << copy.toString();
+		toIntersect.push_back(copy);
+	}
+	if (toIntersect.size() == 0) {
+		set_.clear();
+		return;
+	}
+	// now collapse the intersect set
+	while (toIntersect.size() > 1) {
+		SISet a = toIntersect.front();
+		toIntersect.pop_front();
+		SISet b = toIntersect.front();
+		toIntersect.pop_front();
+
+		SISet intersected = intersection(a, b);
+	//	LOG_PRINT(LOG_DEBUG) << "a=" << a.toString() <<", b=" << b.toString() << ", a intersect b = "<< intersected.toString();
+		toIntersect.push_front(intersected);
+	}
+	set_ = toIntersect.front().set_;
+	//LOG_PRINT(LOG_DEBUG) << "final value: " << this->toString();
+}
 
 std::string SISet::toString() const {
 	std::stringstream sstream;

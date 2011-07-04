@@ -39,6 +39,10 @@ public:
 	void clear() {set_.clear();};
 	void setMaxInterval(const Interval& maxInterval);
 	void setForceLiquid(bool forceLiquid);
+	void subtract(const SpanInterval& si);
+	void subtract(const SISet& sis);
+
+
 	std::string toString() const;
 
 	friend SISet intersection(const SISet& a, const SISet& b);

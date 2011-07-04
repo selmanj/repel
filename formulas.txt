@@ -29,6 +29,8 @@
 # after some tests, needed the following ones for sure!
 1: [ BallContact(them) -> D-BallContact(them) ]
 1: [ BallContact(backLeft) -> D-BallContact(backLeft) ]
+1: [ BallGoingIn() -> D-BallGoingIn() ]
+1: [ BallGoingOut() -> D-BallGoingOut() ]
 
 
 # etc... for now we'll just deal with the backLeft player
@@ -58,6 +60,7 @@
 10: !(BallGoingOut() ^{<} BallGoingIn()) v (<>{d} BallGoingIn()) v BallOnSide(them)
 
 # Ball can only be on one side at once
+# 
 10: [(BallOnSide(us) ^ !BallOnSide(them)) v (!BallOnSide(us) ^ BallOnSide(them))]
 
 # each ballonside interval is met by the opposing one

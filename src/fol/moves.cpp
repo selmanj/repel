@@ -915,11 +915,12 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 		// pick an si to satisfy
 		SISet notSat = d.satisfied(s, m);
 		notSat.setForceLiquid(true);
+		LOG(LOG_DEBUG) << "sentence " << s.toString() << " satisfied at " << notSat.toString();
 		notSat = notSat.compliment();
 		if (notSat.size() == 0) return moves;
 
 		SpanInterval si = set_at(notSat.set(), rand() % notSat.set().size());
-
+		LOG(LOG_DEBUG) << "choosing " << si.toString() << " as the interval to satisfy";
 		const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s);
 		moves = findMovesForLiquid(d, m, *liq->sentence(), si);
 	} else if (isFormula1Type(s, d)) {
@@ -937,11 +938,12 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 		SpanInterval si = set_at(notSat.set(), rand() % notSat.set().size());
 		moves = findMovesForPELCNFLiteral(d, m, s, si);
 	} else if (isDisjunctionOfCNFLiterals(s)) {
-
 		// instead of choosing just one si, we'll try them all
 		SISet notSat = d.satisfied(s, m);
-		std::cout << "satisfied at : " << notSat.toString() << std::endl;
+		LOG(LOG_DEBUG) << "sentence true at :" << notSat.toString();
 		notSat = notSat.compliment();
+		LOG(LOG_DEBUG) << "sentence NOT true at :" << notSat.toString();
+
 		if (notSat.size() == 0) return moves;
 
 		BOOST_FOREACH(SpanInterval si, notSat.set()) {
@@ -956,6 +958,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
 	if (d.dontModifyObsPreds()) {
 		for (std::vector<Move>::iterator it = moves.begin(); it != moves.end();) {
 			if (moveContainsObservationPreds(d, *it)) {
+				LOG(LOG_DEBUG) << "removing invalid move: " << it->toString();
 				it = moves.erase(it);
 			} else {
 				it++;
@@ -1276,13 +1279,20 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 		return currentModel;
 	}
 
-	SpanInterval maxSI = SpanInterval(d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval().start(), d.maxInterval().finish());
+	SpanInterval maxSI = SpanInterval(d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval());
 	unsigned long maxSize = maxSI.size();
 	unsigned long bestScore = d.score(currentModel);
 	Model bestModel = currentModel;
 
+	unsigned int showPeriodMod = numIterations/20;
+
 	for (int iteration=1; iteration < numIterations+1; iteration++) {
+		if (iteration % showPeriodMod == 0) {
+			std::cout << ".";
+			std::cout.flush();
+		}
 		LOG(LOG_DEBUG) << "currentModel: " << modelToString(currentModel);
+		LOG(LOG_DEBUG) << "current score: " << d.score(currentModel);
 		// make a list of the current unsatisfied formulas we can calc moves for
 		std::vector<int> notFullySatisfied = movesForSentences;
 		for (std::vector<int>::iterator it = notFullySatisfied.begin(); it != notFullySatisfied.end(); ) {
@@ -1290,7 +1300,6 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 
 			WSentence wsent = d.formulas().at(i);
 			//const WSentence *wsentence = *it;
-
 			if (maxSize*wsent.weight() == d.score(wsent, currentModel)) {
 				it = notFullySatisfied.erase(it);
 			} else {
@@ -1301,6 +1310,7 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 
 		if (notFullySatisfied.size()==0) {
 			// can't really improve on this
+			LOG_PRINT(LOG_INFO) << "no more sentences to satisfy!  exiting early after "<< iteration-1 << " iterations";
 			return currentModel;
 		}
 
@@ -1310,8 +1320,8 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 		// find the set of moves that improve it
 		std::vector<Move> moves = findMovesFor(d, currentModel, *(toImprove.sentence()));
 		if (moves.size() == 0) {
-			std::cerr << "WARNING: unable to find moves for sentence " << toImprove.sentence()->toString()
-					<< " but couldn't find any (even though its violated)!  continuing..." << std::endl;
+			LOG(LOG_WARN) << "WARNING: unable to find moves for sentence " << toImprove.sentence()->toString()
+					<< " but couldn't find any (even though its violated)!  continuing...";
 			continue; // TODO: this shouldn't happen, right?
 		}
 		if (FileLog::globalLogLevel() <= LOG_DEBUG) {
