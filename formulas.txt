@@ -53,6 +53,9 @@
 10: !(BallGoingIn() ^{<} BallGoingOut()) v (<>{d} BallGoingOut()) v BallContact(backLeft)
 10: !(BallGoingOut() ^{<} BallGoingIn()) v (<>{d} BallGoingIn()) v BallContact(them)
 
+# correspondingly if the ball is on one of our sides, someone must have made contact with it
+10: BallOnSide(us) -> <>{d} BallContact(backleft) v <>{mi} BallOnSide(us) v <>{m} BallOnSide(us)
+10: BallOnSide(them) -> <>{d} BallContact(them) v <>{mi} BallOnSide(them) v <>{m} BallOnSide(them)
 
 # Lets make a nice liquid predicate that indicates which side the ball is on
 # below only works if ballgoingout not liquid
