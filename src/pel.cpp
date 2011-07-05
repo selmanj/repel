@@ -10,7 +10,7 @@
 #endif
 
 #ifndef PACKAGE_STRING
-#define PACKAGE_STRING "pel 0.7"
+#define PACKAGE_STRING "pel 0.8"
 #endif
 
 #include <boost/program_options.hpp>
