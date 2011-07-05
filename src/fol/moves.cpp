@@ -1187,6 +1187,62 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 			moves.push_back(move);
 			return moves;
 		}
+		if (dia->relations().find(Interval::MEETS) != dia->relations().end()) {
+			// unfortunately we can only add (or extend) phi to satisfy this relation
+			if (!si.satisfiesRelation(Interval::MEETSI)) return moves;
+			SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETSI).get();
+			SISet insideSatisfiedAt = d.satisfiedAtom(*a,m);
+			insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
+			unsigned int j = whereToSat.finish().finish();
+
+			if (insideSatisfiedAt.size() == 0) {
+				// just add it at the beginning
+				Move move;
+				move.toAdd.push_back(boost::make_tuple(*a,
+						SpanInterval(j, j, j, j, d.maxInterval())));
+				moves.push_back(move);
+				return moves;
+			} else {
+				SpanInterval mostRecent = set_at(insideSatisfiedAt.set(), insideSatisfiedAt.set().size()-1);
+				Move move;
+				move.toAdd.push_back(boost::make_tuple(*a,
+						SpanInterval(mostRecent.finish().finish()+1,
+								j,
+								mostRecent.finish().finish()+1,
+								j,
+								d.maxInterval())));
+				moves.push_back(move);
+				return moves;
+			}
+		}
+		if (dia->relations().find(Interval::MEETSI) != dia->relations().end()) {
+			// unfortunately we can only add (or extend) phi to satisfy this relation
+			if (!si.satisfiesRelation(Interval::MEETS)) return moves;
+			SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETS).get();
+			SISet insideSatisfiedAt = d.satisfiedAtom(*a,m);
+			insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
+			unsigned int j = whereToSat.start().start();
+
+			if (insideSatisfiedAt.size() == 0) {
+				// just add it at the end
+				Move move;
+				move.toAdd.push_back(boost::make_tuple(*a,
+						SpanInterval(j, j, j, j, d.maxInterval())));
+				moves.push_back(move);
+				return moves;
+			} else {
+				SpanInterval mostRecent = set_at(insideSatisfiedAt.set(), 0);
+				Move move;
+				move.toAdd.push_back(boost::make_tuple(*a,
+						SpanInterval(j,
+								mostRecent.start().start(),
+								j,
+								mostRecent.start().start(),
+								d.maxInterval())));
+				moves.push_back(move);
+				return moves;
+			}
+		}
 	}
 
 	// NO MOVE FOUND

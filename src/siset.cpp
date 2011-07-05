@@ -335,6 +335,13 @@ SISet intersection(const SISet& a, const SISet& b) {
 	return result;
 };
 
+SISet intersection(const SISet& a, const SpanInterval& si) {
+	// cheat for now
+	SISet copy(false, si.maxInterval());
+	copy.add(si);
+	return intersection(a, copy);
+}
+
 SISet span(const SpanInterval& a, const SpanInterval& b) {
 	unsigned int j = std::min(a.start().finish(), b.start().finish());
 	unsigned int k = std::max(a.finish().start(), b.finish().start());
