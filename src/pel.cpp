@@ -112,7 +112,8 @@ int main(int argc, char* argv[]) {
 		LOG(LOG_INFO) << "searching for a maximum-weight model, with p=" << p << " and iterations=" << iterations;
 		Model defModel = d->defaultModel();
 		Model maxModel = maxWalkSat(*d, iterations, p, &defModel);
-		LOG_PRINT(LOG_INFO) << "Best model found: "<< modelToString(maxModel);
+		LOG_PRINT(LOG_INFO) << "Best model found: " << std::endl;
+		LOG_PRINT(LOG_INFO) << modelToString(maxModel);
 	}
 	return 0;
 }
