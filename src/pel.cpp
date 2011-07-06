@@ -20,6 +20,7 @@ namespace po = boost::program_options;
 #include <string>
 #include <vector>
 #include <utility>
+#include <ctime>
 #include "fol/fol.h"
 #include "fol/folparser.h"
 #include "fol/domain.h"
@@ -37,6 +38,7 @@ int main(int argc, char* argv[]) {
 	    ("evalModel,e", "simply print the model weight of the facts file")
 	    ("prob,p", po::value<double>()->default_value(0.25), "probability of taking a random move")
 	    ("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
+	    ("output,o", po::value<std::string>(), "output model file")
 	;
 
 	po::options_description hidden("Hidden options");
@@ -66,8 +68,6 @@ int main(int argc, char* argv[]) {
 	    return 1;
 	}
 
-
-
 	// setup our logging facilities
 	FILE* debugFile = fopen("debug.log", "w");
 	if (!debugFile) std::cerr << "unable to open debug.log for logging - logging to stderr";
@@ -75,6 +75,16 @@ int main(int argc, char* argv[]) {
 	FileLog::globalLogLevel() = LOG_DEBUG;
 
 	LOG(LOG_INFO) << "Opened log file for new session";
+
+	// make sure we can open the output model file, if specified
+	FILE* outputFile = NULL;
+	if (vm.count("output")) {
+		outputFile = fopen(vm["output"].as<std::string>().c_str(), "w");
+		if (!outputFile) {
+			std::cerr << "unable to open output file \"" << vm["output"].as<std::string>() << "\" for writing." << std::endl;
+			return 1;
+		}
+	}
 
 	boost::shared_ptr<Domain> d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
 	if (vm.count("max") || vm.count("min")) {
@@ -114,6 +124,27 @@ int main(int argc, char* argv[]) {
 		Model maxModel = maxWalkSat(*d, iterations, p, &defModel);
 		LOG_PRINT(LOG_INFO) << "Best model found: " << std::endl;
 		LOG_PRINT(LOG_INFO) << modelToString(maxModel);
+		if (vm.count("output")) {
+			// log it to the output file as well
+			fprintf(outputFile, "# generated from fact file \"%s\" and formula file \"%s\"\n",
+					vm["facts-file"].as<std::string>().c_str(),
+					vm["formula-file"].as<std::string>().c_str());
+			std::string timeStr;
+			{
+				time_t rawtime;
+				struct tm * timeinfo;
+				time (&rawtime);
+				timeinfo = localtime (&rawtime);
+				timeStr = asctime(timeinfo);
+			}
+			fprintf(outputFile, "# generated on %s\n", timeStr.c_str());
+			fprintf(outputFile, "# run with %d iterations and %g chance of choosing a random move\n",
+					iterations,
+					p);
+			fputs(modelToString(maxModel).c_str(), outputFile);
+		}
 	}
+
+	// Should be good and close files?
 	return 0;
 }

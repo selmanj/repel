@@ -107,10 +107,18 @@ BOOST_AUTO_TEST_CASE( weighted_formula_test ) {
 	BOOST_CHECK_EQUAL(form.weight(), 55);
 	BOOST_CHECK_EQUAL(form.sentence()->toString(), "[ !(p(?x, ?y) ^ q(?x, ?y)) v r(?x, ?y) ]");
 
-	std::istringstream stream3("0: <>{m,mi} p(x) ^{o} q(x) ; r(x) ; <> z(x)");
+	std::istringstream stream3("0: <>{m,mi} (p(x) ^{o} q(x) ; r(x) ; <> z(x))");
 	tokens = FOLParse::tokenize(&stream3);
 	form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
 
 	BOOST_CHECK_EQUAL(form.weight(), 0);
 	BOOST_CHECK_EQUAL(form.sentence()->toString(), "<>{m, mi} (p(x) ^{o} q(x) ; r(x) ; <> z(x))");
+
+	std::istringstream stream4("0: !p(a) v q(a)");
+	tokens = FOLParse::tokenize(&stream4);
+	form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
+
+	BOOST_CHECK_EQUAL(form.weight(), 0);
+	BOOST_CHECK(boost::dynamic_pointer_cast<Disjunction>(form.sentence()));
+
 }

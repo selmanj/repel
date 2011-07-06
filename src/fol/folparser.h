@@ -313,7 +313,7 @@ template <class ForwardIterator>
 boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::NOT, its)) {
 		consumeTokenType(FOLParse::NOT, its);
-		boost::shared_ptr<Sentence> s = doParseFormula_paren(its);
+		boost::shared_ptr<Sentence> s = doParseFormula_unary(its);
 		boost::shared_ptr<Sentence> neg(new Negation(s));
 		return neg;
 	} else if (peekTokenType(FOLParse::DIAMOND, its)) {
@@ -323,7 +323,8 @@ boost::shared_ptr<Sentence> doParseFormula_unary(iters<ForwardIterator> &its) {
 			// use default
 			relations = DiamondOp::defaultRelations();
 		}
-		boost::shared_ptr<Sentence> s = doParseFormula(its);
+		//boost::shared_ptr<Sentence> s = doParseFormula(its);
+		boost::shared_ptr<Sentence> s = doParseFormula_unary(its);
 
 		boost::shared_ptr<Sentence> dia(new DiamondOp(s, relations.begin(), relations.end()));
 		return dia;
