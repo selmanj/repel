@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 	;
 	po::positional_options_description p;
 	p.add("facts-file", 1);
-	p.add("formula-file", 2);
+	p.add("formula-file", 1);
 
 	po::options_description cmdline_options;
 	cmdline_options.add(desc).add(hidden);
