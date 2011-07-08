@@ -33,7 +33,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = pel$(EXEEXT)
+bin_PROGRAMS = pel$(EXEEXT) pelnoise$(EXEEXT)
 TESTS = $(am__EXEEXT_1)
 check_PROGRAMS = $(am__EXEEXT_1)
 subdir = .
@@ -67,6 +67,13 @@ am_pel_OBJECTS = pel.$(OBJEXT) namegenerator.$(OBJEXT) moves.$(OBJEXT) \
 	variable.$(OBJEXT) siset.$(OBJEXT) domain.$(OBJEXT)
 pel_OBJECTS = $(am_pel_OBJECTS)
 pel_LDADD = $(LDADD)
+am_pelnoise_OBJECTS = pelnoise.$(OBJEXT) domain.$(OBJEXT) \
+	namegenerator.$(OBJEXT) interval.$(OBJEXT) \
+	spaninterval.$(OBJEXT) boollit.$(OBJEXT) constant.$(OBJEXT) \
+	follexer.$(OBJEXT) foltoken.$(OBJEXT) variable.$(OBJEXT) \
+	siset.$(OBJEXT)
+pelnoise_OBJECTS = $(am_pelnoise_OBJECTS)
+pelnoise_LDADD = $(LDADD)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
@@ -116,14 +123,15 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(pel_SOURCES) $(test_atomtest_SOURCES) \
+SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) $(test_atomtest_SOURCES) \
 	$(test_cnftest_SOURCES) $(test_domaintest_SOURCES) \
 	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
 	$(test_movestest_SOURCES) $(test_spanintervaltest_SOURCES)
-DIST_SOURCES = $(pel_SOURCES) $(test_atomtest_SOURCES) \
-	$(test_cnftest_SOURCES) $(test_domaintest_SOURCES) \
-	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
-	$(test_movestest_SOURCES) $(test_spanintervaltest_SOURCES)
+DIST_SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) \
+	$(test_atomtest_SOURCES) $(test_cnftest_SOURCES) \
+	$(test_domaintest_SOURCES) $(test_follexertest_SOURCES) \
+	$(test_folparsertest_SOURCES) $(test_movestest_SOURCES) \
+	$(test_spanintervaltest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -238,6 +246,7 @@ AM_CXXFLAGS = $(BOOST_CPPFLAGS)
 AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
+pelnoise_SOURCES = src/pelnoise.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
 PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp
@@ -345,6 +354,9 @@ clean-checkPROGRAMS:
 pel$(EXEEXT): $(pel_OBJECTS) $(pel_DEPENDENCIES) 
 	@rm -f pel$(EXEEXT)
 	$(CXXLINK) $(pel_OBJECTS) $(pel_LDADD) $(LIBS)
+pelnoise$(EXEEXT): $(pelnoise_OBJECTS) $(pelnoise_DEPENDENCIES) 
+	@rm -f pelnoise$(EXEEXT)
+	$(CXXLINK) $(pelnoise_OBJECTS) $(pelnoise_LDADD) $(LIBS)
 test/$(am__dirstamp):
 	@$(MKDIR_P) test
 	@: > test/$(am__dirstamp)
@@ -391,6 +403,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movestest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namegenerator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pelnoise.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spaninterval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spanintervaltest.Po@am__quote@
@@ -577,6 +590,20 @@ domain.obj: src/fol/domain.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/domain.cpp' object='domain.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o domain.obj `if test -f 'src/fol/domain.cpp'; then $(CYGPATH_W) 'src/fol/domain.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/domain.cpp'; fi`
+
+pelnoise.o: src/pelnoise.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT pelnoise.o -MD -MP -MF $(DEPDIR)/pelnoise.Tpo -c -o pelnoise.o `test -f 'src/pelnoise.cpp' || echo '$(srcdir)/'`src/pelnoise.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/pelnoise.Tpo $(DEPDIR)/pelnoise.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/pelnoise.cpp' object='pelnoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pelnoise.o `test -f 'src/pelnoise.cpp' || echo '$(srcdir)/'`src/pelnoise.cpp
+
+pelnoise.obj: src/pelnoise.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT pelnoise.obj -MD -MP -MF $(DEPDIR)/pelnoise.Tpo -c -o pelnoise.obj `if test -f 'src/pelnoise.cpp'; then $(CYGPATH_W) 'src/pelnoise.cpp'; else $(CYGPATH_W) '$(srcdir)/src/pelnoise.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/pelnoise.Tpo $(DEPDIR)/pelnoise.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/pelnoise.cpp' object='pelnoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pelnoise.obj `if test -f 'src/pelnoise.cpp'; then $(CYGPATH_W) 'src/pelnoise.cpp'; else $(CYGPATH_W) '$(srcdir)/src/pelnoise.cpp'; fi`
 
 atomtest.o: test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT atomtest.o -MD -MP -MF $(DEPDIR)/atomtest.Tpo -c -o atomtest.o `test -f 'test/atomtest.cpp' || echo '$(srcdir)/'`test/atomtest.cpp

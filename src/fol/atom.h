@@ -42,6 +42,7 @@ public:
 
 	int arity() const {return terms.size();};
 	std::string name() const {return pred;};
+	std::string& name() {return pred;};
 
 	Atom& operator=(const Atom& b) {							// TODO add this to all subclasses of sentence!
 		pred = b.pred;

@@ -11,8 +11,10 @@
 #include <string>
 #include <sstream>
 #include <boost/optional.hpp>
+#include <iostream>
 #include "interval.h"
 #include "spaninterval.h"
+#include "log.h"
 
 /*
 SpanInterval::SpanInterval(unsigned int smallest, unsigned int largest)
@@ -121,6 +123,16 @@ unsigned int SpanInterval::size() const {
 	return ((k-i)+1) * ((l-k)+1)
 			  + (j-k)*(l+1) - (j*(j+1))/2 + (k*(k+1))/2;
 
+}
+
+unsigned int SpanInterval::liqSize() const {
+	if (isEmpty()) return 0;
+	SpanInterval si = normalize().get();
+
+	if (!si.isLiquid())
+		LOG_PRINT(LOG_WARN) << "calling liqSize() on a non-liquid interval; this is probably not something you want to do" << std::endl;
+
+	return si.start().size();
 }
 
 bool SpanInterval::isLiquid() const {
@@ -280,6 +292,16 @@ void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& 
 	*/
 	std::set<SpanInterval> compliment;
 	remove.compliment(compliment);
+	for (std::set<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
+		SpanInterval intersect = intersection(*this, *it);
+		if (intersect.size() > 0) collect.insert(intersect);
+	}
+}
+
+void SpanInterval::liqSubtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const {
+	// well this is easy
+	std::set<SpanInterval> compliment;
+	remove.liqCompliment(compliment);
 	for (std::set<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
 		SpanInterval intersect = intersection(*this, *it);
 		if (intersect.size() > 0) collect.insert(intersect);

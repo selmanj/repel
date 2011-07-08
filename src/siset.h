@@ -30,6 +30,7 @@ public:
 	SISet compliment() const;
 	Interval maxInterval() const;
 	unsigned int size() const;
+	unsigned int liqSize() const;
 
 	// modifiers
 	void add(const SpanInterval &s);

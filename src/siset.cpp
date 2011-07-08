@@ -92,6 +92,17 @@ unsigned int SISet::size() const {
 	return sum;
 }
 
+unsigned int SISet::liqSize() const {
+	SISet copy(*this);
+	copy.makeDisjoint();
+
+	unsigned int sum = 0;
+	BOOST_FOREACH(SpanInterval sp, copy.set()) {
+		sum += sp.liqSize();
+	}
+	return sum;
+}
+
 // O(n^2) for every call :(  perhaps set a flag instead?
 bool SISet::isDisjoint() const {
 	for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
@@ -261,7 +272,8 @@ void SISet::subtract(const SpanInterval& si) {
 
 	BOOST_FOREACH(SpanInterval siInSet, set_) {
 		if (intersection(siInSet, si).size() > 0) {
-			siInSet.subtract(si, newSet);
+			if (forceLiquid_) siInSet.liqSubtract(si, newSet);
+			else siInSet.subtract(si, newSet);
 		} else {
 			newSet.insert(siInSet);
 		}
@@ -277,6 +289,7 @@ void SISet::subtract(const SISet& sis) {
 
 	BOOST_FOREACH(SpanInterval b, sis.set_) {
 		SISet copy(*this);
+		//copy.setForceLiquid(false);
 	//	LOG_PRINT(LOG_DEBUG) << "copy size:" << copy.set_.size();
 		copy.subtract(b);
 	//	LOG_PRINT(LOG_DEBUG) << "this \\ b (where b = "<< b.toString() <<") = " << copy.toString();

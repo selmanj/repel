@@ -47,6 +47,7 @@ public:
 
 	bool isEmpty() const;
 	unsigned int size() const;
+	unsigned int liqSize() const;
 	bool isLiquid() const;
 	SpanInterval toLiquid() const;
 	boost::optional<SpanInterval> normalize() const;
@@ -55,6 +56,7 @@ public:
 	boost::optional<SpanInterval> satisfiesRelation(Interval::INTERVAL_RELATION relation) const;
 
 	void subtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const;
+	void liqSubtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const;
 
 	std::string toString() const;
 
