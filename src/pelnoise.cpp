@@ -13,7 +13,7 @@ namespace po = boost::program_options;
 #include "fol/domain.h"
 #include "fol/folparser.h"
 
-Model constructModel(const std::vector<FOL::EventPair>& pairs) {\
+std::pair<Model, Interval> constructModel(const std::vector<FOL::EventPair>& pairs) {\
 	Model m;
 	unsigned int smallest=UINT_MAX, largest=0;
 	// find the max interval
@@ -51,7 +51,7 @@ Model constructModel(const std::vector<FOL::EventPair>& pairs) {\
 		std::pair<Atom, SISet > pair(*atom, set);
 		m.insert(pair);
 	}
-	return m;
+	return std::pair<Model,Interval> (m,maxInterval);
 }
 
 Model subtractModel(const Model& from, const Model& toSubtract) {
@@ -102,6 +102,14 @@ Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, c
 	return newModel;
 }
 
+unsigned long sizeModel(const Model& a) {
+	unsigned long sum = 0;
+	for (Model::const_iterator it = a.begin(); it != a.end(); it++) {
+		sum += it->second.liqSize();
+	}
+	return sum;
+}
+
 Model rewritePELOutputAsConcreteModel(const Model& a) {
 	Model newModel(a);
 	// first, remove any atoms with D- in the front as those are old
@@ -124,14 +132,6 @@ Model rewritePELOutputAsConcreteModel(const Model& a) {
 	return newModelCopy;
 }
 
-unsigned int sizeModel(const Model& a) {
-	unsigned int sum = 0;
-	for (Model::const_iterator it = a.begin(); it != a.end(); it++) {
-		sum += it->second.liqSize();
-	}
-	return sum;
-}
-
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
@@ -139,6 +139,8 @@ int main(int argc, char* argv[]) {
 	desc.add_options()
 	    ("help", "produce help message")
 	    ("batch,b", "run in batch mode, producing csv output")
+	    ("add,a", po::value<std::string>(), "add noise to file")
+	    ("prob,p", po::value<double>(), "the percentage (expressed as a float from 0.0 to 1.0) of false intervals to add noise to")
 	;
 
 	po::options_description hidden("Hidden options");
@@ -160,77 +162,174 @@ int main(int argc, char* argv[]) {
 	po::store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
 	po::notify(vm);
 
-	if (vm.count("help") || !vm.count("ground-truth-file") || !vm.count("noisy-input-file") || !vm.count("noisy-output-file")) {
-	    std::cout << "Usage: " << argv[0] <<"  GROUND-TRUTH-FILE NOISY-INPUT-FILE NOISY-OUTPUT-FILE" << std::endl;
+	if (vm.count("help") ||
+			(!vm.count("add") && (!vm.count("ground-truth-file") || !vm.count("noisy-input-file") || !vm.count("noisy-output-file")))
+			|| (vm.count("add") && !vm.count("prob"))) {
+		std::cout << "Usage:" << std::endl;
+	    std::cout << "\t1. " << argv[0] <<" GROUND-TRUTH-FILE NOISY-INPUT-FILE NOISY-OUTPUT-FILE" << std::endl;
+	    std::cout << "\t2. " << argv[0] <<" -p VALUE -a INPUT-FILE" << std::endl;
 		std::cout << desc << std::endl;
 	    return 1;
 	}
-	std::vector<FOL::EventPair> truthFacts, noisyIn, noisyOut;
+	if (vm.count("add")) {
+		std::vector<FOL::EventPair> inFile;
 
-	FOLParse::parseEventFile(vm["ground-truth-file"].as<std::string>(), truthFacts);
-	if (!vm.count("batch")) std::cout << "loaded ground truth file" << std::endl;
-	FOLParse::parseEventFile(vm["noisy-input-file"].as<std::string>(), noisyIn);
-	if (!vm.count("batch")) std::cout << "loaded noisy input file" << std::endl;
-	FOLParse::parseEventFile(vm["noisy-output-file"].as<std::string>(), noisyOut);
-	if (!vm.count("batch")) std::cout << "loaded noisy output file" << std::endl;
+		FOLParse::parseEventFile(vm["add"].as<std::string>(), inFile);
+		std::pair<Model, Interval> modelPair = constructModel(inFile);
+		Model inModel = modelPair.first;
+		Interval maxInterval = modelPair.second;
+		std::string player_objs[] = {"backleft", "backright", "backmiddle", "frontleft", "frontright", "frontmiddle"};
+		std::string player_preds[] = {"D-BallContact", "D-Spike", "D-Set", "D-Serve", "D-Dig", "D-Block", "D-Squat"};
+		std::string ref_objs[] = {"refback", "refnet"};
+		std::string ref_preds[] = {"D-Flag"};
+		std::string noobj_preds[] = {"D-Huddle"};
 
-	// construct these as models
-	Model truthModel = constructModel(truthFacts);
-	Model noisyInModel = constructModel(noisyIn);
-	Interval maxInterval = span(truthModel.begin()->second.maxInterval(), noisyInModel.begin()->second.maxInterval());
+		std::set<Atom, atomcmp> validPreds;
+		BOOST_FOREACH(std::string pred, player_preds) {
+			BOOST_FOREACH(std::string obj, player_objs) {
+				boost::shared_ptr<Term> cons(new Constant(obj));
+				Atom atom(pred, cons);
+				validPreds.insert(atom);
+			}
+		}
+		BOOST_FOREACH(std::string pred, ref_preds) {
+			BOOST_FOREACH(std::string obj, ref_objs) {
+				boost::shared_ptr<Term> cons(new Constant(obj));
+				Atom atom(pred, cons);
+				validPreds.insert(atom);
+			}
+		}
+		BOOST_FOREACH(std::string pred, noobj_preds) {
+			Atom atom(pred);
+			validPreds.insert(atom);
+		}
 
-	Model noisyOutModel = constructModel(noisyOut);
-	noisyOutModel = rewritePELOutputAsConcreteModel(noisyOutModel);
+		// finally, dont forget about BallContact(them)
+		{
+			boost::shared_ptr<Term> them(new Constant("them"));
+			Atom atom("D-BallContact", them);
+			validPreds.insert(atom);
+		}
 
-	std::set<Atom, atomcmp> allAtoms;
+		Model complModel = complimentModel(inModel, validPreds, maxInterval);
+		double prob = vm["prob"].as<double>();
+		unsigned long noiseToAdd = (double)sizeModel(complModel) * prob;
+		if (!vm.count("batch")) std::cout << "noiseToAdd = " << noiseToAdd << std::endl;
 
-	for (Model::const_iterator it = truthModel.begin(); it != truthModel.end(); it++) {
-		allAtoms.insert(it->first);
+		std::vector<Atom> validPredsVec(validPreds.begin(), validPreds.end());
+		// choose a random predicate
+		while (noiseToAdd != 0) {
+			// choose a random predicate
+			Atom toAdd = validPredsVec[rand() % validPredsVec.size()];
+
+			if (complModel.find(toAdd) == complModel.end()) {
+				continue; 	// wow now we can run forever!
+			}
+			SISet falseAt = complModel.at(toAdd);
+
+			if (falseAt.size() == 0) {
+				continue;
+			}
+			// pick starting point
+			unsigned long sizeStart = rand() % falseAt.liqSize();
+			unsigned long start = 0;
+			BOOST_FOREACH(SpanInterval si, falseAt.set()) {
+				if (si.liqSize() < sizeStart) {
+					// can't be here
+					sizeStart = sizeStart - si.liqSize();
+					continue;
+				} else {
+					start = si.start().start()+sizeStart;
+				}
+			}
+			unsigned long length = rand() % noiseToAdd;
+			unsigned long end = start+length;
+			if (end > maxInterval.finish()) end = maxInterval.finish();
+			// remember the size beforehand and after.  the amount it decreases is the true amount of noise added
+			unsigned long modelSizeBefore = sizeModel(inModel);
+			SISet trueAt;
+			if (inModel.find(toAdd) != inModel.end()) {
+				trueAt = inModel.find(toAdd)->second;
+				inModel.erase(toAdd);
+			} else {
+				trueAt = SISet(true, maxInterval);
+			}
+			trueAt.add(SpanInterval(start, end, start, end, maxInterval));
+			inModel.insert(std::pair<Atom, SISet>(toAdd, trueAt));
+			unsigned long modelSizeAfter = sizeModel(inModel);
+			// the difference is what we subtract from noiseToAdd
+			noiseToAdd = noiseToAdd - (modelSizeAfter - modelSizeBefore);
+			complModel = complimentModel(inModel, validPreds, maxInterval);
+		}
+		std::cout << modelToString(inModel);
+	} else {
+
+		std::vector<FOL::EventPair> truthFacts, noisyIn, noisyOut;
+
+		FOLParse::parseEventFile(vm["ground-truth-file"].as<std::string>(), truthFacts);
+		if (!vm.count("batch")) std::cout << "loaded ground truth file" << std::endl;
+		FOLParse::parseEventFile(vm["noisy-input-file"].as<std::string>(), noisyIn);
+		if (!vm.count("batch")) std::cout << "loaded noisy input file" << std::endl;
+		FOLParse::parseEventFile(vm["noisy-output-file"].as<std::string>(), noisyOut);
+		if (!vm.count("batch")) std::cout << "loaded noisy output file" << std::endl;
+
+		// construct these as models
+		Model truthModel = constructModel(truthFacts).first;
+		Model noisyInModel = constructModel(noisyIn).first;
+		Interval maxInterval = span(truthModel.begin()->second.maxInterval(), noisyInModel.begin()->second.maxInterval());
+
+		Model noisyOutModel = constructModel(noisyOut).first;
+		noisyOutModel = rewritePELOutputAsConcreteModel(noisyOutModel);
+
+		std::set<Atom, atomcmp> allAtoms;
+
+		for (Model::const_iterator it = truthModel.begin(); it != truthModel.end(); it++) {
+			allAtoms.insert(it->first);
+		}
+		for (Model::const_iterator it = noisyInModel.begin(); it != noisyInModel.end(); it++) {
+			allAtoms.insert(it->first);
+		}
+		for (Model::const_iterator it = noisyOutModel.begin(); it != noisyOutModel.end(); it++) {
+			allAtoms.insert(it->first);
+		}
+
+		unsigned int noisyInTP = sizeModel(intersectModel(truthModel, noisyInModel));
+		unsigned int noisyInFP = sizeModel(subtractModel(noisyInModel, truthModel));
+		double noisyInPrecision = (double)noisyInTP / ((double)noisyInTP + (double)noisyInFP);
+
+
+		unsigned int noisyInTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyInModel, allAtoms, maxInterval)));
+		unsigned int noisyInFN = sizeModel(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
+		double noisyInRecall = (double)noisyInTN / ((double)noisyInTN + (double)noisyInFN);
+
+		unsigned int noisyOutTP = sizeModel(intersectModel(truthModel, noisyOutModel));
+		unsigned int noisyOutFP = sizeModel(subtractModel(noisyOutModel, truthModel));
+		double noisyOutPrecision = (double)noisyOutTP / ((double)noisyOutTP + (double)noisyOutFP);
+
+		unsigned int noisyOutTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyOutModel, allAtoms, maxInterval)));
+		unsigned int noisyOutFN = sizeModel(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
+		double noisyOutRecall = (double)noisyOutTN / ((double)noisyOutTN + (double)noisyOutFN);
+
+		if (vm.count("batch")) {
+			std::cout << noisyInTP << ", " << noisyInFP << ", " << noisyInPrecision << ", " << noisyInTN << ", " << noisyInFN << ", " << noisyInRecall << ", "
+				<< noisyOutTP << ", " << noisyOutFP << ", " << noisyOutPrecision << ", " << noisyOutTN << ", " << noisyOutFN << ", " << noisyOutRecall << std::endl;
+			return 0;
+		}
+
+		std::cout << "false positives in noisyInModel: " << modelToString(subtractModel(noisyInModel, truthModel)) << std::endl;
+		std::cout << "false negatives in noisyInModel: " << modelToString(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval),
+				complimentModel(truthModel, allAtoms, maxInterval))) << std::endl;
+
+		std::cout << "noisyInTP = " << noisyInTP << ", noisyInFP = " << noisyInFP << ", noisyInPrecision = " << noisyInPrecision << std::endl;
+		std::cout << "noisyInTN = " << noisyInTN << ", noisyInFN = " << noisyInFN << ", noisyInRecall = " << noisyInRecall << std::endl;
+
+		std::cout << "false positives in noisyOutModel: " << modelToString(subtractModel(noisyOutModel, truthModel)) << std::endl;
+		std::cout << "false negatives in noisyOutModel: " << modelToString(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval),
+				complimentModel(truthModel, allAtoms, maxInterval))) << std::endl;
+
+
+		std::cout << "noisyOutTP = " << noisyOutTP << ", noisyOutFP = " << noisyOutFP << ", noisyOutPrecision = " << noisyOutPrecision << std::endl;
+		std::cout << "noisyOutTN = " << noisyOutTN << ", noisyOutFN = " << noisyOutFN << ", noisyOutRecall = " << noisyOutRecall << std::endl;
 	}
-	for (Model::const_iterator it = noisyInModel.begin(); it != noisyInModel.end(); it++) {
-		allAtoms.insert(it->first);
-	}
-	for (Model::const_iterator it = noisyOutModel.begin(); it != noisyOutModel.end(); it++) {
-		allAtoms.insert(it->first);
-	}
-
-	unsigned int noisyInTP = sizeModel(intersectModel(truthModel, noisyInModel));
-	unsigned int noisyInFP = sizeModel(subtractModel(noisyInModel, truthModel));
-	double noisyInPrecision = (double)noisyInTP / ((double)noisyInTP + (double)noisyInFP);
-
-
-	unsigned int noisyInTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyInModel, allAtoms, maxInterval)));
-	unsigned int noisyInFN = sizeModel(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
-	double noisyInRecall = (double)noisyInTN / ((double)noisyInTN + (double)noisyInFN);
-
-	unsigned int noisyOutTP = sizeModel(intersectModel(truthModel, noisyOutModel));
-	unsigned int noisyOutFP = sizeModel(subtractModel(noisyOutModel, truthModel));
-	double noisyOutPrecision = (double)noisyOutTP / ((double)noisyOutTP + (double)noisyOutFP);
-
-	unsigned int noisyOutTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyOutModel, allAtoms, maxInterval)));
-	unsigned int noisyOutFN = sizeModel(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
-	double noisyOutRecall = (double)noisyOutTN / ((double)noisyOutTN + (double)noisyOutFN);
-
-	if (vm.count("batch")) {
-		std::cout << noisyInTP << ", " << noisyInFP << ", " << noisyInPrecision << ", " << noisyInTN << ", " << noisyInFN << ", " << noisyInRecall << ", "
-			<< noisyOutTP << ", " << noisyOutFP << ", " << noisyOutPrecision << ", " << noisyOutTN << ", " << noisyOutFN << ", " << noisyOutRecall << std::endl;
-		return 0;
-	}
-
-	std::cout << "false positives in noisyInModel: " << modelToString(subtractModel(noisyInModel, truthModel)) << std::endl;
-	std::cout << "false negatives in noisyInModel: " << modelToString(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval),
-			complimentModel(truthModel, allAtoms, maxInterval))) << std::endl;
-
-	std::cout << "noisyInTP = " << noisyInTP << ", noisyInFP = " << noisyInFP << ", noisyInPrecision = " << noisyInPrecision << std::endl;
-	std::cout << "noisyInTN = " << noisyInTN << ", noisyInFN = " << noisyInFN << ", noisyInRecall = " << noisyInRecall << std::endl;
-
-	std::cout << "false positives in noisyOutModel: " << modelToString(subtractModel(noisyOutModel, truthModel)) << std::endl;
-	std::cout << "false negatives in noisyOutModel: " << modelToString(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval),
-			complimentModel(truthModel, allAtoms, maxInterval))) << std::endl;
-
-
-	std::cout << "noisyOutTP = " << noisyOutTP << ", noisyOutFP = " << noisyOutFP << ", noisyOutPrecision = " << noisyOutPrecision << std::endl;
-	std::cout << "noisyOutTN = " << noisyOutTN << ", noisyOutFN = " << noisyOutFN << ", noisyOutRecall = " << noisyOutRecall << std::endl;
-
 	return 0;
 }

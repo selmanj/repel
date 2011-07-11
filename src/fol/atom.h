@@ -18,6 +18,9 @@ public:
 	typedef std::vector<boost::shared_ptr<Term> >::size_type size_type;
 
 	Atom(std::string name) : pred(name) {};
+	Atom(std::string name, boost::shared_ptr<Term> term) : pred(name) {
+		terms.push_back(term);
+	}
 	Atom(const Atom& a) : pred(a.pred), terms(a.terms) {};	// shallow copy
 	template <typename ForwardIterator>
 	Atom(std::string name,
