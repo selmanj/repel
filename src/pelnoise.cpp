@@ -295,20 +295,38 @@ int main(int argc, char* argv[]) {
 
 		unsigned int noisyInTP = sizeModel(intersectModel(truthModel, noisyInModel));
 		unsigned int noisyInFP = sizeModel(subtractModel(noisyInModel, truthModel));
-		double noisyInPrecision = (double)noisyInTP / ((double)noisyInTP + (double)noisyInFP);
-
+		double noisyInPrecision;
+		if (!noisyInTP  && !noisyInFP ) {
+			noisyInPrecision = 0.0;
+		} else {
+			noisyInPrecision = (double)noisyInTP / ((double)noisyInTP + (double)noisyInFP);
+		}
 
 		unsigned int noisyInTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyInModel, allAtoms, maxInterval)));
 		unsigned int noisyInFN = sizeModel(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
-		double noisyInRecall = (double)noisyInTN / ((double)noisyInTN + (double)noisyInFN);
-
+		double noisyInRecall;
+		if (!noisyInTN && !noisyInFN) {
+			noisyInRecall = 0.0;
+		} else {
+			noisyInRecall = (double)noisyInTN / ((double)noisyInTN + (double)noisyInFN);
+		}
 		unsigned int noisyOutTP = sizeModel(intersectModel(truthModel, noisyOutModel));
 		unsigned int noisyOutFP = sizeModel(subtractModel(noisyOutModel, truthModel));
-		double noisyOutPrecision = (double)noisyOutTP / ((double)noisyOutTP + (double)noisyOutFP);
+		double noisyOutPrecision;
+		if (!noisyOutTP && !noisyOutFP) {
+			noisyOutPrecision = 0.0;
+		} else {
+			noisyOutPrecision = (double)noisyOutTP / ((double)noisyOutTP + (double)noisyOutFP);
+		}
 
 		unsigned int noisyOutTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyOutModel, allAtoms, maxInterval)));
 		unsigned int noisyOutFN = sizeModel(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
-		double noisyOutRecall = (double)noisyOutTN / ((double)noisyOutTN + (double)noisyOutFN);
+		double noisyOutRecall;
+		if (!noisyOutTN && !noisyOutFN) {
+			noisyOutRecall = 0.0;
+		} else {
+			noisyOutRecall = (double)noisyOutTN / ((double)noisyOutTN + (double)noisyOutFN);
+		}
 
 		if (vm.count("batch")) {
 			std::cout << noisyInTP << ", " << noisyInFP << ", " << noisyInPrecision << ", " << noisyInTN << ", " << noisyInFN << ", " << noisyInRecall << ", "
