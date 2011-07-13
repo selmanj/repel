@@ -7,11 +7,105 @@
 
 
 #include <boost/program_options.hpp>
+#include <boost/foreach.hpp>
+#include <boost/tuple/tuple.hpp>
 namespace po = boost::program_options;
 #include "pelnoise.h"
 #include "fol/fol.h"
 #include "fol/domain.h"
 #include "fol/folparser.h"
+
+
+boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshholdAccuracy(const Model& groundTruth, const Model& model, double threshhold) {
+	unsigned int falsePos=0, truePos=0, trueNeg=0, falseNeg=0;
+	BOOST_FOREACH(Model::value_type pair, groundTruth) {
+		Atom a = pair.first;
+		SISet set = pair.second;
+
+		BOOST_FOREACH(SpanInterval si, set.set()) {
+			SISet justSi(true, set.maxInterval());
+			justSi.add(si);
+			if (model.find(a) != model.end()) {
+				SISet modelSet = model.find(a)->second;
+				SISet intersect = intersection(justSi, modelSet);
+				bool truePosFound = false;
+				BOOST_FOREACH(SpanInterval siInter, intersect.set()) {
+					if (((double)siInter.liqSize() / (double) si.liqSize()) >= threshhold) {
+						truePosFound = true;
+						break;
+					}
+				}
+				if (truePosFound) {
+					truePos++;
+				} else {
+					falseNeg++;
+				}
+			} else {
+				falseNeg++;
+			}
+		}
+	}
+
+	BOOST_FOREACH(Model::value_type pair, model) {
+		Atom a = pair.first;
+		SISet set = pair.second;
+
+		BOOST_FOREACH(SpanInterval si, set.set()) {
+			SISet justSi(true, set.maxInterval());
+			justSi.add(si);
+			if (groundTruth.find(a) != groundTruth.end()) {
+				SISet truthSet = groundTruth.find(a)->second;
+				SISet intersect = intersection(justSi, truthSet);
+				bool falsePosFound = true;
+				BOOST_FOREACH(SpanInterval siInter, intersect.set()) {
+					if (((double)siInter.liqSize() / (double) si.liqSize()) >= threshhold) {
+						falsePosFound = false;
+						break;
+					}
+				}
+				if (falsePosFound) {
+					falsePos++;
+				}
+			} else {
+				falsePos++;
+			}
+		}
+	}
+
+		/*
+		BOOST_FOREACH(SpanInterval si, set.set()) {
+			// find the set of intervals that intersect this one
+			SISet intersects(true, set.maxInterval());
+			// yes, this is inefficient but this is just a quick tool.  refactor this if its slow
+			if (groundTruth.find(a) != groundTruth.end()) {
+				SISet gtSet = groundTruth.find(a)->second;
+				BOOST_FOREACH(SpanInterval gtsi, gtSet.set()) {
+					if (intersection(si, gtsi).size() > 0) {
+						intersects.add(gtsi);
+					}
+				}
+			}
+			// compute the ratio
+			SISet justSet(true, set.maxInterval());
+			justSet.add(si);
+			unsigned int intersectSize = intersection(justSet, intersects).liqSize();
+			std::cout << "intersectSize = " << intersectSize << std::endl;
+
+			// recycle intersects value
+			intersects.add(si);
+			unsigned int unionSize = intersects.liqSize();
+			std::cout << "unionSize = " << unionSize << std::endl;
+
+			double ratio = (double)intersectSize / (double)unionSize;
+			if (ratio < threshhold) {
+				falsePos++;
+			} else {
+				truePos++;
+			}
+		}
+		*/
+	return boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int>(truePos, falsePos, trueNeg, falseNeg);
+}
 
 std::pair<Model, Interval> constructModel(const std::vector<FOL::EventPair>& pairs) {\
 	Model m;
@@ -141,6 +235,7 @@ int main(int argc, char* argv[]) {
 	    ("batch,b", "run in batch mode, producing csv output")
 	    ("add,a", po::value<std::string>(), "add noise to file")
 	    ("prob,p", po::value<double>(), "the percentage (expressed as a float from 0.0 to 1.0) of false intervals to add noise to")
+	    ("thresh,t", po::value<double>()->default_value(0.5), "threshhold value for precision measure")
 	;
 
 	po::options_description hidden("Hidden options");
@@ -327,10 +422,44 @@ int main(int argc, char* argv[]) {
 		} else {
 			noisyOutRecall = (double)noisyOutTN / ((double)noisyOutTN + (double)noisyOutFN);
 		}
+		boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> threshInPos = getThreshholdAccuracy(truthModel, noisyInModel, vm["thresh"].as<double>());
+		unsigned int noisyInThreshTP = threshInPos.get<0>();
+		unsigned int noisyInThreshFP = threshInPos.get<1>();
+
+		double noisyInThreshPrecision;
+		if (!noisyInThreshTP && !noisyInThreshFP) {
+			noisyInThreshPrecision = 0.0;
+		} else {
+			noisyInThreshPrecision = (double)noisyInThreshTP / ((double)noisyInThreshTP + (double)noisyInThreshFP);
+		}
+
+		boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int>  threshOutPos = getThreshholdAccuracy(truthModel, noisyOutModel, vm["thresh"].as<double>());
+		unsigned int noisyOutThreshTP = threshOutPos.get<0>();
+		unsigned int noisyOutThreshFP = threshOutPos.get<1>();
+		unsigned int noisyOutThreshTN = threshOutPos.get<2>();
+		unsigned int noisyOutThreshFN = threshOutPos.get<3>();
+
+		double noisyOutThreshPrecision;
+		if (!noisyOutThreshTP && !noisyOutThreshFP) {
+			noisyOutThreshPrecision = 0.0;
+		} else {
+			noisyOutThreshPrecision = (double)noisyOutThreshTP / ((double)noisyOutThreshTP + (double)noisyOutThreshFP);
+		}
+
+		double noisyOutThreshRecall;	// TODO: THIS IS BROKEN DONT USE
+		if (!noisyOutThreshTN && !noisyOutThreshFN) {
+			noisyOutThreshRecall = 0.0;
+		} else {
+			noisyOutThreshRecall = (double)noisyOutThreshTN / ((double)noisyOutThreshTN + (double)noisyOutThreshFN);
+		}
+
 
 		if (vm.count("batch")) {
 			std::cout << noisyInTP << ", " << noisyInFP << ", " << noisyInPrecision << ", " << noisyInTN << ", " << noisyInFN << ", " << noisyInRecall << ", "
-				<< noisyOutTP << ", " << noisyOutFP << ", " << noisyOutPrecision << ", " << noisyOutTN << ", " << noisyOutFN << ", " << noisyOutRecall << std::endl;
+				<< noisyOutTP << ", " << noisyOutFP << ", " << noisyOutPrecision << ", " << noisyOutTN << ", " << noisyOutFN << ", " << noisyOutRecall << ", "
+				<< noisyInThreshTP << ", " << noisyInThreshFP << ", " << noisyInThreshPrecision << ", "
+				<< noisyOutThreshTP << ", " << noisyOutThreshFP << ", " << noisyOutThreshPrecision << std::endl;
+			//	<< noisyOutThreshTN << ", " << noisyOutThreshFN << ", " << noisyOutThreshRecall <<std::endl;
 			return 0;
 		}
 
@@ -345,9 +474,13 @@ int main(int argc, char* argv[]) {
 		std::cout << "false negatives in noisyOutModel: " << modelToString(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval),
 				complimentModel(truthModel, allAtoms, maxInterval))) << std::endl;
 
-
 		std::cout << "noisyOutTP = " << noisyOutTP << ", noisyOutFP = " << noisyOutFP << ", noisyOutPrecision = " << noisyOutPrecision << std::endl;
 		std::cout << "noisyOutTN = " << noisyOutTN << ", noisyOutFN = " << noisyOutFN << ", noisyOutRecall = " << noisyOutRecall << std::endl;
+
+		std::cout << "noisyInThreshTP = " << noisyInThreshTP << ", noisyInThreshFP = " << noisyInThreshFP << ", noisyInThreshPrecision = " << noisyInThreshPrecision << std::endl;
+		std::cout << "noisyOutThreshTP = " << noisyOutThreshTP << ", noisyOutThreshFP = " << noisyOutThreshFP << ", noisyOutThreshPrecision = " << noisyOutThreshPrecision << std::endl;
+		//std::cout << "noisyOutThreshTN = " << noisyOutThreshTN << ", noisyOutThreshFN = " << noisyOutThreshFN << ", noisyOutThreshRecall = " << noisyOutThreshRecall << std::endl;
+
 	}
 	return 0;
 }
