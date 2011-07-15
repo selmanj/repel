@@ -15,6 +15,121 @@ namespace po = boost::program_options;
 #include "fol/domain.h"
 #include "fol/folparser.h"
 
+std::set<Atom, atomcmp> generateValidPreds() {
+	std::string player_objs[] = {"backleft", "backright", "backmiddle", "frontleft", "frontright", "frontmiddle"};
+	std::string player_preds[] = {"D-BallContact", "D-Spike", "D-Set", "D-Serve", "D-Dig", "D-Block", "D-Squat"};
+	std::string ref_objs[] = {"refback", "refnet"};
+	std::string ref_preds[] = {"D-Flag"};
+	std::string noobj_preds[] = {"D-Huddle"};
+
+	std::set<Atom, atomcmp> validPreds;
+	BOOST_FOREACH(std::string pred, player_preds) {
+		BOOST_FOREACH(std::string obj, player_objs) {
+			boost::shared_ptr<Term> cons(new Constant(obj));
+			Atom atom(pred, cons);
+			validPreds.insert(atom);
+		}
+	}
+	BOOST_FOREACH(std::string pred, ref_preds) {
+		BOOST_FOREACH(std::string obj, ref_objs) {
+			boost::shared_ptr<Term> cons(new Constant(obj));
+			Atom atom(pred, cons);
+			validPreds.insert(atom);
+		}
+	}
+	BOOST_FOREACH(std::string pred, noobj_preds) {
+		Atom atom(pred);
+		validPreds.insert(atom);
+	}
+
+	// finally, dont forget about BallContact(them)
+	{
+		boost::shared_ptr<Term> them(new Constant("them"));
+		Atom atom("D-BallContact", them);
+		validPreds.insert(atom);
+	}
+	return validPreds;
+}
+/* NOTE!  Caller is responsible for deleting memory that was allocated for hte unsigned ints!  For
+/* this tool its probably ok to not delete it as it will only run for a few ms but dont forget about this!
+ */
+ConfMatrix confusionMatrix(const Model& groundTruth, const Model& model, double threshhold) {
+	ConfMatrix c;
+	std::set<Atom, atomcmp> validPreds = generateValidPreds();
+	// first initalize it
+	BOOST_FOREACH(Atom a, validPreds) {
+		BOOST_FOREACH(Atom b, validPreds) {
+			std::pair<Atom, Atom> atomPair(a, b);
+			unsigned int *counter = new unsigned int;
+			*counter = 0;
+
+			c.insert(std::pair<std::pair<Atom, Atom>, unsigned int* >(atomPair, counter));
+		}
+	}
+
+	BOOST_FOREACH(Model::value_type pair, groundTruth) {
+		Atom a = pair.first;
+		SISet set = pair.second;
+		if (c.find(std::pair<Atom, Atom>(a,a)) == c.end()) {
+				continue;
+		}
+
+		BOOST_FOREACH(SpanInterval truthSi, set.set()) {
+			// now, find ALL intervals that might intersect with htis
+			std::map<Atom, SpanInterval, atomcmp > intersects;
+			BOOST_FOREACH(Model::value_type modelPair, model) {
+				Atom modelA = modelPair.first;
+				SISet setA = modelPair.second;
+				if (c.find(std::pair<Atom, Atom>(modelA,modelA)) == c.end()) {
+					continue;
+				}
+
+				BOOST_FOREACH(SpanInterval modelSi, setA.set()) {
+					if (intersection(modelSi, truthSi).size() > 0
+							&& (double)intersection(modelSi, truthSi).liqSize() / ((double)truthSi.liqSize()) >= threshhold) {
+						/*
+						std::pair<Atom, Atom> atomPair(a, modelA);
+						if (c.find(atomPair) == c.end()) {
+							// do nothing
+						} else {
+
+							unsigned int *counter = c.at(atomPair);
+							*counter = *counter + 1;
+						}
+						 */
+						intersects.insert(std::pair<Atom, SpanInterval>(modelA, modelSi));
+					}
+				}
+			}
+			// ok we've got our list.  first, check to see if it contains our predicate anywhere
+			if (intersects.find(a) != intersects.end()) {
+				// we count this whole thing as positive
+				unsigned int *counter = c.at(std::pair<Atom, Atom>(a, a));
+				*counter = *counter+1;
+				continue;
+			} else if (intersects.size() == 0) {
+				continue;	// do nothing!
+			} else {
+				// choose the highest valued intersection as the error and add 1 there
+				double max = 0.0;
+				std::pair<Atom, SpanInterval> bestFound = *intersects.begin();
+				for (std::map<Atom, SpanInterval>::const_iterator it = intersects.begin();
+						it != intersects.end();
+						it++) {
+					double size = (double)intersection(it->second, truthSi).liqSize() / ((double)truthSi.liqSize());
+					if (size > max) {
+						max = size;
+						bestFound = *it;
+					}
+				}
+				unsigned int *counter = c.at(std::pair<Atom, Atom>(a, bestFound.first));
+				*counter = *counter+1;
+			}
+
+		}
+	}
+	return c;
+}
 
 boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshholdAccuracy(const Model& groundTruth, const Model& model, double threshhold) {
 	unsigned int falsePos=0, truePos=0, trueNeg=0, falseNeg=0;
@@ -69,6 +184,50 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 			} else {
 				falsePos++;
 			}
+		}
+	}
+	// now count the true negatives
+	BOOST_FOREACH(Atom a, generateValidPreds()) {
+		if (groundTruth.find(a) == groundTruth.end()
+				&& model.find(a) == model.end()) {
+			trueNeg++;
+		} else if (model.find(a) != model.end()) {
+			// only in model
+			bool trueNegFound = true;
+			BOOST_FOREACH(SpanInterval si, model.at(a).set()) {
+				if ((double)si.liqSize() / (double)si.maxInterval().size() >= threshhold) {
+					trueNegFound = false;
+					break;
+				}
+			}
+			if (trueNegFound) {
+				trueNeg++;
+			}
+		} else if (groundTruth.find(a) != groundTruth.end()) {
+			// only in ground truth
+			trueNeg = trueNeg + groundTruth.at(a).compliment().set().size();
+		} else {
+			// it's in both
+			BOOST_FOREACH(SpanInterval si, groundTruth.at(a).compliment().set()) {
+				SISet justSi(true, si.maxInterval());
+				justSi.add(si);
+				SISet intersect = intersection(justSi, model.at(a));
+				if (intersect.size() == 0) {
+					trueNeg++;
+				} else {
+					bool trueNegFound = true;
+					BOOST_FOREACH(SpanInterval si2, intersect.set()) {
+						if ((double)si2.liqSize() / (double)si.liqSize() >= threshhold) {
+							trueNegFound = false;
+							break;
+						}
+					}
+					if (trueNegFound) {
+						trueNeg++;
+					}
+				}
+			}
+
 		}
 	}
 
@@ -236,6 +395,7 @@ int main(int argc, char* argv[]) {
 	    ("add,a", po::value<std::string>(), "add noise to file")
 	    ("prob,p", po::value<double>(), "the percentage (expressed as a float from 0.0 to 1.0) of false intervals to add noise to")
 	    ("thresh,t", po::value<double>()->default_value(0.5), "threshhold value for precision measure")
+	    ("confusion,c", "generate confusion matrix only")
 	;
 
 	po::options_description hidden("Hidden options");
@@ -258,7 +418,7 @@ int main(int argc, char* argv[]) {
 	po::notify(vm);
 
 	if (vm.count("help") ||
-			(!vm.count("add") && (!vm.count("ground-truth-file") || !vm.count("noisy-input-file") || !vm.count("noisy-output-file")))
+			(!vm.count("add") && !vm.count("confusion") && (!vm.count("ground-truth-file") || !vm.count("noisy-input-file") || !vm.count("noisy-output-file")))
 			|| (vm.count("add") && !vm.count("prob"))) {
 		std::cout << "Usage:" << std::endl;
 	    std::cout << "\t1. " << argv[0] <<" GROUND-TRUTH-FILE NOISY-INPUT-FILE NOISY-OUTPUT-FILE" << std::endl;
@@ -273,39 +433,8 @@ int main(int argc, char* argv[]) {
 		std::pair<Model, Interval> modelPair = constructModel(inFile);
 		Model inModel = modelPair.first;
 		Interval maxInterval = modelPair.second;
-		std::string player_objs[] = {"backleft", "backright", "backmiddle", "frontleft", "frontright", "frontmiddle"};
-		std::string player_preds[] = {"D-BallContact", "D-Spike", "D-Set", "D-Serve", "D-Dig", "D-Block", "D-Squat"};
-		std::string ref_objs[] = {"refback", "refnet"};
-		std::string ref_preds[] = {"D-Flag"};
-		std::string noobj_preds[] = {"D-Huddle"};
 
-		std::set<Atom, atomcmp> validPreds;
-		BOOST_FOREACH(std::string pred, player_preds) {
-			BOOST_FOREACH(std::string obj, player_objs) {
-				boost::shared_ptr<Term> cons(new Constant(obj));
-				Atom atom(pred, cons);
-				validPreds.insert(atom);
-			}
-		}
-		BOOST_FOREACH(std::string pred, ref_preds) {
-			BOOST_FOREACH(std::string obj, ref_objs) {
-				boost::shared_ptr<Term> cons(new Constant(obj));
-				Atom atom(pred, cons);
-				validPreds.insert(atom);
-			}
-		}
-		BOOST_FOREACH(std::string pred, noobj_preds) {
-			Atom atom(pred);
-			validPreds.insert(atom);
-		}
-
-		// finally, dont forget about BallContact(them)
-		{
-			boost::shared_ptr<Term> them(new Constant("them"));
-			Atom atom("D-BallContact", them);
-			validPreds.insert(atom);
-		}
-
+		std::set<Atom, atomcmp> validPreds = generateValidPreds();
 		Model complModel = complimentModel(inModel, validPreds, maxInterval);
 		double prob = vm["prob"].as<double>();
 		unsigned long noiseToAdd = (double)sizeModel(complModel) * prob;
@@ -357,7 +486,42 @@ int main(int argc, char* argv[]) {
 			complModel = complimentModel(inModel, validPreds, maxInterval);
 		}
 		std::cout << modelToString(inModel);
-	} else {
+	} else if (vm.count("confusion")) {
+		std::vector<FOL::EventPair> truthFacts, inputFacts;
+
+		FOLParse::parseEventFile(vm["ground-truth-file"].as<std::string>(), truthFacts);
+		FOLParse::parseEventFile(vm["noisy-input-file"].as<std::string>(), inputFacts);
+		Model truthModel = constructModel(truthFacts).first;
+		Model inputModel = constructModel(inputFacts).first;
+
+		ConfMatrix c = confusionMatrix(truthModel, inputModel, vm["thresh"].as<double>());
+		// first find the set of predicates we are dealing with
+		std::set<Atom, atomcmp> validPreds = generateValidPreds();
+		// generate a heading to be nice
+		for(std::set<Atom, atomcmp>::const_iterator it = validPreds.begin(); it != validPreds.end(); it++) {
+			if (it != validPreds.begin()) {
+				std::cout << ", ";
+			}
+			std::cout << "\"" << it->toString() << "\"";
+		}
+		std::cout << std::endl;
+
+		for (std::set<Atom, atomcmp>::const_iterator aIt = validPreds.begin(); aIt != validPreds.end(); aIt++) {
+			for (std::set<Atom, atomcmp>::const_iterator bIt = validPreds.begin(); bIt != validPreds.end(); bIt++) {
+				if (bIt != validPreds.begin()) std::cout << ", ";
+
+				std::pair<Atom, Atom> atomPair(*aIt, *bIt);
+				if (c.find(atomPair) == c.end()) {
+					std::cerr << "WARNING can't find a match for atompair " << aIt->toString() << ", " << bIt->toString() << std::endl;
+					return 1;
+				}
+				std::cout << *c.at(atomPair);
+			}
+			std::cout << std::endl;
+		}
+		return 0;
+	}
+	else {
 
 		std::vector<FOL::EventPair> truthFacts, noisyIn, noisyOut;
 
@@ -400,10 +564,10 @@ int main(int argc, char* argv[]) {
 		unsigned int noisyInTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyInModel, allAtoms, maxInterval)));
 		unsigned int noisyInFN = sizeModel(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
 		double noisyInRecall;
-		if (!noisyInTN && !noisyInFN) {
+		if (!noisyInTP && !noisyInFN) {
 			noisyInRecall = 0.0;
 		} else {
-			noisyInRecall = (double)noisyInTN / ((double)noisyInTN + (double)noisyInFN);
+			noisyInRecall = (double)noisyInTP / ((double)noisyInTP + (double)noisyInFN);
 		}
 		unsigned int noisyOutTP = sizeModel(intersectModel(truthModel, noisyOutModel));
 		unsigned int noisyOutFP = sizeModel(subtractModel(noisyOutModel, truthModel));
@@ -417,10 +581,10 @@ int main(int argc, char* argv[]) {
 		unsigned int noisyOutTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyOutModel, allAtoms, maxInterval)));
 		unsigned int noisyOutFN = sizeModel(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
 		double noisyOutRecall;
-		if (!noisyOutTN && !noisyOutFN) {
+		if (!noisyOutTP && !noisyOutFN) {
 			noisyOutRecall = 0.0;
 		} else {
-			noisyOutRecall = (double)noisyOutTN / ((double)noisyOutTN + (double)noisyOutFN);
+			noisyOutRecall = (double)noisyOutTP / ((double)noisyOutTP + (double)noisyOutFN);
 		}
 		boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> threshInPos = getThreshholdAccuracy(truthModel, noisyInModel, vm["thresh"].as<double>());
 		unsigned int noisyInThreshTP = threshInPos.get<0>();
@@ -446,11 +610,18 @@ int main(int argc, char* argv[]) {
 			noisyOutThreshPrecision = (double)noisyOutThreshTP / ((double)noisyOutThreshTP + (double)noisyOutThreshFP);
 		}
 
-		double noisyOutThreshRecall;	// TODO: THIS IS BROKEN DONT USE
-		if (!noisyOutThreshTN && !noisyOutThreshFN) {
+		double noisyOutThreshRecall;
+		if (!noisyOutThreshTP && !noisyOutThreshFN) {
 			noisyOutThreshRecall = 0.0;
 		} else {
-			noisyOutThreshRecall = (double)noisyOutThreshTN / ((double)noisyOutThreshTN + (double)noisyOutThreshFN);
+			noisyOutThreshRecall = (double)noisyOutThreshTP / ((double)noisyOutThreshTP + (double)noisyOutThreshFN);
+		}
+
+		double noisyOutSpecificity;
+		if (!noisyOutThreshFP && !noisyOutThreshTN) {
+			noisyOutSpecificity = 0;
+		} else {
+			noisyOutSpecificity = (double)noisyOutThreshTN / ((double)noisyOutThreshTN + (double)noisyOutThreshFP);
 		}
 
 
@@ -458,8 +629,9 @@ int main(int argc, char* argv[]) {
 			std::cout << noisyInTP << ", " << noisyInFP << ", " << noisyInPrecision << ", " << noisyInTN << ", " << noisyInFN << ", " << noisyInRecall << ", "
 				<< noisyOutTP << ", " << noisyOutFP << ", " << noisyOutPrecision << ", " << noisyOutTN << ", " << noisyOutFN << ", " << noisyOutRecall << ", "
 				<< noisyInThreshTP << ", " << noisyInThreshFP << ", " << noisyInThreshPrecision << ", "
-				<< noisyOutThreshTP << ", " << noisyOutThreshFP << ", " << noisyOutThreshPrecision << std::endl;
-			//	<< noisyOutThreshTN << ", " << noisyOutThreshFN << ", " << noisyOutThreshRecall <<std::endl;
+				<< noisyOutThreshTP << ", " << noisyOutThreshFP << ", " << noisyOutThreshPrecision << ", "
+				<< noisyOutThreshTN << ", " << noisyOutThreshFN << ", " << noisyOutThreshRecall << ", "
+				<< 1.0-noisyOutSpecificity << std::endl;
 			return 0;
 		}
 
@@ -479,7 +651,7 @@ int main(int argc, char* argv[]) {
 
 		std::cout << "noisyInThreshTP = " << noisyInThreshTP << ", noisyInThreshFP = " << noisyInThreshFP << ", noisyInThreshPrecision = " << noisyInThreshPrecision << std::endl;
 		std::cout << "noisyOutThreshTP = " << noisyOutThreshTP << ", noisyOutThreshFP = " << noisyOutThreshFP << ", noisyOutThreshPrecision = " << noisyOutThreshPrecision << std::endl;
-		//std::cout << "noisyOutThreshTN = " << noisyOutThreshTN << ", noisyOutThreshFN = " << noisyOutThreshFN << ", noisyOutThreshRecall = " << noisyOutThreshRecall << std::endl;
+		std::cout << "noisyOutThreshTN = " << noisyOutThreshTN << ", noisyOutThreshFN = " << noisyOutThreshFN << ", noisyOutThreshRecall = " << noisyOutThreshRecall << std::endl;
 
 	}
 	return 0;
