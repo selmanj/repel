@@ -33,7 +33,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = pel$(EXEEXT) pelnoise$(EXEEXT)
+bin_PROGRAMS = pel$(EXEEXT) pelnoise$(EXEEXT) query_sampling$(EXEEXT)
 TESTS = $(am__EXEEXT_1)
 check_PROGRAMS = $(am__EXEEXT_1)
 subdir = .
@@ -74,6 +74,9 @@ am_pelnoise_OBJECTS = pelnoise.$(OBJEXT) domain.$(OBJEXT) \
 	siset.$(OBJEXT)
 pelnoise_OBJECTS = $(am_pelnoise_OBJECTS)
 pelnoise_LDADD = $(LDADD)
+am_query_sampling_OBJECTS = query_sampling.$(OBJEXT)
+query_sampling_OBJECTS = $(am_query_sampling_OBJECTS)
+query_sampling_LDADD = $(LDADD)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
@@ -123,15 +126,16 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) $(test_atomtest_SOURCES) \
-	$(test_cnftest_SOURCES) $(test_domaintest_SOURCES) \
-	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
-	$(test_movestest_SOURCES) $(test_spanintervaltest_SOURCES)
-DIST_SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) \
+SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) $(query_sampling_SOURCES) \
 	$(test_atomtest_SOURCES) $(test_cnftest_SOURCES) \
 	$(test_domaintest_SOURCES) $(test_follexertest_SOURCES) \
 	$(test_folparsertest_SOURCES) $(test_movestest_SOURCES) \
 	$(test_spanintervaltest_SOURCES)
+DIST_SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) \
+	$(query_sampling_SOURCES) $(test_atomtest_SOURCES) \
+	$(test_cnftest_SOURCES) $(test_domaintest_SOURCES) \
+	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
+	$(test_movestest_SOURCES) $(test_spanintervaltest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -247,6 +251,7 @@ AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_O
 dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 pelnoise_SOURCES = src/pelnoise.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
+query_sampling_SOURCES = queries/query_sampling.cpp 
 PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp
@@ -357,6 +362,9 @@ pel$(EXEEXT): $(pel_OBJECTS) $(pel_DEPENDENCIES)
 pelnoise$(EXEEXT): $(pelnoise_OBJECTS) $(pelnoise_DEPENDENCIES) 
 	@rm -f pelnoise$(EXEEXT)
 	$(CXXLINK) $(pelnoise_OBJECTS) $(pelnoise_LDADD) $(LIBS)
+query_sampling$(EXEEXT): $(query_sampling_OBJECTS) $(query_sampling_DEPENDENCIES) 
+	@rm -f query_sampling$(EXEEXT)
+	$(CXXLINK) $(query_sampling_OBJECTS) $(query_sampling_LDADD) $(LIBS)
 test/$(am__dirstamp):
 	@$(MKDIR_P) test
 	@: > test/$(am__dirstamp)
@@ -404,6 +412,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namegenerator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pelnoise.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query_sampling.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spaninterval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spanintervaltest.Po@am__quote@
@@ -604,6 +613,20 @@ pelnoise.obj: src/pelnoise.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/pelnoise.cpp' object='pelnoise.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pelnoise.obj `if test -f 'src/pelnoise.cpp'; then $(CYGPATH_W) 'src/pelnoise.cpp'; else $(CYGPATH_W) '$(srcdir)/src/pelnoise.cpp'; fi`
+
+query_sampling.o: queries/query_sampling.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT query_sampling.o -MD -MP -MF $(DEPDIR)/query_sampling.Tpo -c -o query_sampling.o `test -f 'queries/query_sampling.cpp' || echo '$(srcdir)/'`queries/query_sampling.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/query_sampling.Tpo $(DEPDIR)/query_sampling.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='queries/query_sampling.cpp' object='query_sampling.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o query_sampling.o `test -f 'queries/query_sampling.cpp' || echo '$(srcdir)/'`queries/query_sampling.cpp
+
+query_sampling.obj: queries/query_sampling.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT query_sampling.obj -MD -MP -MF $(DEPDIR)/query_sampling.Tpo -c -o query_sampling.obj `if test -f 'queries/query_sampling.cpp'; then $(CYGPATH_W) 'queries/query_sampling.cpp'; else $(CYGPATH_W) '$(srcdir)/queries/query_sampling.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/query_sampling.Tpo $(DEPDIR)/query_sampling.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='queries/query_sampling.cpp' object='query_sampling.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o query_sampling.obj `if test -f 'queries/query_sampling.cpp'; then $(CYGPATH_W) 'queries/query_sampling.cpp'; else $(CYGPATH_W) '$(srcdir)/queries/query_sampling.cpp'; fi`
 
 atomtest.o: test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT atomtest.o -MD -MP -MF $(DEPDIR)/atomtest.Tpo -c -o atomtest.o `test -f 'test/atomtest.cpp' || echo '$(srcdir)/'`test/atomtest.cpp
