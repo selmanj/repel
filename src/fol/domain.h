@@ -18,16 +18,10 @@
 #include <boost/optional.hpp>
 #include "fol.h"
 #include "predcollector.h"
+#include "model.h"
 #include "../siset.h"
 #include "namegenerator.h"
 
-struct atomcmp {
-	bool operator()(const Atom& a, const Atom& b) const {
-		return a.toString() < b.toString();
-	}
-};
-
-typedef std::map<Atom, SISet, atomcmp> Model;
 
 std::string modelToString(const Model& m);
 
@@ -92,12 +86,15 @@ public:
 			SISet set(true, maxInterval_);
 
 			set.add(interval);
+			/*
 			if (observations_.find(*atom) != observations_.end()) {
 				set.add(observations_.find(*atom)->second);
 				observations_.erase(*atom);
 			}
 			std::pair<Atom, SISet > pair(*atom, set);
 			observations_.insert(pair);
+			*/
+			observations_.setAtom(*atom, set);
 		}
 
 	};

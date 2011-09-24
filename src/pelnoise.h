@@ -25,7 +25,6 @@ typedef std::map<std::pair<Atom, Atom>, unsigned int*, atompair_cmp> ConfMatrix;
 std::set<Atom, atomcmp> generateValidPreds();
 ConfMatrix confusionMatrix(const Model& groundTruth, const Model& model, double threshhold);
 boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshholdAccuracy(const Model& groundTruth, const Model& model, double threshhold);
-std::pair<Model,Interval> constructModel(const std::vector<FOL::EventPair>& pairs);
 Model subtractModel(const Model& from, const Model& toSubtract);
 Model intersectModel(const Model& a, const Model& b);
 Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval);

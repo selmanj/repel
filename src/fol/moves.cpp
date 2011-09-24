@@ -12,6 +12,7 @@
 #include "fol.h"
 #include "domain.h"
 #include "sentence.h"
+#include "model.h"
 #include "../siset.h"
 #include "../log.h"
 
@@ -1276,9 +1277,9 @@ std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m,
 Model executeMove(const Domain& d, const Move& move, const Model& model) {
 	Model currentModel = model;
 	// handle toadd
-	// TODO: make model a full blown class/struct so it has its own operators that modify it
 	for (std::vector<Move::change>::const_iterator it = move.toAdd.begin(); it != move.toAdd.end(); it++) {
 		// check to see if atom is in the map; if not we will add it
+		/*
 		Model::iterator modelIt = currentModel.find(it->get<0>());
 		if (modelIt != currentModel.end()) {
 			const Atom a = modelIt->first;
@@ -1292,10 +1293,16 @@ Model executeMove(const Domain& d, const Move& move, const Model& model) {
 			trueAt.add(it->get<1>());
 			currentModel.insert(std::pair<const Atom, SISet>(it->get<0>(), trueAt));
 		}
+		*/
+		bool isLiquid = d.isLiquid(it->get<0>().name());
+		SISet trueAt(isLiquid, d.maxInterval());
+		trueAt.add(it->get<1>());
+		currentModel.setAtom(it->get<0>(), trueAt);
 	}
 	// handle toDel
 	for (std::vector<Move::change>::const_iterator it = move.toDel.begin(); it != move.toDel.end(); it++) {
 		// check to see if atom is in the map; if not we are done
+		/*
 		Model::iterator modelIt = currentModel.find(it->get<0>());
 		if (modelIt != currentModel.end()) {
 			const Atom a = modelIt->first;
@@ -1308,6 +1315,11 @@ Model executeMove(const Domain& d, const Move& move, const Model& model) {
 
 			currentModel.erase(modelIt);
 			if (trueAt.size() > 0) currentModel.insert(std::pair<const Atom, SISet>(a, trueAt));
+		}
+		*/
+		if (currentModel.hasAtom(it->get<0>())) {
+			SISet toRemove(d.isLiquid(it->get<0>().name()), d.maxInterval());
+			currentModel.unsetAtom(it->get<0>(), toRemove);
 		}
 	}
 	return currentModel;
@@ -1347,7 +1359,7 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 			std::cout << ".";
 			std::cout.flush();
 		}
-		LOG(LOG_DEBUG) << "currentModel: " << modelToString(currentModel);
+		LOG(LOG_DEBUG) << "currentModel: " << currentModel.toString();
 		LOG(LOG_DEBUG) << "current score: " << d.score(currentModel);
 		// make a list of the current unsatisfied formulas we can calc moves for
 		std::vector<int> notFullySatisfied = movesForSentences;

@@ -1,6 +1,7 @@
 #include "domain.h"
 #include "fol.h"
 #include "atom.h"
+#include "model.h"
 #include "../log.h"
 
 #include <boost/shared_ptr.hpp>
@@ -8,29 +9,12 @@
 #include <sstream>
 #include <vector>
 
-std::string modelToString(const Model& m) {
-	std::stringstream stream;
-
-	for (Model::const_iterator it = m.begin(); it != m.end(); it++) {
-		const Atom a = it->first;
-		SISet set = it->second;
-		stream << a.toString() << " @ " << set.toString() << std::endl;
-	}
-	return stream.str();
-}
 
 void Domain::setMaxInterval(const Interval& maxInterval) {
 	maxInterval_ = Interval(maxInterval);
 	Model resized;
-	for (Model::iterator it = observations_.begin(); it != observations_.end(); it++) {
-		const Atom atom = it->first;
-		SISet set = it->second;
-		set.setMaxInterval(maxInterval);
-		if (set.size() != 0) {
-			resized.insert(std::pair<const Atom, SISet>(atom,set));
-		}
-	}
-	observations_.swap(resized);
+
+	observations_.setMaxInterval(maxInterval);
 }
 
 bool Domain::isLiquid(const std::string& predicate) const {
@@ -95,8 +79,8 @@ SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 SISet Domain::satisfiedAtom(const Atom& a, const Model& m) const {
 	if (a.isGrounded()) {
 		// make sure its in model
-		if (m.find(a) != m.end()){
-			SISet set = m.at(a);
+		if (m.hasAtom(a)){
+			SISet set = m.getAtom(a);
 			// force non-liquidity
 			set.setForceLiquid(false);
 			return set;
@@ -192,8 +176,8 @@ SISet Domain::liqSatisfiedAtom(const Atom& a, const Model& m) const {
 		throw e;
 	}
 	// make sure its in model
-	if (m.find(a) != m.end()){
-		SISet set = m.at(a);
+	if (m.hasAtom(a)){
+		SISet set = m.getAtom(a);
 		set.setForceLiquid(true);
 		return set;
 	} else {

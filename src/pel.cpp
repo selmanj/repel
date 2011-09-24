@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
 		Model defModel = d->defaultModel();
 		Model maxModel = maxWalkSat(*d, iterations, p, &defModel);
 		LOG_PRINT(LOG_INFO) << "Best model found: " << std::endl;
-		LOG_PRINT(LOG_INFO) << modelToString(maxModel);
+		LOG_PRINT(LOG_INFO) << maxModel.toString();
 		if (vm.count("output")) {
 			// log it to the output file as well
 			fprintf(outputFile, "# generated from fact file \"%s\" and formula file \"%s\"\n",
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
 			fprintf(outputFile, "# run with %d iterations and %g chance of choosing a random move\n",
 					iterations,
 					p);
-			fputs(modelToString(maxModel).c_str(), outputFile);
+			fputs(maxModel.toString().c_str(), outputFile);
 		}
 	}
 

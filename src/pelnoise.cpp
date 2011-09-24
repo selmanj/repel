@@ -13,6 +13,7 @@ namespace po = boost::program_options;
 #include "pelnoise.h"
 #include "fol/fol.h"
 #include "fol/domain.h"
+#include "fol/model.h"
 #include "fol/folparser.h"
 
 std::set<Atom, atomcmp> generateValidPreds() {
@@ -140,8 +141,8 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 		BOOST_FOREACH(SpanInterval si, set.set()) {
 			SISet justSi(true, set.maxInterval());
 			justSi.add(si);
-			if (model.find(a) != model.end()) {
-				SISet modelSet = model.find(a)->second;
+			if (model.hasAtom(a)) {
+				SISet modelSet = model.getAtom(a);
 				SISet intersect = intersection(justSi, modelSet);
 				bool truePosFound = false;
 				BOOST_FOREACH(SpanInterval siInter, intersect.set()) {
@@ -168,8 +169,8 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 		BOOST_FOREACH(SpanInterval si, set.set()) {
 			SISet justSi(true, set.maxInterval());
 			justSi.add(si);
-			if (groundTruth.find(a) != groundTruth.end()) {
-				SISet truthSet = groundTruth.find(a)->second;
+			if (groundTruth.hasAtom(a)) {
+				SISet truthSet = groundTruth.getAtom(a);
 				SISet intersect = intersection(justSi, truthSet);
 				bool falsePosFound = true;
 				BOOST_FOREACH(SpanInterval siInter, intersect.set()) {
@@ -188,13 +189,13 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 	}
 	// now count the true negatives
 	BOOST_FOREACH(Atom a, generateValidPreds()) {
-		if (groundTruth.find(a) == groundTruth.end()
-				&& model.find(a) == model.end()) {
+		if (!groundTruth.hasAtom(a)
+				&& !model.hasAtom(a)) {
 			trueNeg++;
-		} else if (model.find(a) != model.end()) {
+		} else if (model.hasAtom(a)) {
 			// only in model
 			bool trueNegFound = true;
-			BOOST_FOREACH(SpanInterval si, model.at(a).set()) {
+			BOOST_FOREACH(SpanInterval si, model.getAtom(a).set()) {
 				if ((double)si.liqSize() / (double)si.maxInterval().size() >= threshhold) {
 					trueNegFound = false;
 					break;
@@ -203,15 +204,15 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 			if (trueNegFound) {
 				trueNeg++;
 			}
-		} else if (groundTruth.find(a) != groundTruth.end()) {
+		} else if (groundTruth.hasAtom(a)) {
 			// only in ground truth
-			trueNeg = trueNeg + groundTruth.at(a).compliment().set().size();
+			trueNeg = trueNeg + groundTruth.getAtom(a).compliment().set().size();
 		} else {
 			// it's in both
-			BOOST_FOREACH(SpanInterval si, groundTruth.at(a).compliment().set()) {
+			BOOST_FOREACH(SpanInterval si, groundTruth.getAtom(a).compliment().set()) {
 				SISet justSi(true, si.maxInterval());
 				justSi.add(si);
-				SISet intersect = intersection(justSi, model.at(a));
+				SISet intersect = intersection(justSi, model.getAtom(a));
 				if (intersect.size() == 0) {
 					trueNeg++;
 				} else {
@@ -266,102 +267,6 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 	return boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int>(truePos, falsePos, trueNeg, falseNeg);
 }
 
-std::pair<Model, Interval> constructModel(const std::vector<FOL::EventPair>& pairs) {\
-	Model m;
-	unsigned int smallest=UINT_MAX, largest=0;
-	// find the max interval
-	for (std::vector<FOL::EventPair>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
-		SpanInterval interval = it->second;
-
-		boost::optional<SpanInterval> norm = interval.normalize();
-		if (!norm) {
-			continue;
-		}
-		interval = norm.get();
-		smallest = (std::min)(interval.start().start(), smallest);
-		largest = (std::max)(interval.finish().finish(), largest);
-	}
-
-	Interval maxInterval = Interval(smallest, largest);
-
-	// initialize observations
-	for (std::vector<FOL::EventPair>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
-		boost::shared_ptr<const Atom> atom = it->first;
-		SpanInterval interval = it->second;
-
-		// reinforce the max interval
-		boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval);
-		if (!opt) continue;
-		interval = opt.get();
-
-		SISet set(true, maxInterval);
-
-		set.add(interval);
-		if (m.find(*atom) != m.end()) {
-			set.add(m.find(*atom)->second);
-			m.erase(*atom);
-		}
-		std::pair<Atom, SISet > pair(*atom, set);
-		m.insert(pair);
-	}
-	return std::pair<Model,Interval> (m,maxInterval);
-}
-
-Model subtractModel(const Model& from, const Model& toSubtract) {
-	Model newModel;
-	for (Model::const_iterator it = from.begin(); it != from.end(); it++) {
-		Atom a = it->first;
-		SISet set = it->second;
-
-		if (toSubtract.find(a) != toSubtract.end()) {
-			SISet setSubtract = toSubtract.find(a)->second;
-			set.subtract(setSubtract);
-		}
-		if (set.size() != 0) newModel.insert(std::pair<Atom, SISet>(a, set));
-	}
-	return newModel;
-}
-
-Model intersectModel(const Model& a, const Model& b) {
-	Model newModel;
-	for (Model::const_iterator it = a.begin(); it != a.end(); it++) {
-		Atom atom = it->first;
-		SISet set = it->second;
-
-		if (b.find(atom) != b.end()) {
-			SISet intersect = intersection(set, b.find(atom)->second);
-			if (intersect.size() != 0) newModel.insert(std::pair<Atom, SISet>(atom, intersect));
-		}
-	}
-	return newModel;
-}
-
-Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval) {
-	Model newModel;
-	BOOST_FOREACH(Atom atom, allAtoms) {
-		if (a.find(atom) != a.end()) {
-			Model::const_iterator it = a.find(atom);
-			SISet set = it->second;
-			if (set.compliment().size() != 0) {
-				newModel.insert(std::pair<Atom, SISet>(atom, set.compliment()));
-			}
-		} else {
-			SISet set(true, maxInterval);
-			set.add(SpanInterval(maxInterval, maxInterval, maxInterval));
-			newModel.insert(std::pair<Atom, SISet>(atom, set));
-		}
-	}
-
-	return newModel;
-}
-
-unsigned long sizeModel(const Model& a) {
-	unsigned long sum = 0;
-	for (Model::const_iterator it = a.begin(); it != a.end(); it++) {
-		sum += it->second.liqSize();
-	}
-	return sum;
-}
 
 Model rewritePELOutputAsConcreteModel(const Model& a) {
 	Model newModel(a);
@@ -370,7 +275,7 @@ Model rewritePELOutputAsConcreteModel(const Model& a) {
 		Atom atom = it->first;
 		SISet set = it->second;
 		if (atom.name().find("D-") == 0) {
-			newModel.erase(atom);
+			newModel.clearAtom(atom);
 		}
 	}
 	// done?  ok now lets add D- to the front of all the atoms (weird but this will work)
@@ -380,7 +285,7 @@ Model rewritePELOutputAsConcreteModel(const Model& a) {
 		SISet set = it->second;
 
 		atom.name() = std::string("D-") += atom.name();
-		newModelCopy.insert(std::pair<Atom, SISet>(atom, set));
+		newModelCopy.setAtom(atom, set);
 	}
 	return newModelCopy;
 }
@@ -430,14 +335,14 @@ int main(int argc, char* argv[]) {
 		std::vector<FOL::EventPair> inFile;
 
 		FOLParse::parseEventFile(vm["add"].as<std::string>(), inFile);
-		std::pair<Model, Interval> modelPair = constructModel(inFile);
-		Model inModel = modelPair.first;
-		Interval maxInterval = modelPair.second;
+		Model inModel(inFile);
+		Interval maxInterval = inModel.begin()->second.maxInterval();
 
 		std::set<Atom, atomcmp> validPreds = generateValidPreds();
-		Model complModel = complimentModel(inModel, validPreds, maxInterval);
+		Model complModel(inModel);
+		complModel.compliment(validPreds, maxInterval);
 		double prob = vm["prob"].as<double>();
-		unsigned long noiseToAdd = (double)sizeModel(complModel) * prob;
+		unsigned long noiseToAdd = (double)complModel.size() * prob;
 		if (!vm.count("batch")) std::cout << "noiseToAdd = " << noiseToAdd << std::endl;
 
 		std::vector<Atom> validPredsVec(validPreds.begin(), validPreds.end());
@@ -446,10 +351,10 @@ int main(int argc, char* argv[]) {
 			// choose a random predicate
 			Atom toAdd = validPredsVec[rand() % validPredsVec.size()];
 
-			if (complModel.find(toAdd) == complModel.end()) {
+			if (!complModel.hasAtom(toAdd)) {
 				continue; 	// wow now we can run forever!
 			}
-			SISet falseAt = complModel.at(toAdd);
+			SISet falseAt = complModel.getAtom(toAdd);
 
 			if (falseAt.size() == 0) {
 				continue;
@@ -470,29 +375,30 @@ int main(int argc, char* argv[]) {
 			unsigned long end = start+length;
 			if (end > maxInterval.finish()) end = maxInterval.finish();
 			// remember the size beforehand and after.  the amount it decreases is the true amount of noise added
-			unsigned long modelSizeBefore = sizeModel(inModel);
+			unsigned long modelSizeBefore = inModel.size();
 			SISet trueAt;
-			if (inModel.find(toAdd) != inModel.end()) {
-				trueAt = inModel.find(toAdd)->second;
-				inModel.erase(toAdd);
+			if (inModel.hasAtom(toAdd)) {
+				trueAt = inModel.getAtom(toAdd);
+				inModel.clearAtom(toAdd);
 			} else {
 				trueAt = SISet(true, maxInterval);
 			}
 			trueAt.add(SpanInterval(start, end, start, end, maxInterval));
-			inModel.insert(std::pair<Atom, SISet>(toAdd, trueAt));
-			unsigned long modelSizeAfter = sizeModel(inModel);
+			inModel.setAtom(toAdd, trueAt);
+			unsigned long modelSizeAfter = inModel.size();
 			// the difference is what we subtract from noiseToAdd
 			noiseToAdd = noiseToAdd - (modelSizeAfter - modelSizeBefore);
-			complModel = complimentModel(inModel, validPreds, maxInterval);
+			Model complModel(inModel);
+			inModel.compliment(validPreds, maxInterval);
 		}
-		std::cout << modelToString(inModel);
+		std::cout << inModel.toString();
 	} else if (vm.count("confusion")) {
 		std::vector<FOL::EventPair> truthFacts, inputFacts;
 
 		FOLParse::parseEventFile(vm["ground-truth-file"].as<std::string>(), truthFacts);
 		FOLParse::parseEventFile(vm["noisy-input-file"].as<std::string>(), inputFacts);
-		Model truthModel = constructModel(truthFacts).first;
-		Model inputModel = constructModel(inputFacts).first;
+		Model truthModel(truthFacts);
+		Model inputModel(inputFacts);
 
 		ConfMatrix c = confusionMatrix(truthModel, inputModel, vm["thresh"].as<double>());
 		// first find the set of predicates we are dealing with
@@ -533,11 +439,11 @@ int main(int argc, char* argv[]) {
 		if (!vm.count("batch")) std::cout << "loaded noisy output file" << std::endl;
 
 		// construct these as models
-		Model truthModel = constructModel(truthFacts).first;
-		Model noisyInModel = constructModel(noisyIn).first;
+		Model truthModel(truthFacts);
+		Model noisyInModel(noisyIn);
 		Interval maxInterval = span(truthModel.begin()->second.maxInterval(), noisyInModel.begin()->second.maxInterval());
 
-		Model noisyOutModel = constructModel(noisyOut).first;
+		Model noisyOutModel(noisyOut);
 		noisyOutModel = rewritePELOutputAsConcreteModel(noisyOutModel);
 
 		std::set<Atom, atomcmp> allAtoms;
@@ -552,8 +458,8 @@ int main(int argc, char* argv[]) {
 			allAtoms.insert(it->first);
 		}
 
-		unsigned int noisyInTP = sizeModel(intersectModel(truthModel, noisyInModel));
-		unsigned int noisyInFP = sizeModel(subtractModel(noisyInModel, truthModel));
+		unsigned int noisyInTP = intersectModel(truthModel, noisyInModel).size();
+		unsigned int noisyInFP = subtractModel(noisyInModel, truthModel).size();
 		double noisyInPrecision;
 		if (!noisyInTP  && !noisyInFP ) {
 			noisyInPrecision = 0.0;
@@ -561,16 +467,16 @@ int main(int argc, char* argv[]) {
 			noisyInPrecision = (double)noisyInTP / ((double)noisyInTP + (double)noisyInFP);
 		}
 
-		unsigned int noisyInTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyInModel, allAtoms, maxInterval)));
-		unsigned int noisyInFN = sizeModel(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
+		unsigned int noisyInTN = intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyInModel, allAtoms, maxInterval)).size();
+		unsigned int noisyInFN = subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)).size();
 		double noisyInRecall;
 		if (!noisyInTP && !noisyInFN) {
 			noisyInRecall = 0.0;
 		} else {
 			noisyInRecall = (double)noisyInTP / ((double)noisyInTP + (double)noisyInFN);
 		}
-		unsigned int noisyOutTP = sizeModel(intersectModel(truthModel, noisyOutModel));
-		unsigned int noisyOutFP = sizeModel(subtractModel(noisyOutModel, truthModel));
+		unsigned int noisyOutTP = intersectModel(truthModel, noisyOutModel).size();
+		unsigned int noisyOutFP = subtractModel(noisyOutModel, truthModel).size();
 		double noisyOutPrecision;
 		if (!noisyOutTP && !noisyOutFP) {
 			noisyOutPrecision = 0.0;
@@ -578,8 +484,8 @@ int main(int argc, char* argv[]) {
 			noisyOutPrecision = (double)noisyOutTP / ((double)noisyOutTP + (double)noisyOutFP);
 		}
 
-		unsigned int noisyOutTN = sizeModel(intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyOutModel, allAtoms, maxInterval)));
-		unsigned int noisyOutFN = sizeModel(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)));
+		unsigned int noisyOutTN = intersectModel(complimentModel(truthModel, allAtoms, maxInterval), complimentModel(noisyOutModel, allAtoms, maxInterval)).size();
+		unsigned int noisyOutFN = subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval), complimentModel(truthModel, allAtoms, maxInterval)).size();
 		double noisyOutRecall;
 		if (!noisyOutTP && !noisyOutFN) {
 			noisyOutRecall = 0.0;
@@ -635,16 +541,16 @@ int main(int argc, char* argv[]) {
 			return 0;
 		}
 
-		std::cout << "false positives in noisyInModel: " << modelToString(subtractModel(noisyInModel, truthModel)) << std::endl;
-		std::cout << "false negatives in noisyInModel: " << modelToString(subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval),
-				complimentModel(truthModel, allAtoms, maxInterval))) << std::endl;
+		std::cout << "false positives in noisyInModel: " << subtractModel(noisyInModel, truthModel).size() << std::endl;
+		std::cout << "false negatives in noisyInModel: " << subtractModel(complimentModel(noisyInModel, allAtoms, maxInterval),
+				complimentModel(truthModel, allAtoms, maxInterval)).size() << std::endl;
 
 		std::cout << "noisyInTP = " << noisyInTP << ", noisyInFP = " << noisyInFP << ", noisyInPrecision = " << noisyInPrecision << std::endl;
 		std::cout << "noisyInTN = " << noisyInTN << ", noisyInFN = " << noisyInFN << ", noisyInRecall = " << noisyInRecall << std::endl;
 
-		std::cout << "false positives in noisyOutModel: " << modelToString(subtractModel(noisyOutModel, truthModel)) << std::endl;
-		std::cout << "false negatives in noisyOutModel: " << modelToString(subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval),
-				complimentModel(truthModel, allAtoms, maxInterval))) << std::endl;
+		std::cout << "false positives in noisyOutModel: " << subtractModel(noisyOutModel, truthModel).size() << std::endl;
+		std::cout << "false negatives in noisyOutModel: " << subtractModel(complimentModel(noisyOutModel, allAtoms, maxInterval),
+				complimentModel(truthModel, allAtoms, maxInterval)).size() << std::endl;
 
 		std::cout << "noisyOutTP = " << noisyOutTP << ", noisyOutFP = " << noisyOutFP << ", noisyOutPrecision = " << noisyOutPrecision << std::endl;
 		std::cout << "noisyOutTN = " << noisyOutTN << ", noisyOutFN = " << noisyOutFN << ", noisyOutRecall = " << noisyOutRecall << std::endl;
