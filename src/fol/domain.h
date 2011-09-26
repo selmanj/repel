@@ -123,6 +123,7 @@ public:
 	SISet getModifiableSISet(const std::string& name, const SISet& where) const;
 	NameGenerator& nameGenerator() {return generator_;};
 	Model defaultModel() const {return observations_;};
+	Model randomModel() const;
 	Interval maxInterval() const {return maxInterval_;};
 	void setMaxInterval(const Interval& maxInterval);
 

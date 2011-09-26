@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <cstdlib>
 #include <boost/foreach.hpp>
 #include "siset.h"
 #include "spaninterval.h"
@@ -312,6 +313,44 @@ void SISet::subtract(const SISet& sis) {
 	}
 	set_ = toIntersect.front().set_;
 	//LOG_PRINT(LOG_DEBUG) << "final value: " << this->toString();
+}
+
+SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
+	SISet start(forceLiquid, maxInterval);
+	if (!forceLiquid) {
+		LOG_PRINT(LOG_ERROR) << "generating random SISets for non-liquid events is not yet implemented!";
+		return start;
+	}
+
+	int bitsLeft = 15;	// TODO: we assume max is 32767, always true?
+	int random = rand();
+	unsigned int curStart = 0;
+	unsigned int curEnd = 0;
+	bool buildingSI = false;
+	for (unsigned int i = maxInterval.start(); i <= maxInterval.finish(); i++) {
+		if (random % 2) {
+			if (buildingSI) {
+				curEnd = i;
+			} else {
+				buildingSI = true;
+				curStart = i;
+				curEnd = i;
+			}
+		} else {
+			if (buildingSI) {
+				buildingSI = false;
+				start.add(SpanInterval(curStart, curEnd, curStart, curEnd, maxInterval));
+			}
+		}
+		bitsLeft--;
+		if (bitsLeft == 0) {
+			random = rand();
+			bitsLeft = 15;
+		} else {
+			random = random >> 1;
+		}
+	}
+	return start;
 }
 
 std::string SISet::toString() const {

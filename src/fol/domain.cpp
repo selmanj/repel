@@ -22,6 +22,15 @@ SISet Domain::getModifiableSISet(const std::string& name, const SISet& where) co
 	return modifiable;
 }
 
+Model Domain::randomModel() const {
+	// first check to see if we are even allowed to modify obs preds.  if not, just return the default model
+	if (assumeClosedWorld()) {
+		return defaultModel();
+	}
+	// TODO: finish
+
+}
+
 
 void Domain::setMaxInterval(const Interval& maxInterval) {
 	maxInterval_ = Interval(maxInterval);

@@ -43,6 +43,7 @@ public:
 	void subtract(const SpanInterval& si);
 	void subtract(const SISet& sis);
 
+	static SISet randomSISet(bool forceLiquid, const Interval& maxInterval);
 
 	std::string toString() const;
 
