@@ -816,19 +816,25 @@ Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &
 		if (!a->isGrounded()) {
 			throw std::runtime_error("cannot handle atoms with variables at the moment!");
 		}
-		if (d.dontModifyObsPreds()
-				&& d.observedPredicates().find(a->name()) != d.observedPredicates().end()) {
-			// this predicate is an observed predicate; we can't change it.  return an empty move
+		SISet original(true, si.maxInterval());
+		original.add(si);
+		SISet toModify = d.getModifiableSISet(a->name(), original);
+		if (toModify.size() == 0) {
+			// this predicate can't be changed.  return an empty move
 			return move;
 		}
 		if (isNegation) {
 			// we want to delete span intervals where its true
-			Move::change change = boost::make_tuple(*a, si);
-			move.toDel.push_back(change);
+			BOOST_FOREACH(SpanInterval toModifySi, toModify.set()) {
+				Move::change change = boost::make_tuple(*a, toModifySi);
+				move.toDel.push_back(change);
+			}
 		} else {
-			// we want to add span intervals where its false
-			Move::change change = boost::make_tuple(*a, si);
-			move.toAdd.push_back(change);
+			BOOST_FOREACH(SpanInterval toModifySi, toModify.set()) {
+				// we want to add span intervals where its false
+				Move::change change = boost::make_tuple(*a, toModifySi);
+				move.toAdd.push_back(change);
+			}
 		}
 	}
 	return move;
@@ -1571,19 +1577,30 @@ bool moveContainsObservationPreds(const Domain& d, const Move &m) {
 	for (std::vector<Move::change>::const_iterator it = m.toAdd.begin();
 			it != m.toAdd.end();
 			it++) {
-	    if (d.observedPredicates().find(it->get<0>().name()) != d.observedPredicates().end()) {
-	      return true;
-	    }
-	    if (it->get<0>().name().find("D-") == 0) return true;
+	    //if (d.observedPredicates().find(it->get<0>().name()) != d.observedPredicates().end()) {
+	    //  return true;
+	    //}
+		SISet original(d.isLiquid(it->get<0>().name()), it->get<1>().maxInterval());
+		original.add(it->get<1>());
+		SISet modifiable = d.getModifiableSISet(it->get<0>().name(), original);
+		if (modifiable.size() != original.size()) return true;
+
+	   // if (it->get<0>().name().find("D-") == 0) return true;
 	}
 
 	for (std::vector<Move::change>::const_iterator it = m.toDel.begin();
 			it != m.toDel.end();
 			it++) {
+		/*
 	    if (d.observedPredicates().find(it->get<0>().name()) != d.observedPredicates().end()) {
 	      return true;
 	    }
 	    if (it->get<0>().name().find("D-") == 0) return true;
+	    */
+		SISet original(d.isLiquid(it->get<0>().name()), it->get<1>().maxInterval());
+		original.add(it->get<1>());
+		SISet modifiable = d.getModifiableSISet(it->get<0>().name(), original);
+		if (modifiable.size() != original.size()) return true;
 	}
 
 

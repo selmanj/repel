@@ -21,6 +21,7 @@ namespace po = boost::program_options;
 #include <vector>
 #include <utility>
 #include <ctime>
+#include <map>
 #include "fol/fol.h"
 #include "fol/folparser.h"
 #include "fol/domain.h"
@@ -98,8 +99,10 @@ int main(int argc, char* argv[]) {
 
 	LOG_PRINT(LOG_INFO) << "model size: " << model.size();
 	LOG(LOG_DEBUG) << "observation predicates: ";
-	BOOST_FOREACH(std::string name, d->observedPredicates()) {
-		LOG(LOG_DEBUG) << "\t" << name;
+	for(std::map<std::string, SISet>::const_iterator it = d->observedPredicates().begin();
+			it != d->observedPredicates().end();
+			it++) {
+		LOG(LOG_DEBUG) << "\t" << it->first;
 	}
 
 	if (vm.count("evalModel")) {

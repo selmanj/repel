@@ -9,6 +9,19 @@
 #include <sstream>
 #include <vector>
 
+SISet Domain::getModifiableSISet(const std::string& name, const SISet& where) const {
+	// check to see if its an obs predicate
+	if (obsPreds_.find(name) == obsPreds_.end() || !dontModifyObsPreds()) {
+		return where;
+	}
+
+	SISet modifiable(where.forceLiquid(), where.maxInterval());
+	if (assumeClosedWorld()) return modifiable;	// if its a closed world, can't change any obs predicates
+	modifiable = where;
+	modifiable.subtract(obsPreds_.find(name)->second);
+	return modifiable;
+}
+
 
 void Domain::setMaxInterval(const Interval& maxInterval) {
 	maxInterval_ = Interval(maxInterval);

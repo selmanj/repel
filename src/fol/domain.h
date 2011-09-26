@@ -30,8 +30,9 @@ public:
 	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_() {}
 	template <class FactsForwardIterator, class FormForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
-			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd)
-			: dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(formulasBegin, formulasEnd), generator_() {
+			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd,
+			bool assumeClosedWorld=true)
+			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(formulasBegin, formulasEnd), generator_() {
 
 		// create a class for collecting predicate names
 		PredCollector predCollector;
@@ -58,19 +59,36 @@ public:
 
 		// collect all fact predicates
 		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			boost::shared_ptr<const Atom> s = it->first;
-			it->first->visit(predCollector);
+			boost::shared_ptr<const Atom> a = it->first;
+			SpanInterval si = it->second;
+			if (obsPreds_.find(a->name()) == obsPreds_.end()) {
+				SISet newSet(true, maxInterval_);		// TODO: assumes all unobs are liquid!!!
+				newSet.add(si);
+				obsPreds_.insert(std::pair<std::string, SISet>(a->name(), newSet));
+			} else {
+				SISet curSet = obsPreds_.find(a->name())->second;
+				curSet.add(si);
+				obsPreds_.erase(a->name());
+				obsPreds_.insert(std::pair<std::string, SISet>(a->name(), curSet));
+			}
+			//it->first->visit(predCollector);
 		}
-		obsPreds_.insert(predCollector.preds.begin(), predCollector.preds.end());
+	//	obsPreds_.insert(predCollector.preds.begin(), predCollector.preds.end());
 		// now collect all unobserved preds
-		predCollector.preds.clear();
+		//predCollector.preds.clear();
 		for (FormForwardIterator it = formulasBegin; it != formulasEnd; it++) {
 			it->sentence()->visit(predCollector);
 		}
 
 		// remove the predicates we know are observed
+		std::set<std::string> obsJustPreds;
+		for (std::map<std::string, SISet>::const_iterator it = obsPreds_.begin();
+				it != obsPreds_.end();
+				it++) {
+			obsJustPreds.insert(it->first);
+		}
 		std::set_difference(predCollector.preds.begin(), predCollector.preds.end(),
-				obsPreds_.begin(), obsPreds_.end(),
+				obsJustPreds.begin(), obsJustPreds.end(),
 				std::inserter(unobsPreds_, unobsPreds_.end()));
 
 		// initialize observations
@@ -101,7 +119,8 @@ public:
 	virtual ~Domain() {};
 
 	const std::vector<WSentence>& formulas() const {return formulas_;};
-	const std::set<std::string>& observedPredicates() const {return obsPreds_;};
+	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};
+	SISet getModifiableSISet(const std::string& name, const SISet& where) const;
 	NameGenerator& nameGenerator() {return generator_;};
 	Model defaultModel() const {return observations_;};
 	Interval maxInterval() const {return maxInterval_;};
@@ -109,8 +128,9 @@ public:
 
 	bool isLiquid(const std::string& predicate) const;
 	bool dontModifyObsPreds() const {return dontModifyObsPreds_;};
+	bool assumeClosedWorld() const {return assumeClosedWorld_;};
 	void setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
-
+	void setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
 
 	unsigned long score(const WSentence& s, const Model& m) const;
 	unsigned long score(const Model& m) const;
@@ -132,8 +152,9 @@ public:
 
 private:
 	bool dontModifyObsPreds_;
+	bool assumeClosedWorld_;
 
-	std::set<std::string> obsPreds_;
+	std::map<std::string, SISet> obsPreds_;
 	std::set<std::string> unobsPreds_;
 	std::set<std::string> constants_;
 	Interval maxInterval_;
