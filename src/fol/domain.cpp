@@ -9,6 +9,15 @@
 #include <sstream>
 #include <vector>
 
+void Domain::addObservedPredicate(const Atom& a) {
+	if (observations_.hasAtom(a)) return;
+	SISet newSet(true, maxInterval_);
+	obsPreds_.insert(std::pair<std::string, SISet>(a.name(), newSet));
+	observations_.setAtom(a, newSet);
+
+}
+
+
 SISet Domain::getModifiableSISet(const std::string& name) const {
 	SISet everywhere(isLiquid(name), maxInterval_);
 	everywhere = everywhere.compliment();

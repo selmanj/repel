@@ -59,6 +59,7 @@ SISet intersection(const SISet& a, const SpanInterval& si);
 SISet intersection(const SISet& a, const SISet& b);
 SISet span(const SpanInterval& a, const SpanInterval& b);
 SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION);
+unsigned long hammingDistance(const SISet& a, const SISet& b);
 
 
 #endif /* SISET_H_ */

@@ -115,7 +115,8 @@ public:
 	virtual ~Domain() {};
 
 	const std::vector<WSentence>& formulas() const {return formulas_;};
-	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};
+	void addObservedPredicate(const Atom& a);
+	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};	// TODO RENAME
 	SISet getModifiableSISet(const std::string& name) const;
 	SISet getModifiableSISet(const std::string& name, const SISet& where) const;
 	NameGenerator& nameGenerator() {return generator_;};

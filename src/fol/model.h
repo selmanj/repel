@@ -48,9 +48,9 @@ public:
 	virtual void swap(Model& b) { amap_.swap(b.amap_); };
 
 	virtual std::string toString() const;
+	typedef std::map<Atom, SISet, atomcmp> atom_map;
 
 private:
-	typedef std::map<Atom, SISet, atomcmp> atom_map;
 
 	atom_map amap_;
 };

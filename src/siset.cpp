@@ -460,3 +460,20 @@ SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVA
 //	std::cout << "returning spanned = " << spanned.toString() << std::endl;
 	return spanned;
 }
+
+unsigned long hammingDistance(const SISet& a, const SISet& b) {
+	// (a ^ !b) v (!a ^ b)
+	SISet aComp = a.compliment();
+	SISet bComp = b.compliment();
+
+	unsigned long sum = 0;
+	SISet abC = intersection(a, bComp);
+	SISet aCb = intersection(aComp, b);
+	SISet result(abC);
+	result.add(aCb);
+	if (a.forceLiquid() && b.forceLiquid()) {
+		return result.liqSize();
+	}
+	return result.size();
+
+}

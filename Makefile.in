@@ -76,7 +76,11 @@ am_pelnoise_OBJECTS = pelnoise.$(OBJEXT) model.$(OBJEXT) \
 	siset.$(OBJEXT)
 pelnoise_OBJECTS = $(am_pelnoise_OBJECTS)
 pelnoise_LDADD = $(LDADD)
-am_query_sampling_OBJECTS = query_sampling.$(OBJEXT)
+am_query_sampling_OBJECTS = query_sampling.$(OBJEXT) \
+	interval.$(OBJEXT) domain.$(OBJEXT) siset.$(OBJEXT) \
+	spaninterval.$(OBJEXT) model.$(OBJEXT) boollit.$(OBJEXT) \
+	constant.$(OBJEXT) variable.$(OBJEXT) namegenerator.$(OBJEXT) \
+	foltoken.$(OBJEXT) follexer.$(OBJEXT)
 query_sampling_OBJECTS = $(am_query_sampling_OBJECTS)
 query_sampling_LDADD = $(LDADD)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
@@ -265,7 +269,7 @@ AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_O
 dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/fol/model.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 pelnoise_SOURCES = src/pelnoise.cpp src/fol/model.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
-query_sampling_SOURCES = queries/query_sampling.cpp 
+query_sampling_SOURCES = queries/query_sampling.cpp src/interval.cpp src/fol/domain.cpp src/siset.cpp src/spaninterval.cpp src/fol/model.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/namegenerator.cpp src/fol/foltoken.cpp src/fol/follexer.cpp
 PEL_BUILT_TESTS = test/spanintervaltest test/si_histogramtest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest test/modeltest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp

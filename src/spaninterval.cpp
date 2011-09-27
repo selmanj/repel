@@ -325,3 +325,4 @@ SpanInterval intersection(const SpanInterval& a, const SpanInterval& b) {
 			std::max(a.finish().start(), b.finish().start()),
 			std::min(a.finish().finish(), b.finish().finish()), a.maxInterval_);	// TODO: more sensible way to pick max interval
 }
+

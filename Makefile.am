@@ -5,7 +5,7 @@ dist_noinst_SCRIPTS=autogen.sh
 bin_PROGRAMS = pel pelnoise query_sampling
 pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/fol/model.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 pelnoise_SOURCES = src/pelnoise.cpp src/fol/model.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
-query_sampling_SOURCES = queries/query_sampling.cpp 
+query_sampling_SOURCES = queries/query_sampling.cpp src/interval.cpp src/fol/domain.cpp src/siset.cpp src/spaninterval.cpp src/fol/model.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/namegenerator.cpp src/fol/foltoken.cpp src/fol/follexer.cpp
 
 PEL_BUILT_TESTS = test/spanintervaltest test/si_histogramtest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest test/modeltest
 TESTS = $(PEL_BUILT_TESTS)

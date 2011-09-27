@@ -71,6 +71,28 @@ BOOST_AUTO_TEST_CASE( siset_test ) {
 	std::cout << "double compliment is " << dcompliment.toString() << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE( hammingliq_dist_test) {
+	Interval maxInterval(0,50);
+	SISet a(true, maxInterval);
+	SISet b(true, maxInterval);
+
+	a.add(SpanInterval(1,5,1,5,maxInterval));
+	b.add(SpanInterval(2,5,2,5,maxInterval));
+
+	BOOST_CHECK_EQUAL(hammingDistance(a,b), 1);
+}
+
+BOOST_AUTO_TEST_CASE( hamming_dist_test) {
+	Interval maxInterval(0,50);
+	SISet a(false, maxInterval);
+	SISet b(false, maxInterval);
+
+	a.add(SpanInterval(1,5,1,5,maxInterval));
+	b.add(SpanInterval(2,5,2,5,maxInterval));
+
+	BOOST_CHECK_EQUAL(hammingDistance(a,b), 5);
+}
+
 BOOST_AUTO_TEST_CASE( rand_siset_test ) {
 	Interval maxInterval(0,100);
 	srand(0);
