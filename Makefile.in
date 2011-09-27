@@ -57,10 +57,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 am__EXEEXT_1 = test/spanintervaltest$(EXEEXT) \
-	test/follexertest$(EXEEXT) test/folparsertest$(EXEEXT) \
-	test/atomtest$(EXEEXT) test/domaintest$(EXEEXT) \
-	test/movestest$(EXEEXT) test/cnftest$(EXEEXT) \
-	test/modeltest$(EXEEXT)
+	test/si_histogramtest$(EXEEXT) test/follexertest$(EXEEXT) \
+	test/folparsertest$(EXEEXT) test/atomtest$(EXEEXT) \
+	test/domaintest$(EXEEXT) test/movestest$(EXEEXT) \
+	test/cnftest$(EXEEXT) test/modeltest$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 am_pel_OBJECTS = pel.$(OBJEXT) namegenerator.$(OBJEXT) moves.$(OBJEXT) \
 	model.$(OBJEXT) interval.$(OBJEXT) spaninterval.$(OBJEXT) \
@@ -118,6 +118,11 @@ am_test_movestest_OBJECTS = movestest.$(OBJEXT) model.$(OBJEXT) \
 	domain.$(OBJEXT) moves.$(OBJEXT)
 test_movestest_OBJECTS = $(am_test_movestest_OBJECTS)
 test_movestest_LDADD = $(LDADD)
+am_test_si_histogramtest_OBJECTS = si_histogramtest.$(OBJEXT) \
+	spaninterval.$(OBJEXT) interval.$(OBJEXT) siset.$(OBJEXT) \
+	si_histogram.$(OBJEXT)
+test_si_histogramtest_OBJECTS = $(am_test_si_histogramtest_OBJECTS)
+test_si_histogramtest_LDADD = $(LDADD)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
 	interval.$(OBJEXT) spaninterval.$(OBJEXT) siset.$(OBJEXT)
 test_spanintervaltest_OBJECTS = $(am_test_spanintervaltest_OBJECTS)
@@ -136,12 +141,14 @@ SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) $(query_sampling_SOURCES) \
 	$(test_atomtest_SOURCES) $(test_cnftest_SOURCES) \
 	$(test_domaintest_SOURCES) $(test_follexertest_SOURCES) \
 	$(test_folparsertest_SOURCES) $(test_modeltest_SOURCES) \
-	$(test_movestest_SOURCES) $(test_spanintervaltest_SOURCES)
+	$(test_movestest_SOURCES) $(test_si_histogramtest_SOURCES) \
+	$(test_spanintervaltest_SOURCES)
 DIST_SOURCES = $(pel_SOURCES) $(pelnoise_SOURCES) \
 	$(query_sampling_SOURCES) $(test_atomtest_SOURCES) \
 	$(test_cnftest_SOURCES) $(test_domaintest_SOURCES) \
 	$(test_follexertest_SOURCES) $(test_folparsertest_SOURCES) \
 	$(test_modeltest_SOURCES) $(test_movestest_SOURCES) \
+	$(test_si_histogramtest_SOURCES) \
 	$(test_spanintervaltest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
@@ -259,7 +266,7 @@ dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/fol/model.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 pelnoise_SOURCES = src/pelnoise.cpp src/fol/model.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
 query_sampling_SOURCES = queries/query_sampling.cpp 
-PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest test/modeltest
+PEL_BUILT_TESTS = test/spanintervaltest test/si_histogramtest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest test/modeltest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
@@ -268,6 +275,7 @@ test_domaintest_SOURCES = test/domaintest.cpp src/fol/model.cpp src/fol/namegene
 test_movestest_SOURCES = test/movestest.cpp src/fol/model.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
 test_cnftest_SOURCES = test/cnftest.cpp src/fol/model.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/domain.cpp src/siset.cpp src/fol/boollit.cpp src/fol/variable.cpp src/fol/constant.cpp src/fol/foltoken.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp
 test_modeltest_SOURCES = test/modeltest.cpp
+test_si_histogramtest_SOURCES = test/si_histogramtest.cpp src/spaninterval.cpp src/interval.cpp src/siset.cpp src/si_histogram.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -397,6 +405,9 @@ test/modeltest$(EXEEXT): $(test_modeltest_OBJECTS) $(test_modeltest_DEPENDENCIES
 test/movestest$(EXEEXT): $(test_movestest_OBJECTS) $(test_movestest_DEPENDENCIES) test/$(am__dirstamp)
 	@rm -f test/movestest$(EXEEXT)
 	$(CXXLINK) $(test_movestest_OBJECTS) $(test_movestest_LDADD) $(LIBS)
+test/si_histogramtest$(EXEEXT): $(test_si_histogramtest_OBJECTS) $(test_si_histogramtest_DEPENDENCIES) test/$(am__dirstamp)
+	@rm -f test/si_histogramtest$(EXEEXT)
+	$(CXXLINK) $(test_si_histogramtest_OBJECTS) $(test_si_histogramtest_LDADD) $(LIBS)
 test/spanintervaltest$(EXEEXT): $(test_spanintervaltest_OBJECTS) $(test_spanintervaltest_DEPENDENCIES) test/$(am__dirstamp)
 	@rm -f test/spanintervaltest$(EXEEXT)
 	$(CXXLINK) $(test_spanintervaltest_OBJECTS) $(test_spanintervaltest_LDADD) $(LIBS)
@@ -426,6 +437,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pelnoise.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query_sampling.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/si_histogram.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/si_histogramtest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spaninterval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spanintervaltest.Po@am__quote@
@@ -752,6 +765,34 @@ movestest.obj: test/movestest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/movestest.cpp' object='movestest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o movestest.obj `if test -f 'test/movestest.cpp'; then $(CYGPATH_W) 'test/movestest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/movestest.cpp'; fi`
+
+si_histogramtest.o: test/si_histogramtest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogramtest.o -MD -MP -MF $(DEPDIR)/si_histogramtest.Tpo -c -o si_histogramtest.o `test -f 'test/si_histogramtest.cpp' || echo '$(srcdir)/'`test/si_histogramtest.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogramtest.Tpo $(DEPDIR)/si_histogramtest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/si_histogramtest.cpp' object='si_histogramtest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogramtest.o `test -f 'test/si_histogramtest.cpp' || echo '$(srcdir)/'`test/si_histogramtest.cpp
+
+si_histogramtest.obj: test/si_histogramtest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogramtest.obj -MD -MP -MF $(DEPDIR)/si_histogramtest.Tpo -c -o si_histogramtest.obj `if test -f 'test/si_histogramtest.cpp'; then $(CYGPATH_W) 'test/si_histogramtest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/si_histogramtest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogramtest.Tpo $(DEPDIR)/si_histogramtest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/si_histogramtest.cpp' object='si_histogramtest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogramtest.obj `if test -f 'test/si_histogramtest.cpp'; then $(CYGPATH_W) 'test/si_histogramtest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/si_histogramtest.cpp'; fi`
+
+si_histogram.o: src/si_histogram.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogram.o -MD -MP -MF $(DEPDIR)/si_histogram.Tpo -c -o si_histogram.o `test -f 'src/si_histogram.cpp' || echo '$(srcdir)/'`src/si_histogram.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogram.Tpo $(DEPDIR)/si_histogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/si_histogram.cpp' object='si_histogram.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogram.o `test -f 'src/si_histogram.cpp' || echo '$(srcdir)/'`src/si_histogram.cpp
+
+si_histogram.obj: src/si_histogram.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogram.obj -MD -MP -MF $(DEPDIR)/si_histogram.Tpo -c -o si_histogram.obj `if test -f 'src/si_histogram.cpp'; then $(CYGPATH_W) 'src/si_histogram.cpp'; else $(CYGPATH_W) '$(srcdir)/src/si_histogram.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogram.Tpo $(DEPDIR)/si_histogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/si_histogram.cpp' object='si_histogram.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogram.obj `if test -f 'src/si_histogram.cpp'; then $(CYGPATH_W) 'src/si_histogram.cpp'; else $(CYGPATH_W) '$(srcdir)/src/si_histogram.cpp'; fi`
 
 spanintervaltest.o: test/spanintervaltest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT spanintervaltest.o -MD -MP -MF $(DEPDIR)/spanintervaltest.Tpo -c -o spanintervaltest.o `test -f 'test/spanintervaltest.cpp' || echo '$(srcdir)/'`test/spanintervaltest.cpp

@@ -205,7 +205,10 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
 	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end(), false);
 
 	Model randomModel = d.randomModel();
-	std::cout << "random model: " << randomModel.toString() << std::endl;
+	BOOST_CHECK_EQUAL(randomModel.toString(), "Q(a) @ {[1:3], [17:18]}\n"
+			"R(a) @ {[1:1], [4:4], [6:10], [12:13], [16:17]}\n"
+			"S(a) @ {[1:1], [5:5], [7:7], [11:20]}\n");
+	//std::cout << "random model: " << randomModel.toString() << std::endl;
 
 }
 

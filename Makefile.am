@@ -7,7 +7,7 @@ pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/fol/mo
 pelnoise_SOURCES = src/pelnoise.cpp src/fol/model.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
 query_sampling_SOURCES = queries/query_sampling.cpp 
 
-PEL_BUILT_TESTS = test/spanintervaltest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest test/modeltest
+PEL_BUILT_TESTS = test/spanintervaltest test/si_histogramtest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest test/modeltest
 TESTS = $(PEL_BUILT_TESTS)
 check_PROGRAMS = $(PEL_BUILT_TESTS)
 
@@ -19,3 +19,4 @@ test_domaintest_SOURCES = test/domaintest.cpp src/fol/model.cpp src/fol/namegene
 test_movestest_SOURCES = test/movestest.cpp src/fol/model.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
 test_cnftest_SOURCES = test/cnftest.cpp src/fol/model.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/domain.cpp src/siset.cpp src/fol/boollit.cpp src/fol/variable.cpp src/fol/constant.cpp src/fol/foltoken.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp
 test_modeltest_SOURCES = test/modeltest.cpp
+test_si_histogramtest_SOURCES = test/si_histogramtest.cpp src/spaninterval.cpp src/interval.cpp src/siset.cpp src/si_histogram.cpp
