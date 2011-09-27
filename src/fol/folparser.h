@@ -110,14 +110,14 @@ bool endOfTokens(iters<ForwardIterator> &its) {
 
 
 template <class ForwardIterator>
-void doParseEvents(std::vector<FOL::EventPair>& store, iters<ForwardIterator> &its) {
+void doParseEvents(std::vector<FOL::Event>& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
-			std::vector<FOL::EventPair> events = doParseEvent(its);
-			BOOST_FOREACH(FOL::EventPair pair, events) {
-				store.push_back(pair);
+			std::vector<FOL::Event> events = doParseEvent(its);
+			BOOST_FOREACH(FOL::Event event, events) {
+				store.push_back(event);
 			}
 		}
 	}
@@ -136,9 +136,14 @@ void doParseFormulas(std::vector<WSentence>& store, iters<ForwardIterator> &its)
 }
 
 template <class ForwardIterator>
-std::vector<FOL::EventPair> doParseEvent(iters<ForwardIterator> &its) {
-	std::vector<FOL::EventPair> events;
-	boost::shared_ptr<Atom> a = doParseGroundAtom(its);
+std::vector<FOL::Event> doParseEvent(iters<ForwardIterator> &its) {
+	std::vector<FOL::Event> events;
+	bool truthVal = true;
+	if (peekTokenType(FOLParse::NOT, its)) {
+		consumeTokenType(FOLParse::NOT, its);
+		truthVal = false;
+	}
+	boost::shared_ptr<Atom> s = doParseGroundAtom(its);
 	consumeTokenType(FOLParse::AT, its);
 	if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
 		consumeTokenType(FOLParse::OPEN_BRACE, its);
@@ -147,14 +152,14 @@ std::vector<FOL::EventPair> doParseEvent(iters<ForwardIterator> &its) {
 			return events;
 		}
 		while (!peekTokenType(FOLParse::CLOSE_BRACE, its)) {
-			FOL::EventPair pair(a, doParseInterval(its));
-			events.push_back(pair);
+			FOL::Event event(s, doParseInterval(its), truthVal);
+			events.push_back(event);
 			if (!peekTokenType(FOLParse::CLOSE_BRACE, its)) consumeTokenType(FOLParse::COMMA, its);
 		}
 		consumeTokenType(FOLParse::CLOSE_BRACE, its);
 
 	} else {
-		events.push_back(FOL::EventPair(a, doParseInterval(its)));
+		events.push_back(FOL::Event(s, doParseInterval(its), truthVal));
 	}
 
 	return events;
@@ -205,6 +210,17 @@ SpanInterval doParseInterval3(unsigned int i, iters<ForwardIterator> &its) {
 }
 
 template <class ForwardIterator>
+boost::shared_ptr<Sentence> doParseEventLiteral(iters<ForwardIterator> &its) {
+	if (peekTokenType(FOLParse::NOT, its)) {
+		consumeTokenType(FOLParse::NOT, its);
+		boost::shared_ptr<Atom> atom = doParseGroundAtom(its);
+		boost::shared_ptr<Sentence> s(new Negation(atom));
+		return s;
+	}
+	return doParseGroundAtom(its);
+}
+
+template <class ForwardIterator>
 boost::shared_ptr<Atom> doParseGroundAtom(iters<ForwardIterator> &its) {
 	std::string predName = consumeIdent(its);
 	boost::shared_ptr<Atom> a(new Atom(predName));
@@ -225,6 +241,8 @@ boost::shared_ptr<Atom> doParseGroundAtom(iters<ForwardIterator> &its) {
 	consumeTokenType(FOLParse::CLOSE_PAREN, its);
 	return a;
 }
+
+
 
 template <class ForwardIterator>
 boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
@@ -527,7 +545,7 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 namespace FOLParse 
 {
 
-void parseEventFile(const std::string &filename, std::vector<FOL::EventPair>& store) {
+void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store) {
 	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
 		std::runtime_error e("unable to open event file for parsing");
@@ -563,7 +581,7 @@ void parseFormulas(const ForwardIterator &first,
 }
 
 boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
-	std::vector<FOL::EventPair> events;
+	std::vector<FOL::Event> events;
 	std::vector<WSentence> formulas;
 
 	parseEventFile(eventfile, events);
@@ -579,13 +597,13 @@ boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, cons
 
 template <class ForwardIterator>
 void parseEvents(const ForwardIterator &first,
-		const ForwardIterator &last, std::vector<FOL::EventPair>& store) {
+		const ForwardIterator &last, std::vector<FOL::Event>& store) {
 	iters<ForwardIterator> its(first, last);
 	doParseEvents(store, its);
 };
 
 template <class ForwardIterator>
-std::vector<FOL::EventPair> parseEvent(const ForwardIterator &first,
+std::vector<FOL::Event> parseEvent(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
 	return doParseEvent(its);

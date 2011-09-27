@@ -20,6 +20,7 @@
 #include "constant.h"
 #include "diamondop.h"
 #include "disjunction.h"
+#include "event.h"
 #include "liquidop.h"
 #include "negation.h"
 #include "sentence.h"
@@ -29,9 +30,11 @@
 #include "sentencevisitor.h"
 #include "../spaninterval.h"
 
+/*
 namespace FOL {
-	typedef std::pair<boost::shared_ptr<Atom>, SpanInterval> EventPair;
+	typedef std::pair<boost::shared_ptr<Atom>, SpanInterval, bool> EventPair;
 }
+*/
 
 inline std::vector<const Sentence*> getDisjunctionArgs(const Disjunction& d) {
 	std::vector<const Sentence*> vec;

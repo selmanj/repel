@@ -46,26 +46,26 @@ BOOST_AUTO_TEST_CASE( event_test)
 {
 	std::istringstream stream("mrManager(georgeMichael, bananaStand) @ [10:20]");
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	std::vector<FOL::EventPair> events = FOLParse::parseEvent(tokens.begin(), tokens.end());
+	std::vector<FOL::Event> events = FOLParse::parseEvent(tokens.begin(), tokens.end());
 	BOOST_REQUIRE_EQUAL(events.size(), 1);
-	FOL::EventPair e = events[0];
-	BOOST_CHECK_EQUAL(e.first->name(), "mrManager");
-	BOOST_CHECK_EQUAL(e.first->at(0)->name(), "georgeMichael");
-	BOOST_CHECK_EQUAL(e.first->at(1)->name(), "bananaStand");
+	FOL::Event e = events[0];
+	BOOST_CHECK_EQUAL(e.atom()->name(), "mrManager");
+	BOOST_CHECK_EQUAL(e.atom()->at(0)->name(), "georgeMichael");
+	BOOST_CHECK_EQUAL(e.atom()->at(1)->name(), "bananaStand");
 }
 
 BOOST_AUTO_TEST_CASE( multipleEvent_test)
 {
 	std::istringstream stream("mrManager(georgeMichael, bananaStand) @ {[10:20], [25:30]}");
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	std::vector<FOL::EventPair> events = FOLParse::parseEvent(tokens.begin(), tokens.end());
+	std::vector<FOL::Event> events = FOLParse::parseEvent(tokens.begin(), tokens.end());
 	BOOST_REQUIRE_EQUAL(events.size(), 2);
-	FOL::EventPair e = events[0];
-	FOL::EventPair e2 = events[0];
-	BOOST_CHECK_EQUAL(e.first, e2.first);
-	BOOST_CHECK_EQUAL(e.first->name(), "mrManager");
-	BOOST_CHECK_EQUAL(e.first->at(0)->name(), "georgeMichael");
-	BOOST_CHECK_EQUAL(e.first->at(1)->name(), "bananaStand");
+	FOL::Event e = events[0];
+	FOL::Event e2 = events[0];
+	BOOST_CHECK_EQUAL(e.atom(), e2.atom());
+	BOOST_CHECK_EQUAL(e.atom()->name(), "mrManager");
+	BOOST_CHECK_EQUAL(e.atom()->at(0)->name(), "georgeMichael");
+	BOOST_CHECK_EQUAL(e.atom()->at(1)->name(), "bananaStand");
 }
 
 BOOST_AUTO_TEST_CASE( atom_test) 

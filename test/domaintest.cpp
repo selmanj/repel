@@ -9,6 +9,7 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <sstream>
+#include <cstdlib>
 #include "testutilities.h"
 #include "../src/fol/domain.h"
 #include "../src/fol/fol.h"
@@ -22,14 +23,14 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	facts << "Q(a,b) @ [5:15]";
 
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
-	std::vector<FOL::EventPair> factvec;
+	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 
 	std::vector<WSentence> formulas;
 
 	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
 	d.setMaxInterval(Interval(0,1000));
-	boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(factvec.front().first);
+	boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(factvec.front().atom());
 	SISet trueAt = d.satisfied(*query, d.defaultModel());
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:10]}");
 
@@ -97,7 +98,7 @@ BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
 	facts << "B(b) @ [2:10]";
 
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
-	std::vector<FOL::EventPair> factvec;
+	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 	std::vector<WSentence> formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
@@ -117,7 +118,7 @@ BOOST_AUTO_TEST_CASE( conjunctionMeetsTest ) {
 	facts << "R(a) @ [3:3]";
 
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
-	std::vector<FOL::EventPair> factvec;
+	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 	std::vector<WSentence> formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
@@ -134,7 +135,7 @@ BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
 	facts << "S(a) @ [2:3]";
 
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
-	std::vector<FOL::EventPair> factvec;
+	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 	std::vector<WSentence> formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
@@ -167,7 +168,7 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
 	facts << "S(a) @ [1:3]";
 
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
-	std::vector<FOL::EventPair> factvec;
+	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 	std::vector<WSentence> formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
@@ -189,5 +190,23 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
 	//BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
 }
 
+BOOST_AUTO_TEST_CASE( randomModelTest ) {
+	srand(0);
+	std::stringstream facts;
+	facts << "Q(a) @ [1:3]";
+	facts << "!Q(a) @ [4:15]";
+	facts << "R(a) @ [6:10]";
+	facts << "S(a) @ [11:20]";
+
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+	std::vector<FOL::Event> factvec;
+	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+	std::vector<WSentence> formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end(), false);
+
+	Model randomModel = d.randomModel();
+	std::cout << "random model: " << randomModel.toString() << std::endl;
+
+}
 
 

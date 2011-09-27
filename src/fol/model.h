@@ -24,7 +24,7 @@ public:
 	typedef std::map<Atom, SISet, atomcmp>::value_type value_type;
 
 	Model();
-	Model(const std::vector<FOL::EventPair>& pairs);
+	Model(const std::vector<FOL::Event>& pairs);
 	Model(const Model& m);
 	virtual ~Model();
 

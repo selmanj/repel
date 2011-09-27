@@ -14,12 +14,13 @@ Model::Model()
 
 }
 
-Model::Model(const std::vector<FOL::EventPair>& pairs)
+Model::Model(const std::vector<FOL::Event>& pairs)
 	: amap_() {
 	unsigned int smallest=UINT_MAX, largest=0;
 	// find the max interval
-	for (std::vector<FOL::EventPair>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
-		SpanInterval interval = it->second;
+	for (std::vector<FOL::Event>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
+
+		SpanInterval interval = it->where();
 
 		boost::optional<SpanInterval> norm = interval.normalize();
 		if (!norm) {
@@ -33,9 +34,10 @@ Model::Model(const std::vector<FOL::EventPair>& pairs)
 	Interval maxInterval = Interval(smallest, largest);
 
 	// initialize observations
-	for (std::vector<FOL::EventPair>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
-		boost::shared_ptr<const Atom> atom = it->first;
-		SpanInterval interval = it->second;
+	for (std::vector<FOL::Event>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
+		boost::shared_ptr<const Atom> atom = it->atom();
+		SpanInterval interval = it->where();
+		bool truthVal = it->truthVal();
 
 		// reinforce the max interval
 		boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval);
@@ -44,7 +46,7 @@ Model::Model(const std::vector<FOL::EventPair>& pairs)
 
 		SISet set(true, maxInterval);
 
-		set.add(interval);
+		if (truthVal) set.add(interval);
 		if (amap_.find(*atom) != amap_.end()) {
 			set.add(amap_.find(*atom)->second);
 			amap_.erase(*atom);

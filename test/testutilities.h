@@ -20,7 +20,7 @@ Domain loadDomainWithStreams(const std::string& facts, const std::string& formul
 	std::vector<FOLToken> factsTokens = FOLParse::tokenize(&factsStream);
 	std::vector<FOLToken> formulaTokens = FOLParse::tokenize(&formulasStream);
 
-	std::vector<FOL::EventPair> factvec;
+	std::vector<FOL::Event> factvec;
 	std::vector<WSentence> formVec;
 
 	FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec);

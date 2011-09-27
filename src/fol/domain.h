@@ -45,7 +45,7 @@ public:
 		}
 		unsigned int smallest=UINT_MAX, largest=0;
 		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			SpanInterval interval = it->second;
+			SpanInterval interval = it->where();
 
 			boost::optional<SpanInterval> norm = interval.normalize();
 			if (!norm) {
@@ -59,8 +59,9 @@ public:
 
 		// collect all fact predicates
 		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			boost::shared_ptr<const Atom> a = it->first;
-			SpanInterval si = it->second;
+			boost::shared_ptr<const Atom> a = it->atom();
+			SpanInterval si = it->where();
+
 			if (obsPreds_.find(a->name()) == obsPreds_.end()) {
 				SISet newSet(true, maxInterval_);		// TODO: assumes all unobs are liquid!!!
 				newSet.add(si);
@@ -93,26 +94,21 @@ public:
 
 		// initialize observations
 		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			boost::shared_ptr<const Atom> atom = it->first;
-			SpanInterval interval = it->second;
+			boost::shared_ptr<const Atom> atom = it->atom();
+			SpanInterval interval = it->where();
 
 			// reinforce the max interval
 			boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval_);
 			if (!opt) continue;
 			interval = opt.get();
 			// TODO: we are hardwired for liquidity, come back and fix this later
-			SISet set(true, maxInterval_);
 
-			set.add(interval);
-			/*
-			if (observations_.find(*atom) != observations_.end()) {
-				set.add(observations_.find(*atom)->second);
-				observations_.erase(*atom);
+			if (it->truthVal()) {
+				SISet set(true, maxInterval_);
+
+				set.add(interval);
+				observations_.setAtom(*atom, set);
 			}
-			std::pair<Atom, SISet > pair(*atom, set);
-			observations_.insert(pair);
-			*/
-			observations_.setAtom(*atom, set);
 		}
 
 	};

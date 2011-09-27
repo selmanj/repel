@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
 	    return 1;
 	}
 	if (vm.count("add")) {
-		std::vector<FOL::EventPair> inFile;
+		std::vector<FOL::Event> inFile;
 
 		FOLParse::parseEventFile(vm["add"].as<std::string>(), inFile);
 		Model inModel(inFile);
@@ -393,7 +393,7 @@ int main(int argc, char* argv[]) {
 		}
 		std::cout << inModel.toString();
 	} else if (vm.count("confusion")) {
-		std::vector<FOL::EventPair> truthFacts, inputFacts;
+		std::vector<FOL::Event> truthFacts, inputFacts;
 
 		FOLParse::parseEventFile(vm["ground-truth-file"].as<std::string>(), truthFacts);
 		FOLParse::parseEventFile(vm["noisy-input-file"].as<std::string>(), inputFacts);
@@ -429,7 +429,7 @@ int main(int argc, char* argv[]) {
 	}
 	else {
 
-		std::vector<FOL::EventPair> truthFacts, noisyIn, noisyOut;
+		std::vector<FOL::Event> truthFacts, noisyIn, noisyOut;
 
 		FOLParse::parseEventFile(vm["ground-truth-file"].as<std::string>(), truthFacts);
 		if (!vm.count("batch")) std::cout << "loaded ground truth file" << std::endl;

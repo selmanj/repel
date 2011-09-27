@@ -33,6 +33,7 @@ Model Domain::randomModel() const {
 	if (assumeClosedWorld()) {
 		return defaultModel();
 	}
+	Model newModel(observations_);
 	for (std::map<const Atom, SISet>::const_iterator obsPair = observations_.begin(); obsPair != observations_.end(); obsPair++) {
 		SISet random = SISet::randomSISet(isLiquid(obsPair->first.name()), maxInterval_);
 		// intersect it with the places that are currently unset
@@ -44,8 +45,10 @@ Model Domain::randomModel() const {
 		SISet trueVals = intersection(setAt, obsPair->second);
 		random.add(trueVals);
 
-
+		newModel.clearAtom(obsPair->first);
+		newModel.setAtom(obsPair->first, random);
 	}
+	return newModel;
 }
 
 
