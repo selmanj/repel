@@ -120,6 +120,7 @@ public:
 
 	const std::vector<WSentence>& formulas() const {return formulas_;};
 	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};
+	SISet getModifiableSISet(const std::string& name) const;
 	SISet getModifiableSISet(const std::string& name, const SISet& where) const;
 	NameGenerator& nameGenerator() {return generator_;};
 	Model defaultModel() const {return observations_;};

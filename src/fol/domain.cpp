@@ -9,6 +9,12 @@
 #include <sstream>
 #include <vector>
 
+SISet Domain::getModifiableSISet(const std::string& name) const {
+	SISet everywhere(isLiquid(name), maxInterval_);
+	everywhere = everywhere.compliment();
+	return getModifiableSISet(name, everywhere);
+}
+
 SISet Domain::getModifiableSISet(const std::string& name, const SISet& where) const {
 	// check to see if its an obs predicate
 	if (obsPreds_.find(name) == obsPreds_.end() || !dontModifyObsPreds()) {
@@ -27,8 +33,19 @@ Model Domain::randomModel() const {
 	if (assumeClosedWorld()) {
 		return defaultModel();
 	}
-	// TODO: finish
+	for (std::map<const Atom, SISet>::const_iterator obsPair = observations_.begin(); obsPair != observations_.end(); obsPair++) {
+		SISet random = SISet::randomSISet(isLiquid(obsPair->first.name()), maxInterval_);
+		// intersect it with the places that are currently unset
+		SISet unsetAt = getModifiableSISet(obsPair->first.name());
+		random = intersection(random, unsetAt);
+		// add in the set parts
 
+		SISet setAt = unsetAt.compliment();
+		SISet trueVals = intersection(setAt, obsPair->second);
+		random.add(trueVals);
+
+
+	}
 }
 
 

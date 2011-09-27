@@ -71,6 +71,13 @@ BOOST_AUTO_TEST_CASE( siset_test ) {
 	std::cout << "double compliment is " << dcompliment.toString() << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE( rand_siset_test ) {
+	Interval maxInterval(0,100);
+	srand(0);
+	SISet set = SISet::randomSISet(true, maxInterval);
+	BOOST_CHECK_EQUAL(set.toString(), "{[0:2], [5:6], [8:8], [10:10], [14:14], [16:17], [21:24], [28:28], [30:30], [33:33], [35:36], [41:42], [45:46], [49:51], [56:56], [59:60], [64:64], [66:66], [70:72], [74:82], [85:87], [89:89], [91:91], [93:93], [96:96]}");
+}
+
 BOOST_AUTO_TEST_CASE( sisetliq_test ) {
 	SpanInterval sp1(1,10,1,10);
 	SpanInterval sp2(6,11,6,11);
