@@ -17,61 +17,17 @@
 #     relations are specified as before
 #        
 
-# for now, we will use simple versions of the original formulas
-1: [ D-Spike(backLeft) -> Spike(backLeft) ]
-1: [ D-Dig(backLeft) -> Dig(backLeft) ]
-1: [ D-Serve(backLeft) -> Serve(backLeft) ]
-1: [ D-BallContact(them) -> BallContact(them) ]
-1: [ D-BallContact(backLeft) -> BallContact(backLeft) ]
-1: [ D-BallGoingIn() -> BallGoingIn() ]
-1: [ D-BallGoingOut() -> BallGoingOut() ]
-1: [ D-Huddle() -> Huddle() ]
-# after some tests, needed the following ones for sure!
-1: [ BallContact(them) -> D-BallContact(them) ]
-1: [ BallContact(backLeft) -> D-BallContact(backLeft) ]
-1: [ BallGoingIn() -> D-BallGoingIn() ]
-1: [ BallGoingOut() -> D-BallGoingOut() ]
+1: D-Eating(Gary) -> Eating(Gary)
+1: D-Walking(Gary) -> Walking(Gary)
+1: D-Driving(Gary) -> Driving(Gary)
+1: D-Working(Gary) -> Working(Gary)
+1: Eating(Gary) -> D-Eating(Gary)
+1: Walking(Gary) -> D-Walking(Gary)
+1: Driving(Gary) -> D-Driving(Gary)
+1: Working(Gary) -> D-Working(Gary)
 
+1: (Eating(Gary) ^ !Walking(Gary) ^ !Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ Walking(Gary) ^ !Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ !Walking(Gary) ^ Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ !Walking(Gary) ^ !Driving(Gary) ^ Working(Gary))
 
-# etc... for now we'll just deal with the backLeft player
-
-# one pose at a time (note to self, add \ to allow formulas to span multiple lines
-10: [ ( Spike(backLeft) ^ !Dig(backLeft) ^ !Serve(backLeft)) v (!Spike(backLeft) ^ Dig(backLeft) ^ !Serve(backLeft)) v (!Spike(backLeft) ^ !Dig(backLeft) ^ Serve(backLeft)) v (!Spike(backLeft) ^ !Dig(backLeft) ^ !Serve(backLeft))]
-
-# serving starts the round
-# TODO: can't have ! next to a diamond??
-10: Serve(backLeft) -> !(<>{<} [Spike(backLeft) v Set(backLeft) v Serve(backLeft) v Dig(backLeft) v Block(backLeft) v Squat(backLeft)])
-
-# huddling ends it
-10: Huddle(backLeft) -> !(<>{>} [Spike(backLeft) v Set(backLeft) v Serve(backLeft) v Dig(backLeft) v Block(backLeft) v Squat(backLeft)])
-
-# Ball going in must be followed by ballgoing out (and vice versa)
-10: BallGoingIn() ^{<} BallGoingIn() -> <>{d} BallGoingOut()
-10: BallGoingOut() ^{<} BallGoingOut() -> <>{d} BallGoingIn()
-
-# if the ball changes sides, SOMEONE must have contacted it
-10: !(BallGoingIn() ^{<} BallGoingOut()) v (<>{d} BallGoingOut()) v BallContact(backLeft)
-10: !(BallGoingOut() ^{<} BallGoingIn()) v (<>{d} BallGoingIn()) v BallContact(them)
-
-# correspondingly if the ball is on one of our sides, someone must have made contact with it
-10: BallOnSide(us) -> <>{d} BallContact(backleft) v <>{mi} BallOnSide(us) v <>{m} BallOnSide(us)
-10: BallOnSide(them) -> <>{d} BallContact(them) v <>{mi} BallOnSide(them) v <>{m} BallOnSide(them)
-
-# Lets make a nice liquid predicate that indicates which side the ball is on
-# below only works if ballgoingout not liquid
-10: !(BallGoingIn() ^{<} BallGoingOut()) v (<>{d} BallGoingOut()) v BallOnSide(us)
-10: !(BallGoingOut() ^{<} BallGoingIn()) v (<>{d} BallGoingIn()) v BallOnSide(them)
-
-# Ball can only be on one side at once
-# 
-10: [(BallOnSide(us) ^ !BallOnSide(them)) v (!BallOnSide(us) ^ BallOnSide(them))]
-
-# each ballonside interval is met by the opposing one
-10: BallOnSide(us) -> <>{mi} [BallOnSide(us) v BallOnSide(them)]
-10: BallOnSide(them) -> <>{mi} [BallOnSide(them) v BallOnSide(us)]
-
-# If the ball is not on our side, we cannot make contact with it
-10: [BallOnSide(them) -> !BallContact(backLeft)]
-10: [BallContact(backLeft) -> BallOnSide(us)]
-
-
+1: Eating(Gary) -> <>{mi} [(Eating(Gary) v Walking(Gary))]
+1: !(Walking(Gary);Driving(Gary);Walking(Gary)) v <>{m,mi} Walking(Gary) v DroveToWork(Gary)
+1: Working(Gary) -> <>{m} Working(Gary) v <>{m} DroveToWork(Gary)

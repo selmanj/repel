@@ -119,6 +119,7 @@ public:
 	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};	// TODO RENAME
 	SISet getModifiableSISet(const std::string& name) const;
 	SISet getModifiableSISet(const std::string& name, const SISet& where) const;
+	void unsetAtomAt(const std::string& name, const SISet& where);
 	NameGenerator& nameGenerator() {return generator_;};
 	Model defaultModel() const {return observations_;};
 	Model randomModel() const;

@@ -33,29 +33,43 @@ SISet Domain::getModifiableSISet(const std::string& name, const SISet& where) co
 	SISet modifiable(where.forceLiquid(), where.maxInterval());
 	if (assumeClosedWorld()) return modifiable;	// if its a closed world, can't change any obs predicates
 	modifiable = where;
+
 	modifiable.subtract(obsPreds_.find(name)->second);
 	return modifiable;
 }
+
+void Domain::unsetAtomAt(const std::string& name, const SISet& where) {
+	SISet newSet = obsPreds_.at(name);
+	newSet.subtract(where);
+	obsPreds_.erase(name);
+	obsPreds_.insert(std::pair<std::string, SISet>(name, newSet));
+
+	observations_.unsetAtom(name, where);
+
+
+}
+
 
 Model Domain::randomModel() const {
 	// first check to see if we are even allowed to modify obs preds.  if not, just return the default model
 	if (assumeClosedWorld()) {
 		return defaultModel();
 	}
-	Model newModel(observations_);
-	for (std::map<const Atom, SISet>::const_iterator obsPair = observations_.begin(); obsPair != observations_.end(); obsPair++) {
-		SISet random = SISet::randomSISet(isLiquid(obsPair->first.name()), maxInterval_);
+	Model newModel;
+	std::set<Atom, atomcmp> atoms = observations_.atoms();
+	BOOST_FOREACH(Atom atom, atoms) {
+		SISet random = SISet::randomSISet(isLiquid(atom.name()), maxInterval_);
 		// intersect it with the places that are currently unset
-		SISet unsetAt = getModifiableSISet(obsPair->first.name());
+		SISet unsetAt = getModifiableSISet(atom.name());
 		random = intersection(random, unsetAt);
 		// add in the set parts
 
 		SISet setAt = unsetAt.compliment();
-		SISet trueVals = intersection(setAt, obsPair->second);
+		SISet trueVals = intersection(setAt, observations_.getAtom(atom));
 		random.add(trueVals);
 
-		newModel.clearAtom(obsPair->first);
-		newModel.setAtom(obsPair->first, random);
+		//newModel.clearAtom(obsPair->first);
+		newModel.setAtom(atom, random);
 	}
 	return newModel;
 }

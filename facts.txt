@@ -6,13 +6,8 @@
 # the max interval is by default determined by the smallest/largest values 
 # mentioned here.  to override this, specify --min or --max on the command line
 
-
-D-Serve(backLeft) @ [3:6]
-D-BallContact(backLeft) @ [5:5]
-D-BallGoingOut() @ [9:9]
-D-BallContact(them) @ [15:15]
-D-BallGoingIn() @ [27:27]
-D-Spike(backLeft) @ [30:38]
-D-BallContact(backLeft) @ [35:35]
-D-BallGoingOut() @ [41:41]
-D-Huddle() @ [55:70]
+D-Eating(Gary) @ [1:5]
+D-Walking(Gary) @ [6:10]
+D-Driving(Gary) @ [11:25]
+D-Walking(Gary) @ [26:30]
+D-Working(Gary) @ [30:50]

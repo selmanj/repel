@@ -77,6 +77,7 @@ am_pelnoise_OBJECTS = pelnoise.$(OBJEXT) model.$(OBJEXT) \
 pelnoise_OBJECTS = $(am_pelnoise_OBJECTS)
 pelnoise_LDADD = $(LDADD)
 am_query_sampling_OBJECTS = query_sampling.$(OBJEXT) \
+	si_histogram.$(OBJEXT) moves.$(OBJEXT) obsproxy.$(OBJEXT) \
 	interval.$(OBJEXT) domain.$(OBJEXT) siset.$(OBJEXT) \
 	spaninterval.$(OBJEXT) model.$(OBJEXT) boollit.$(OBJEXT) \
 	constant.$(OBJEXT) variable.$(OBJEXT) namegenerator.$(OBJEXT) \
@@ -269,7 +270,7 @@ AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_O
 dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/fol/model.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 pelnoise_SOURCES = src/pelnoise.cpp src/fol/model.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
-query_sampling_SOURCES = queries/query_sampling.cpp src/interval.cpp src/fol/domain.cpp src/siset.cpp src/spaninterval.cpp src/fol/model.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/namegenerator.cpp src/fol/foltoken.cpp src/fol/follexer.cpp
+query_sampling_SOURCES = queries/query_sampling.cpp src/si_histogram.cpp src/fol/moves.cpp src/fol/obsproxy.cpp src/interval.cpp src/fol/domain.cpp src/siset.cpp src/spaninterval.cpp src/fol/model.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/namegenerator.cpp src/fol/foltoken.cpp src/fol/follexer.cpp
 PEL_BUILT_TESTS = test/spanintervaltest test/si_histogramtest test/follexertest test/folparsertest test/atomtest test/domaintest test/movestest test/cnftest test/modeltest
 test_spanintervaltest_SOURCES = test/spanintervaltest.cpp src/interval.cpp src/spaninterval.cpp src/siset.cpp
 test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/boollit.cpp
@@ -438,6 +439,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/moves.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movestest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namegenerator.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/obsproxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pelnoise.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query_sampling.Po@am__quote@
@@ -672,6 +674,34 @@ query_sampling.obj: queries/query_sampling.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o query_sampling.obj `if test -f 'queries/query_sampling.cpp'; then $(CYGPATH_W) 'queries/query_sampling.cpp'; else $(CYGPATH_W) '$(srcdir)/queries/query_sampling.cpp'; fi`
 
+si_histogram.o: src/si_histogram.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogram.o -MD -MP -MF $(DEPDIR)/si_histogram.Tpo -c -o si_histogram.o `test -f 'src/si_histogram.cpp' || echo '$(srcdir)/'`src/si_histogram.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogram.Tpo $(DEPDIR)/si_histogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/si_histogram.cpp' object='si_histogram.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogram.o `test -f 'src/si_histogram.cpp' || echo '$(srcdir)/'`src/si_histogram.cpp
+
+si_histogram.obj: src/si_histogram.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogram.obj -MD -MP -MF $(DEPDIR)/si_histogram.Tpo -c -o si_histogram.obj `if test -f 'src/si_histogram.cpp'; then $(CYGPATH_W) 'src/si_histogram.cpp'; else $(CYGPATH_W) '$(srcdir)/src/si_histogram.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogram.Tpo $(DEPDIR)/si_histogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/si_histogram.cpp' object='si_histogram.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogram.obj `if test -f 'src/si_histogram.cpp'; then $(CYGPATH_W) 'src/si_histogram.cpp'; else $(CYGPATH_W) '$(srcdir)/src/si_histogram.cpp'; fi`
+
+obsproxy.o: src/fol/obsproxy.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT obsproxy.o -MD -MP -MF $(DEPDIR)/obsproxy.Tpo -c -o obsproxy.o `test -f 'src/fol/obsproxy.cpp' || echo '$(srcdir)/'`src/fol/obsproxy.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/obsproxy.Tpo $(DEPDIR)/obsproxy.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/obsproxy.cpp' object='obsproxy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o obsproxy.o `test -f 'src/fol/obsproxy.cpp' || echo '$(srcdir)/'`src/fol/obsproxy.cpp
+
+obsproxy.obj: src/fol/obsproxy.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT obsproxy.obj -MD -MP -MF $(DEPDIR)/obsproxy.Tpo -c -o obsproxy.obj `if test -f 'src/fol/obsproxy.cpp'; then $(CYGPATH_W) 'src/fol/obsproxy.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/obsproxy.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/obsproxy.Tpo $(DEPDIR)/obsproxy.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/fol/obsproxy.cpp' object='obsproxy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o obsproxy.obj `if test -f 'src/fol/obsproxy.cpp'; then $(CYGPATH_W) 'src/fol/obsproxy.cpp'; else $(CYGPATH_W) '$(srcdir)/src/fol/obsproxy.cpp'; fi`
+
 atomtest.o: test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT atomtest.o -MD -MP -MF $(DEPDIR)/atomtest.Tpo -c -o atomtest.o `test -f 'test/atomtest.cpp' || echo '$(srcdir)/'`test/atomtest.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/atomtest.Tpo $(DEPDIR)/atomtest.Po
@@ -783,20 +813,6 @@ si_histogramtest.obj: test/si_histogramtest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/si_histogramtest.cpp' object='si_histogramtest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogramtest.obj `if test -f 'test/si_histogramtest.cpp'; then $(CYGPATH_W) 'test/si_histogramtest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/si_histogramtest.cpp'; fi`
-
-si_histogram.o: src/si_histogram.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogram.o -MD -MP -MF $(DEPDIR)/si_histogram.Tpo -c -o si_histogram.o `test -f 'src/si_histogram.cpp' || echo '$(srcdir)/'`src/si_histogram.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogram.Tpo $(DEPDIR)/si_histogram.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/si_histogram.cpp' object='si_histogram.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogram.o `test -f 'src/si_histogram.cpp' || echo '$(srcdir)/'`src/si_histogram.cpp
-
-si_histogram.obj: src/si_histogram.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT si_histogram.obj -MD -MP -MF $(DEPDIR)/si_histogram.Tpo -c -o si_histogram.obj `if test -f 'src/si_histogram.cpp'; then $(CYGPATH_W) 'src/si_histogram.cpp'; else $(CYGPATH_W) '$(srcdir)/src/si_histogram.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/si_histogram.Tpo $(DEPDIR)/si_histogram.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/si_histogram.cpp' object='si_histogram.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o si_histogram.obj `if test -f 'src/si_histogram.cpp'; then $(CYGPATH_W) 'src/si_histogram.cpp'; else $(CYGPATH_W) '$(srcdir)/src/si_histogram.cpp'; fi`
 
 spanintervaltest.o: test/spanintervaltest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT spanintervaltest.o -MD -MP -MF $(DEPDIR)/spanintervaltest.Tpo -c -o spanintervaltest.o `test -f 'test/spanintervaltest.cpp' || echo '$(srcdir)/'`test/spanintervaltest.cpp

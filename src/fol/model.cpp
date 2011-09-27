@@ -63,6 +63,14 @@ Model::Model(const Model& m)
 Model::~Model() {
 }
 
+std::set<Atom, atomcmp> Model::atoms() const {
+	std::set<Atom, atomcmp> atoms;
+	for(atom_map::const_iterator it = amap_.begin(); it != amap_.end(); it++) {
+		atoms.insert(it->first);
+	}
+	return atoms;
+}
+
 bool Model::hasAtom(const Atom& a) const {
 	return amap_.find(a) != amap_.end();
 }
@@ -181,6 +189,17 @@ std::string Model::toString() const {
 	}
 	return stream.str();
 }
+
+bool Model::operator ==(const Model& a) const {
+	if (atoms() != a.atoms()) return false;
+	BOOST_FOREACH(Atom atom, atoms()) {
+		SISet ourSet= getAtom(atom);
+		SISet theirSet = a.getAtom(atom);
+		if (ourSet != theirSet) return false;
+	}
+	return true;
+}
+
 
 
 Model subtractModel(const Model& from, const Model& toSubtract) {

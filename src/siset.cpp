@@ -270,6 +270,7 @@ void SISet::subtract(const SpanInterval& si) {
 	std::set<SpanInterval> newSet;
 
 	if (set_.size() == 0) return;
+	if (si.size() == 0) return;
 
 	BOOST_FOREACH(SpanInterval siInSet, set_) {
 		if (intersection(siInSet, si).size() > 0) {
@@ -287,6 +288,7 @@ void SISet::subtract(const SISet& sis) {
 	std::list<SISet> toIntersect;
 
 	if (set_.size() == 0) return;
+	if (sis.size() == 0) return;
 
 	BOOST_FOREACH(SpanInterval b, sis.set_) {
 		SISet copy(*this);

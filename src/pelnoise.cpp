@@ -68,9 +68,8 @@ ConfMatrix confusionMatrix(const Model& groundTruth, const Model& model, double 
 		}
 	}
 
-	BOOST_FOREACH(Model::value_type pair, groundTruth) {
-		Atom a = pair.first;
-		SISet set = pair.second;
+	BOOST_FOREACH(Atom a, groundTruth.atoms()) {
+		SISet set = groundTruth.getAtom(a);
 		if (c.find(std::pair<Atom, Atom>(a,a)) == c.end()) {
 				continue;
 		}
@@ -78,9 +77,9 @@ ConfMatrix confusionMatrix(const Model& groundTruth, const Model& model, double 
 		BOOST_FOREACH(SpanInterval truthSi, set.set()) {
 			// now, find ALL intervals that might intersect with htis
 			std::map<Atom, SpanInterval, atomcmp > intersects;
-			BOOST_FOREACH(Model::value_type modelPair, model) {
-				Atom modelA = modelPair.first;
-				SISet setA = modelPair.second;
+			BOOST_FOREACH(Atom modelA, model.atoms()) {
+
+				SISet setA = model.getAtom(modelA);
 				if (c.find(std::pair<Atom, Atom>(modelA,modelA)) == c.end()) {
 					continue;
 				}
@@ -134,9 +133,8 @@ ConfMatrix confusionMatrix(const Model& groundTruth, const Model& model, double 
 
 boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshholdAccuracy(const Model& groundTruth, const Model& model, double threshhold) {
 	unsigned int falsePos=0, truePos=0, trueNeg=0, falseNeg=0;
-	BOOST_FOREACH(Model::value_type pair, groundTruth) {
-		Atom a = pair.first;
-		SISet set = pair.second;
+	BOOST_FOREACH(Atom a, groundTruth.atoms()) {
+		SISet set = groundTruth.getAtom(a);
 
 		BOOST_FOREACH(SpanInterval si, set.set()) {
 			SISet justSi(true, set.maxInterval());
@@ -162,9 +160,9 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 		}
 	}
 
-	BOOST_FOREACH(Model::value_type pair, model) {
-		Atom a = pair.first;
-		SISet set = pair.second;
+	BOOST_FOREACH(Atom a, model.atoms()) {
+		//Atom a = pair.first;
+		SISet set = model.getAtom(a);
 
 		BOOST_FOREACH(SpanInterval si, set.set()) {
 			SISet justSi(true, set.maxInterval());
@@ -271,20 +269,18 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 Model rewritePELOutputAsConcreteModel(const Model& a) {
 	Model newModel(a);
 	// first, remove any atoms with D- in the front as those are old
-	for (Model::const_iterator it = a.begin(); it != a.end(); it++) {
-		Atom atom = it->first;
-		SISet set = it->second;
+	BOOST_FOREACH(Atom atom, a.atoms()) {
+		SISet set = a.getAtom(atom);
 		if (atom.name().find("D-") == 0) {
 			newModel.clearAtom(atom);
 		}
 	}
 	// done?  ok now lets add D- to the front of all the atoms (weird but this will work)
 	Model newModelCopy;
-	for (Model::const_iterator it = newModel.begin(); it != newModel.end(); it++) {
-		Atom atom = it->first;
-		SISet set = it->second;
+	BOOST_FOREACH(Atom atom, newModel.atoms()) {
+		SISet set = newModel.getAtom(atom);
 
-		atom.name() = std::string("D-") += atom.name();
+		atom.name() = std::string("D-") += atom.name();		// TODO: does this still work???  not holding a ptr anymore
 		newModelCopy.setAtom(atom, set);
 	}
 	return newModelCopy;
@@ -336,7 +332,7 @@ int main(int argc, char* argv[]) {
 
 		FOLParse::parseEventFile(vm["add"].as<std::string>(), inFile);
 		Model inModel(inFile);
-		Interval maxInterval = inModel.begin()->second.maxInterval();
+		Interval maxInterval = inModel.getAtom(*inModel.atoms().begin()).maxInterval();
 
 		std::set<Atom, atomcmp> validPreds = generateValidPreds();
 		Model complModel(inModel);
@@ -441,21 +437,22 @@ int main(int argc, char* argv[]) {
 		// construct these as models
 		Model truthModel(truthFacts);
 		Model noisyInModel(noisyIn);
-		Interval maxInterval = span(truthModel.begin()->second.maxInterval(), noisyInModel.begin()->second.maxInterval());
+		SISet firstSet = truthModel.getAtom(*truthModel.atoms().begin());
+		Interval maxInterval = span(firstSet.maxInterval(), firstSet.maxInterval());
 
 		Model noisyOutModel(noisyOut);
 		noisyOutModel = rewritePELOutputAsConcreteModel(noisyOutModel);
 
 		std::set<Atom, atomcmp> allAtoms;
 
-		for (Model::const_iterator it = truthModel.begin(); it != truthModel.end(); it++) {
-			allAtoms.insert(it->first);
+		BOOST_FOREACH(Atom atom, truthModel.atoms()) {
+			allAtoms.insert(atom);
 		}
-		for (Model::const_iterator it = noisyInModel.begin(); it != noisyInModel.end(); it++) {
-			allAtoms.insert(it->first);
+		BOOST_FOREACH(Atom atom, noisyInModel.atoms()) {
+			allAtoms.insert(atom);
 		}
-		for (Model::const_iterator it = noisyOutModel.begin(); it != noisyOutModel.end(); it++) {
-			allAtoms.insert(it->first);
+		BOOST_FOREACH(Atom atom, noisyOutModel.atoms()) {
+			allAtoms.insert(atom);
 		}
 
 		unsigned int noisyInTP = intersectModel(truthModel, noisyInModel).size();

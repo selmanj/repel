@@ -28,10 +28,12 @@ int main(int argc, char* argv[]) {
 	hidden.add_options()
 					("facts-file", po::value<std::string>(), "facts file")
 					("formula-file", po::value<std::string>(), "formula file")
+					("query-file", po::value<std::string>(), "query file")
 					;
 	po::positional_options_description p;
 	p.add("facts-file", 1);
 	p.add("formula-file", 1);
+	p.add("query-file", 1);
 
 	po::options_description cmdline_options;
 	cmdline_options.add(desc).add(hidden);
@@ -40,8 +42,8 @@ int main(int argc, char* argv[]) {
 	po::store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
 	po::notify(vm);
 
-	if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
-		std::cout << "Usage: query_sampling [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
+	if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file") || !vm.count("query-file")) {
+		std::cout << "Usage: query_sampling [OPTION]... FACT-FILE FORMULA-FILE QUERY-FILE" << std::endl;
 		std::cout << desc << std::endl;
 		return 1;
 	}
@@ -65,8 +67,20 @@ int main(int argc, char* argv[]) {
 	}
 
 	boost::shared_ptr<Domain> d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
-	//ObsProxy proxy(d, 0);
+	std::vector<FOL::Event> queries;	// restrict this to 1 for now
+	FOLParse::parseEventFile(vm["query-file"].as<std::string>(), queries);
+	if (queries.size() == 0) {
+		LOG_PRINT(LOG_ERROR) << "no query found in query file!";
+		return 1;
+	}
+	FOL::Event queryevent = queries.front();
+	SISet set(false, d->maxInterval());
+	set.add(queryevent.where());
+	//std::pair<Atom, SISet> query(*queryevent.atom(), set);
 
+	ObsProxy proxy(*d, *queryevent.atom(), set);
+	std::vector<Model> samples = proxy.generateSamples();
+	std::map<Model, int, modelcmp> clusters = proxy.kMedoid(2, samples);
 
 	return 0;
 }

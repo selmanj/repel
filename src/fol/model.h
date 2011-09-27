@@ -28,8 +28,7 @@ public:
 	Model(const Model& m);
 	virtual ~Model();
 
-	virtual const_iterator begin() const {return amap_.begin();}
-	virtual const_iterator end() const {return amap_.end();}
+	std::set<Atom, atomcmp> atoms() const;
 
 	virtual bool hasAtom(const Atom& a) const;
 
@@ -48,6 +47,10 @@ public:
 	virtual void swap(Model& b) { amap_.swap(b.amap_); };
 
 	virtual std::string toString() const;
+
+	bool operator ==(const Model& a) const;
+	bool operator !=(const Model& a) const {return !(*this == a);}
+
 	typedef std::map<Atom, SISet, atomcmp> atom_map;
 
 private:

@@ -47,6 +47,9 @@ public:
 
 	std::string toString() const;
 
+	bool operator ==(const SISet& a) const {return set_ == a.set_;}		// TODO: THIS MIGHT BE WRONG IN SOME CASES
+	bool operator !=(const SISet& a) const {return !(*this == a);}
+
 	friend SISet intersection(const SISet& a, const SISet& b);
 	friend SISet span(const SpanInterval& a, const SpanInterval& b);
 private:

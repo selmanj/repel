@@ -61,6 +61,12 @@ void SIHistogram::add(const SISet& siset) {
 	counts_ = countsNew;
 }
 
+void SIHistogram::clear() {
+	sis_.clear();
+	counts_.clear();
+}
+
+
 std::string SIHistogram::toString() const {
 	std::stringstream sstream;
 	sstream << "{" << std::endl;

@@ -239,6 +239,7 @@ boost::shared_ptr<Atom> doParseGroundAtom(iters<ForwardIterator> &its) {
 		a->push_back(cnext);
 	}
 	consumeTokenType(FOLParse::CLOSE_PAREN, its);
+
 	return a;
 }
 
