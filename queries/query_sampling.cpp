@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 		    		("max", po::value<unsigned int>(), "maximum value an interval endpoint can take")
 		    		("min", po::value<unsigned int>(), "minimum value an interval endpoint can take")
 		    		("prob,p", po::value<double>()->default_value(0.25), "probability of taking a random move")
-		    		("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
+		    		("iterations,i", po::value<unsigned int>()->default_value(200), "number of iterations before returning a model")
 		    		("output,o", po::value<std::string>(), "output model file")
 		    		;
 
@@ -81,6 +81,9 @@ int main(int argc, char* argv[]) {
 	ObsProxy proxy(*d, *queryevent.atom(), set);
 	std::vector<Model> samples = proxy.generateSamples();
 	std::map<Model, int, modelcmp> clusters = proxy.kMedoid(2, samples);
+	for (int i = 0; i < samples.size(); i++) {
+		LOG_PRINT(LOG_INFO) << "Sample " << i << " assigned to cluster " << clusters[samples[i]];
+	}
 
 	return 0;
 }

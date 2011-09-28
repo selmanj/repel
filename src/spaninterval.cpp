@@ -96,34 +96,6 @@ bool SpanInterval::operator<=(const SpanInterval& b) const {
 	return !(*this > b);
 }
 
-bool SpanInterval::isEmpty() const {
-	unsigned int j = std::min(start_.finish(), finish_.finish());
-	unsigned int k = std::max(finish_.start(), start_.start());
-
-	if (start_.start() > j
-			|| finish_.finish() < k)
-		return true;
-	return false;
-}
-
-unsigned int SpanInterval::size() const {
-	if (isEmpty()) return 0;
-
-	SpanInterval si = normalize().get();
-
-	unsigned int i = si.start().start();
-	unsigned int j = si.start().finish();
-	unsigned int k = si.finish().start();
-	unsigned int l = si.finish().finish();
-
-	if (j <= k) {
-		return ((l-k)+1) * ((j-i)+1);
-	}
-	// I'm so sorry about the below formula; TODO: rewrite this nicer
-	return ((k-i)+1) * ((l-k)+1)
-			  + (j-k)*(l+1) - (j*(j+1))/2 + (k*(k+1))/2;
-
-}
 
 unsigned int SpanInterval::liqSize() const {
 	if (isEmpty()) return 0;

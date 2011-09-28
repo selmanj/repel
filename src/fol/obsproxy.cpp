@@ -18,11 +18,10 @@
 
 
 ObsProxy::ObsProxy(const Domain &d, const Atom& queryAtom, const SISet& querySet)
-: fullDomain_(d), masks_(), queryAtom_(queryAtom), querySet_(querySet), numSamples_(8) {
+: fullDomain_(d), masks_(), queryAtom_(queryAtom), querySet_(querySet), numSamples_(1) {
 	LOG_PRINT(LOG_DEBUG) << "defaultModel = " << d.defaultModel().toString();
 	std::set<Atom, atomcmp> atoms = d.defaultModel().atoms();
 	BOOST_FOREACH(Atom atom, atoms) {
-		LOG_PRINT(LOG_DEBUG) << "it = " << atom.toString();
 		SISet allHidden(d.isLiquid(atom.name()), d.maxInterval());
 		allHidden = allHidden.compliment();
 
@@ -46,7 +45,7 @@ std::vector<Model> ObsProxy::generateSamples() {
 	std::vector<Model > result;
 	for (int count = 0; count < numSamples_; count++) {
 		Model model = d.randomModel();
-		model = maxWalkSat(d, 1000, .2, &model);
+		model = maxWalkSat(d, 200, .25, &model);
 		//boost::shared_ptr<Model> mptr(new Model(model));
 		result.push_back(model);
 		LOG_PRINT(LOG_DEBUG) << "sample " << count << ": " << std::endl << model.toString();
