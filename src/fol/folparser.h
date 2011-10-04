@@ -390,6 +390,7 @@ std::set<Interval::INTERVAL_RELATION> doParseRelationList(iters<ForwardIterator>
 			relations.insert(Interval::EQUALS);
 			relations.insert(Interval::GREATERTHAN);
 			relations.insert(Interval::LESSTHAN);
+			consumeTokenType(FOLParse::STAR, its);
 		} else {
 			relations.insert(doParseRelation(its));
 		}
