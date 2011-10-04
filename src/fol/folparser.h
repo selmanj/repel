@@ -375,7 +375,24 @@ std::set<Interval::INTERVAL_RELATION> doParseRelationList(iters<ForwardIterator>
 	std::set<Interval::INTERVAL_RELATION> relations;
 	if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
 		consumeTokenType(FOLParse::OPEN_BRACE, its);
-		relations.insert(doParseRelation(its));
+		if (peekTokenType(FOLParse::STAR, its)) {
+			// add all relations
+			relations.insert(Interval::MEETS);
+			relations.insert(Interval::MEETSI);
+			relations.insert(Interval::OVERLAPS);
+			relations.insert(Interval::OVERLAPSI);
+			relations.insert(Interval::STARTS);
+			relations.insert(Interval::STARTSI);
+			relations.insert(Interval::DURING);
+			relations.insert(Interval::DURINGI);
+			relations.insert(Interval::FINISHES);
+			relations.insert(Interval::FINISHESI);
+			relations.insert(Interval::EQUALS);
+			relations.insert(Interval::GREATERTHAN);
+			relations.insert(Interval::LESSTHAN);
+		} else {
+			relations.insert(doParseRelation(its));
+		}
 		while (peekTokenType(FOLParse::COMMA, its)) {
 			consumeTokenType(FOLParse::COMMA, its);
 			relations.insert(doParseRelation(its));

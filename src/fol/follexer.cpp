@@ -132,6 +132,11 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 				token.setContents("}");
 				tokens.push_back(token);
 				break;
+			case '*':
+				token.setType(FOLParse::STAR);
+				token.setContents("*");
+				tokens.push_back(token);
+				break;
 			case '(':
 				token.setType(FOLParse::OPEN_PAREN);
 				token.setContents("(");
