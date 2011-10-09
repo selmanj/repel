@@ -1068,6 +1068,17 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 		}
 		if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&*n->sentence())) {
 			// TODO: implement code that handles multiple diamond operators!
+			if (dia->relations().size() == 13) {
+				const Atom* a = dynamic_cast<const Atom*>(&*dia->sentence());
+				if (a) {
+					// We've got !<>{*}, this is easy
+					Move move;
+					SpanInterval everywhere(d.maxInterval(), d.maxInterval(), d.maxInterval());
+					move.toDel.push_back(boost::make_tuple(*a, everywhere));
+					moves.push_back(move);
+					return moves;
+				}
+			}
 			if (dia->relations().size() > 1) {
 				LOG_PRINT(LOG_ERROR) << "currently cannot handle moves for diamond ops with multiple relations!";
 				throw std::runtime_error("unimplemented moves found");
@@ -1325,6 +1336,7 @@ Model executeMove(const Domain& d, const Move& move, const Model& model) {
 		*/
 		if (currentModel.hasAtom(it->get<0>())) {
 			SISet toRemove(d.isLiquid(it->get<0>().name()), d.maxInterval());
+			toRemove.add(it->get<1>());
 			currentModel.unsetAtom(it->get<0>(), toRemove);
 		}
 	}
