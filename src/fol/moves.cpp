@@ -1370,9 +1370,9 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 	unsigned long bestScore = d.score(currentModel);
 	Model bestModel = currentModel;
 
-	unsigned int showPeriodMod = numIterations/20;
+	unsigned int showPeriodMod = (numIterations < 20 ? 1 : numIterations/20);
 
-	for (int iteration=1; iteration < numIterations+1; iteration++) {
+	for (int iteration=1; iteration <= numIterations; iteration++) {
 		if (iteration % showPeriodMod == 0) {
 			std::cout << ".";
 			std::cout.flush();
