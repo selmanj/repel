@@ -26,6 +26,9 @@ public:
 	virtual int count(K key) const {return map_.count(key);}
 	virtual int size() const {return vals_.size();}
 	virtual V get(K key);
+	virtual void clear();
+	virtual unsigned int capacity() const {return maxCapacity_;}
+	virtual void setCapacity(unsigned int maxCapacity);
 private:
 	ValueList vals_;
 	ValueMap map_;
@@ -82,6 +85,29 @@ V LRUCache<K,V>::get(K key) {
 	typename ValueList::iterator valIt = vals_.begin();
 	map_.insert(std::pair<K, typename ValueList::iterator>(key, valIt));
 	return valPair.second;
+}
+
+template<typename K, typename V>
+void LRUCache<K,V>::clear() {
+	map_.clear();
+	vals_.clear();
+}
+
+template<typename K, typename V>
+void LRUCache<K,V>::setCapacity(unsigned int maxCapacity) {
+	if (maxCapacity >= maxCapacity_) {
+		// no changes needed, great
+		maxCapacity_ = maxCapacity;
+		return;
+	}
+	maxCapacity_ = maxCapacity;
+	// throw away least recently used items until we are under capacity
+	while (vals_.size() > maxCapacity_) {
+		K key = vals_.back().first;
+		vals_.pop_back();
+		map_.erase(key);
+	}
+
 }
 
 #endif /* LRUCACHE_H_ */
