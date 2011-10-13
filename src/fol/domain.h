@@ -7,6 +7,7 @@
 
 #ifndef DOMAIN_H_
 #define DOMAIN_H_
+#define DOMAIN_CACHE_SIZE 50000
 
 #include <set>
 #include <string>
@@ -21,18 +22,19 @@
 #include "model.h"
 #include "../siset.h"
 #include "namegenerator.h"
-
+#include "../lrucache.h"
 
 std::string modelToString(const Model& m);
 
 class Domain {
 public:
-	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_() {}
+	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {}
 	template <class FactsForwardIterator, class FormForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd,
 			bool assumeClosedWorld=true)
-			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(formulasBegin, formulasEnd), generator_() {
+			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), maxInterval_(0,0),
+			  formulas_(formulasBegin, formulasEnd), generator_(), cache_(DOMAIN_CACHE_SIZE) {
 
 		// create a class for collecting predicate names
 		PredCollector predCollector;
@@ -125,6 +127,7 @@ public:
 	Model randomModel() const;
 	Interval maxInterval() const {return maxInterval_;};
 	void setMaxInterval(const Interval& maxInterval);
+	void clearCache() const {cache_.clear();}
 
 	bool isLiquid(const std::string& predicate) const;
 	bool dontModifyObsPreds() const {return dontModifyObsPreds_;};
@@ -151,6 +154,8 @@ public:
 	SISet liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const;
 
 private:
+	typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
+
 	bool dontModifyObsPreds_;
 	bool assumeClosedWorld_;
 
@@ -163,6 +168,17 @@ private:
 	Model observations_;
 
 	NameGenerator generator_;
+
+	struct ModelSentencePair_cmp {
+		bool operator() (const ModelSentencePair& a, const ModelSentencePair& b) const {
+			if (a.first < b.first) return true;
+			if (a.first > b.first) return false;
+			if (a.second < b.second) return true;
+			return false;
+		}
+	};
+
+	mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
 };
 
 #endif /* DOMAIN_H_ */

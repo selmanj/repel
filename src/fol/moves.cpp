@@ -1447,6 +1447,7 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 			currentModel = bestLocalModels[idx];
 			LOG(LOG_DEBUG) << "choosing best local move: " << bestLocalMoves[idx].toString();
 		}
+		d.clearCache();
 		// evaluate and see if our model is better than any found so far
 		unsigned long newScore = d.score(currentModel);
 		if (newScore > bestScore) {

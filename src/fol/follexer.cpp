@@ -15,16 +15,16 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 		}
 		FOLToken token;
 		// first check for identifiers
-		if (c >= 'A' && c <= 'Z'
-				|| c >= 'a' && c <= 'z'
+		if ((c >= 'A' && c <= 'Z')
+				|| (c >= 'a' && c <= 'z')
 				|| c == '_') {
 			std::string ident;
 			ident.push_back(c);
 			while (!input->eof()) {
 				c = input->peek();
-				if (c >= 'A' && c <= 'Z'
-						|| c >= 'a' && c <= 'z'
-						|| c >= '0' && c <= '9'
+				if ((c >= 'A' && c <= 'Z')
+						|| (c >= 'a' && c <= 'z')
+						|| (c >= '0' && c <= '9')
 						|| c == '_'
 						|| c == '-') {
 					input->get();
@@ -78,9 +78,9 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 			std::string var;
 			while (!input->eof()) {
 				c = input->peek();
-				if (c >= 'A' && c <= 'Z'
-						|| c >= 'a' && c <= 'z'
-						|| c >= '0' && c <= '9'
+				if ((c >= 'A' && c <= 'Z')
+						|| (c >= 'a' && c <= 'z')
+						|| (c >= '0' && c <= '9')
 						|| c == '_') {
 					input->get();
 					var.push_back(c);
@@ -157,6 +157,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 				token.setType(FOLParse::OR);
 				token.setContents("v");
 				tokens.push_back(token);
+				break;
 			case ',':
 				token.setType(FOLParse::COMMA);
 				token.setContents(",");
@@ -207,6 +208,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 						break;
 					}
 				}
+				break;
 			case ' ':
 			case '\t':
 			case '\r':
@@ -214,6 +216,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 				break;
 			default:
 				std::cerr << "dont know what " << c << " is" << std::endl;
+				break;
 				// error!
 			}
 		}

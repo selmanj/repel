@@ -14,9 +14,7 @@ void Domain::addObservedPredicate(const Atom& a) {
 	SISet newSet(true, maxInterval_);
 	obsPreds_.insert(std::pair<std::string, SISet>(a.name(), newSet));
 	observations_.setAtom(a, newSet);
-
 }
-
 
 SISet Domain::getModifiableSISet(const std::string& name) const {
 	SISet everywhere(isLiquid(name), maxInterval_);
@@ -87,10 +85,11 @@ bool Domain::isLiquid(const std::string& predicate) const {
 	return true;
 }
 
-unsigned long Domain::score(const WSentence& s, const Model& m) const {
-	SISet sat = satisfied(*(s.sentence()), m);
+unsigned long Domain::score(const WSentence& w, const Model& m) const {
+	const Sentence& s = *(w.sentence());
+	SISet sat = satisfied(s, m);
 	if (!sat.isDisjoint()) sat.makeDisjoint();
-	return sat.size() * s.weight();
+	return sat.size() * w.weight();
 }
 
 unsigned long Domain::score(const Model& m) const {
@@ -102,43 +101,46 @@ unsigned long Domain::score(const Model& m) const {
 }
 
 SISet Domain::satisfied(const Sentence& s, const Model& m) const {
+	// check in our cache first!
+	ModelSentencePair pair(&m,&s);
+	if (cache_.count(pair) == 1) {
+		// return that instead!
+		return cache_.get(pair);
+	}
+
+	SISet toReturn;
 	// start with the base case
 	if (dynamic_cast<const Atom *>(&s) != 0) {
 		const Atom* a = dynamic_cast<const Atom *>(&s);
-		return satisfiedAtom(*a, m);
+		toReturn = satisfiedAtom(*a, m);
 	} else if (dynamic_cast<const Negation*>(&s) != 0) {
 		const Negation* n = dynamic_cast<const Negation *>(&s);
-		SISet set = satisfiedNegation(*n, m);
-		//set.makeDisjoint();
-		return set;
+		toReturn = satisfiedNegation(*n, m);
 	} else if (dynamic_cast<const Disjunction*>(&s) != 0) {
 		const Disjunction* d = dynamic_cast<const Disjunction *>(&s);
-		SISet set = satisfiedDisjunction(*d, m);
-		//set.makeDisjoint();
-		return set;
+		toReturn = satisfiedDisjunction(*d, m);
 	} else if (dynamic_cast<const LiquidOp*>(&s) != 0) {
 		const LiquidOp* l = dynamic_cast<const LiquidOp *>(&s);
-		SISet set = liqSatisfied(*(l->sentence()), m);
+		toReturn = liqSatisfied(*(l->sentence()), m);
 		// remove liquid restriction
-		set.setForceLiquid(false);
-		//set.makeDisjoint();
-		return set;
+		toReturn.setForceLiquid(false);
 	} else if (dynamic_cast<const DiamondOp*>(&s) != 0) {
 		const DiamondOp* d = dynamic_cast<const DiamondOp *>(&s);
-		SISet set = satisfiedDiamond(*d, m);
-		//set.makeDisjoint();
-		return set;
+		toReturn = satisfiedDiamond(*d, m);
 	} else if (dynamic_cast<const Conjunction*>(&s) != 0) {
 		const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
-		SISet set = satisfiedConjunction(*c, m);
-		return set;
+		toReturn = satisfiedConjunction(*c, m);
 	} else if (dynamic_cast<const BoolLit *>(&s) != 0) {
 		const BoolLit* b = dynamic_cast<const BoolLit *>(&s);
-		return satisfiedBoolLit(*b, m);
+		toReturn = satisfiedBoolLit(*b, m);
+	} else {
+		// made it this far, unimplemented!
+		std::runtime_error e("Domain::satisfied not implemented yet!");
+		throw e;
 	}
-	// made it this far, unimplemented!
-	std::runtime_error e("Domain::satisfied not implemented yet!");
-	throw e;
+	// add set to cache
+	cache_.insert(pair, toReturn);
+	return toReturn;
 }
 
 SISet Domain::satisfiedAtom(const Atom& a, const Model& m) const {

@@ -47,7 +47,7 @@ Model::Model(const std::vector<FOL::Event>& pairs)
 		SISet set(true, maxInterval);
 
 		if (truthVal) set.add(interval);
-		if (amap_.find(*atom) != amap_.end()) {
+		if (amap_.count(*atom) == 1) {
 			set.add(amap_.find(*atom)->second);
 			amap_.erase(*atom);
 		}
@@ -72,7 +72,7 @@ std::set<Atom, atomcmp> Model::atoms() const {
 }
 
 bool Model::hasAtom(const Atom& a) const {
-	return amap_.find(a) != amap_.end();
+	return amap_.count(a) == 1;
 }
 
 SISet Model::getAtom(const Atom& a) const {
@@ -130,7 +130,7 @@ void Model::subtract(const Model& toSubtract) {
 		Atom a = it->first;
 		SISet set = it->second;
 
-		if (toSubtract.amap_.find(a) != toSubtract.amap_.end()) {
+		if (toSubtract.amap_.count(a) == 1) {
 			SISet setSubtract = toSubtract.amap_.find(a)->second;
 			set.subtract(setSubtract);
 		}
@@ -144,7 +144,7 @@ void Model::intersect(const Model& b) {
 		Atom atom = it->first;
 		SISet set = it->second;
 
-		if (b.amap_.find(atom) != b.amap_.end()) {
+		if (b.amap_.count(atom) == 1) {
 			SISet intersect = intersection(set, b.amap_.find(atom)->second);
 			if (intersect.size() != 0) amap_.insert(std::pair<Atom, SISet>(atom, intersect));
 		}
@@ -155,7 +155,7 @@ void Model::compliment(const std::set<Atom, atomcmp>& allAtoms, const Interval& 
 	Model newModel;
 
 	BOOST_FOREACH(Atom atom, allAtoms) {
-		if (amap_.find(atom) != amap_.end()) {
+		if (amap_.count(atom) == 1) {
 			Model::const_iterator it = amap_.find(atom);
 			SISet set = it->second;
 			if (set.compliment().size() != 0) {

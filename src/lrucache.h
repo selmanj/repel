@@ -11,17 +11,19 @@
 #include <map>
 #include <iostream>
 #include <iterator>
+#include <functional>
 
-template<typename K, typename V>
+template<typename K, typename V, typename C = std::less<K> >
 class LRUCache {
 public:
 	typedef std::pair< K,V > ValuePair;
 	typedef std::list< ValuePair > ValueList;
-	typedef std::map< K, typename ValueList::iterator > ValueMap;
+	typedef std::map< K, typename ValueList::iterator, C > ValueMap;
 
 	LRUCache(unsigned int maxCapacity);
 	virtual ~LRUCache();
 
+	virtual void insert(K key, V value);
 	virtual void insert(ValuePair pair);
 	virtual int count(K key) const {return map_.count(key);}
 	virtual int size() const {return vals_.size();}
@@ -35,19 +37,24 @@ private:
 	unsigned int maxCapacity_;
 };
 
-template<typename K, typename V>
-LRUCache<K, V>::LRUCache(unsigned int maxCapacity)
+template<typename K, typename V, typename C>
+LRUCache<K,V,C>::LRUCache(unsigned int maxCapacity)
 	: vals_(), map_(), maxCapacity_(maxCapacity){
 
 }
 
-template<typename K, typename V>
-LRUCache<K, V>::~LRUCache() {
+template<typename K, typename V, typename C>
+LRUCache<K,V,C>::~LRUCache() {
 
 }
 
-template<typename K, typename V>
-void LRUCache<K, V>::insert(ValuePair pair) {
+template<typename K, typename V, typename C>
+void LRUCache<K,V,C>::insert(K key, V value) {
+	insert(ValuePair(key, value));
+}
+
+template<typename K, typename V, typename C>
+void LRUCache<K,V,C>::insert(ValuePair pair) {
 	// check to see if we have something already, if so overwrite
 	K key = pair.first;
 	V value = pair.second;
@@ -69,8 +76,8 @@ void LRUCache<K, V>::insert(ValuePair pair) {
 	map_.insert(std::pair<K, typename ValueList::iterator>(key, valIt));
 }
 
-template<typename K, typename V>
-V LRUCache<K,V>::get(K key) {
+template<typename K, typename V, typename C>
+V LRUCache<K,V,C>::get(K key) {
 	typename ValueMap::iterator oldMapIt = map_.find(key);
 	typename ValueList::iterator oldValIt = oldMapIt->second;
 	ValuePair valPair = *oldValIt;
@@ -87,14 +94,14 @@ V LRUCache<K,V>::get(K key) {
 	return valPair.second;
 }
 
-template<typename K, typename V>
-void LRUCache<K,V>::clear() {
+template<typename K, typename V, typename C>
+void LRUCache<K,V,C>::clear() {
 	map_.clear();
 	vals_.clear();
 }
 
-template<typename K, typename V>
-void LRUCache<K,V>::setCapacity(unsigned int maxCapacity) {
+template<typename K, typename V, typename C>
+void LRUCache<K,V,C>::setCapacity(unsigned int maxCapacity) {
 	if (maxCapacity >= maxCapacity_) {
 		// no changes needed, great
 		maxCapacity_ = maxCapacity;
