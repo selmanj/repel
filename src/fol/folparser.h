@@ -129,10 +129,9 @@ void doParseFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
+		} else if (peekTokenType(FOLParse::INIT, its)) {
+			doParseInitFormulas(store, its);
 		} else {
-			if (peekTokenType(FOLParse::INIT, its)) {
-				doParseInitFormulas(store, its);
-			}
 			WSentence formula = doParseWeightedFormula(its);
 			store.addSecondaryFormula(formula);
 			//store.push_back(formula);
