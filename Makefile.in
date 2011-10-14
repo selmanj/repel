@@ -89,11 +89,11 @@ am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_test_cnftest_OBJECTS = cnftest.$(OBJEXT) model.$(OBJEXT) \
-	moves.$(OBJEXT) interval.$(OBJEXT) spaninterval.$(OBJEXT) \
-	domain.$(OBJEXT) siset.$(OBJEXT) boollit.$(OBJEXT) \
-	variable.$(OBJEXT) constant.$(OBJEXT) foltoken.$(OBJEXT) \
-	namegenerator.$(OBJEXT) follexer.$(OBJEXT)
+am_test_cnftest_OBJECTS = cnftest.$(OBJEXT) formulaset.$(OBJEXT) \
+	model.$(OBJEXT) moves.$(OBJEXT) interval.$(OBJEXT) \
+	spaninterval.$(OBJEXT) domain.$(OBJEXT) siset.$(OBJEXT) \
+	boollit.$(OBJEXT) variable.$(OBJEXT) constant.$(OBJEXT) \
+	foltoken.$(OBJEXT) namegenerator.$(OBJEXT) follexer.$(OBJEXT)
 test_cnftest_OBJECTS = $(am_test_cnftest_OBJECTS)
 test_cnftest_LDADD = $(LDADD)
 am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) formulaset.$(OBJEXT) \
@@ -120,11 +120,11 @@ test_lrucachetest_LDADD = $(LDADD)
 am_test_modeltest_OBJECTS = modeltest.$(OBJEXT)
 test_modeltest_OBJECTS = $(am_test_modeltest_OBJECTS)
 test_modeltest_LDADD = $(LDADD)
-am_test_movestest_OBJECTS = movestest.$(OBJEXT) model.$(OBJEXT) \
-	namegenerator.$(OBJEXT) boollit.$(OBJEXT) interval.$(OBJEXT) \
-	siset.$(OBJEXT) spaninterval.$(OBJEXT) constant.$(OBJEXT) \
-	variable.$(OBJEXT) follexer.$(OBJEXT) foltoken.$(OBJEXT) \
-	domain.$(OBJEXT) moves.$(OBJEXT)
+am_test_movestest_OBJECTS = movestest.$(OBJEXT) formulaset.$(OBJEXT) \
+	model.$(OBJEXT) namegenerator.$(OBJEXT) boollit.$(OBJEXT) \
+	interval.$(OBJEXT) siset.$(OBJEXT) spaninterval.$(OBJEXT) \
+	constant.$(OBJEXT) variable.$(OBJEXT) follexer.$(OBJEXT) \
+	foltoken.$(OBJEXT) domain.$(OBJEXT) moves.$(OBJEXT)
 test_movestest_OBJECTS = $(am_test_movestest_OBJECTS)
 test_movestest_LDADD = $(LDADD)
 am_test_si_histogramtest_OBJECTS = si_histogramtest.$(OBJEXT) \
@@ -282,8 +282,8 @@ test_follexertest_SOURCES = test/follexertest.cpp src/fol/follexer.cpp src/fol/f
 test_atomtest_SOURCES = test/atomtest.cpp src/fol/constant.cpp 
 test_folparsertest_SOURCES = test/folparsertest.cpp src/fol/formulaset.cpp src/fol/model.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp src/fol/boollit.cpp src/fol/foltoken.cpp src/fol/constant.cpp src/fol/variable.cpp src/spaninterval.cpp src/siset.cpp src/interval.cpp
 test_domaintest_SOURCES = test/domaintest.cpp src/fol/formulaset.cpp src/fol/model.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp
-test_movestest_SOURCES = test/movestest.cpp src/fol/model.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
-test_cnftest_SOURCES = test/cnftest.cpp src/fol/model.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/domain.cpp src/siset.cpp src/fol/boollit.cpp src/fol/variable.cpp src/fol/constant.cpp src/fol/foltoken.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp
+test_movestest_SOURCES = test/movestest.cpp src/fol/formulaset.cpp src/fol/model.cpp src/fol/namegenerator.cpp src/fol/boollit.cpp src/interval.cpp src/siset.cpp src/spaninterval.cpp src/fol/constant.cpp src/fol/variable.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/domain.cpp src/fol/moves.cpp
+test_cnftest_SOURCES = test/cnftest.cpp src/fol/formulaset.cpp src/fol/model.cpp src/fol/moves.cpp src/interval.cpp src/spaninterval.cpp src/fol/domain.cpp src/siset.cpp src/fol/boollit.cpp src/fol/variable.cpp src/fol/constant.cpp src/fol/foltoken.cpp src/fol/namegenerator.cpp src/fol/follexer.cpp
 test_modeltest_SOURCES = test/modeltest.cpp
 test_si_histogramtest_SOURCES = test/si_histogramtest.cpp src/spaninterval.cpp src/interval.cpp src/siset.cpp src/si_histogram.cpp
 test_lrucachetest_SOURCES = test/lrucachetest.cpp 
