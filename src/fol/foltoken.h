@@ -33,7 +33,8 @@ enum FOL_TOKEN_TYPE { INVALID,
 	VAR,
 	NUMBER,
 	TTRUE,
-	TFALSE};
+	TFALSE,
+	INIT};
 }
 
 class FOLToken {

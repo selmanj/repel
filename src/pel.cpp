@@ -17,6 +17,7 @@
 namespace po = boost::program_options;
 #include <boost/foreach.hpp>
 #include <iostream>
+#include <cstdio>
 #include <string>
 #include <vector>
 #include <utility>
@@ -27,6 +28,7 @@ namespace po = boost::program_options;
 #include "fol/domain.h"
 #include "log.h"
 #include "fol/moves.h"
+#include "fol/formulaset.h"
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
@@ -109,7 +111,8 @@ int main(int argc, char* argv[]) {
 		LOG(LOG_INFO) << "evaluating model...";
 		unsigned long sum = 0;
 		// evaluate the weight of each formula in the domain
-		BOOST_FOREACH(const WSentence formula, d->formulas()) {
+		for(FormulaSet::const_iterator it = d->formulas().begin(); it != d->formulas().end(); it++) {
+			WSentence formula = *it;
 			SISet satisfied = d->satisfied(*(formula.sentence()), model);
 			unsigned long weight = d->score(formula, model);
 			sum += weight;

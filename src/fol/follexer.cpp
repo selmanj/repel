@@ -52,6 +52,9 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
 			} else if (ident == "false") {
 				// FALSE
 				token.setType(FOLParse::TFALSE);
+			} else if (ident == "init") {
+				// INIT
+				token.setType(FOLParse::INIT);
 			} else {
 				// IDENT
 				token.setType(FOLParse::IDENT);

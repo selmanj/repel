@@ -23,18 +23,19 @@
 #include "../siset.h"
 #include "namegenerator.h"
 #include "../lrucache.h"
+#include "formulaset.h"
 
 std::string modelToString(const Model& m);
 
 class Domain {
 public:
-	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {}
-	template <class FactsForwardIterator, class FormForwardIterator>
+	Domain() : dontModifyObsPreds_(true), scoringInit_(false), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
+	template <class FactsForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
-			FormForwardIterator formulasBegin, FormForwardIterator formulasEnd,
+			FormulaSet formSet,
 			bool assumeClosedWorld=true)
-			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), maxInterval_(0,0),
-			  formulas_(formulasBegin, formulasEnd), generator_(), cache_(DOMAIN_CACHE_SIZE) {
+			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), scoringInit_(false), maxInterval_(0,0),
+			  formulas_(formSet), generator_(), cache_(DOMAIN_CACHE_SIZE) {
 
 		// create a class for collecting predicate names
 		PredCollector predCollector;
@@ -79,7 +80,7 @@ public:
 	//	obsPreds_.insert(predCollector.preds.begin(), predCollector.preds.end());
 		// now collect all unobserved preds
 		//predCollector.preds.clear();
-		for (FormForwardIterator it = formulasBegin; it != formulasEnd; it++) {
+		for (FormulaSet::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
 			it->sentence()->visit(predCollector);
 		}
 
@@ -116,7 +117,7 @@ public:
 	};
 	virtual ~Domain() {};
 
-	const std::vector<WSentence>& formulas() const {return formulas_;};
+	const FormulaSet& formulas() const {return formulas_;};
 	void addObservedPredicate(const Atom& a);
 	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};	// TODO RENAME
 	SISet getModifiableSISet(const std::string& name) const;
@@ -132,8 +133,10 @@ public:
 	bool isLiquid(const std::string& predicate) const;
 	bool dontModifyObsPreds() const {return dontModifyObsPreds_;};
 	bool assumeClosedWorld() const {return assumeClosedWorld_;};
+	bool scoringInit() const {return scoringInit_;};
 	void setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
 	void setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
+	void setScoringInit(bool scoringInit) {scoringInit_ = scoringInit;};
 
 	unsigned long score(const WSentence& s, const Model& m) const;
 	unsigned long score(const Model& m) const;
@@ -158,13 +161,14 @@ private:
 
 	bool dontModifyObsPreds_;
 	bool assumeClosedWorld_;
+	bool scoringInit_;
 
 	std::map<std::string, SISet> obsPreds_;
 	std::set<std::string> unobsPreds_;
 	std::set<std::string> constants_;
 	Interval maxInterval_;
 
-	std::vector<WSentence> formulas_;
+	FormulaSet formulas_;
 	Model observations_;
 
 	NameGenerator generator_;

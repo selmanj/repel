@@ -54,7 +54,7 @@ bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence);
 std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
 std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m, const Disjunction &dis, const SpanInterval& si);
 Model executeMove(const Domain& d, const Move& move, const Model& model);
-Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
+Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0);
 
 boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<const Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences, Domain &d);
 boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence>& sentence);

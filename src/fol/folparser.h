@@ -11,6 +11,7 @@
 #include "foltoken.h"
 #include "domain.h"
 #include "bad_parse.h"
+#include "formulaset.h"
 #include "../spaninterval.h"
 #include "../interval.h"
 #include "fol.h"
@@ -124,15 +125,37 @@ void doParseEvents(std::vector<FOL::Event>& store, iters<ForwardIterator> &its) 
 }
 
 template <class ForwardIterator>
-void doParseFormulas(std::vector<WSentence>& store, iters<ForwardIterator> &its) {
+void doParseFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
+			if (peekTokenType(FOLParse::INIT, its)) {
+				doParseInitFormulas(store, its);
+			}
 			WSentence formula = doParseWeightedFormula(its);
-			store.push_back(formula);
+			store.addSecondaryFormula(formula);
+			//store.push_back(formula);
 		}
 	}
+}
+
+template <class ForwardIterator>
+void doParseInitFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
+	consumeTokenType(FOLParse::INIT, its);
+	while (peekTokenType(FOLParse::ENDL, its)) {
+		consumeTokenType(FOLParse::ENDL, its);
+	}
+	consumeTokenType(FOLParse::OPEN_BRACE, its);
+	while (!peekTokenType(FOLParse::CLOSE_BRACE, its)) {
+		if (peekTokenType(FOLParse::ENDL, its)) {
+			consumeTokenType(FOLParse::ENDL, its);
+			continue;
+		}
+		WSentence formula = doParseWeightedFormula(its);
+		store.addPrimaryFormula(formula);
+	}
+	consumeTokenType(FOLParse::CLOSE_BRACE, its);
 }
 
 template <class ForwardIterator>
@@ -580,7 +603,7 @@ void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store)
 	file.close();
 };
 
-void parseFormulaFile(const std::string &filename, std::vector<WSentence>& store) {
+void parseFormulaFile(const std::string &filename, FormulaSet& store) {
 	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
 		std::runtime_error e("unable to open event file for parsing");
@@ -594,22 +617,22 @@ void parseFormulaFile(const std::string &filename, std::vector<WSentence>& store
 
 template <class ForwardIterator>
 void parseFormulas(const ForwardIterator &first,
-		const ForwardIterator &last, std::vector<WSentence>& store) {
+		const ForwardIterator &last, FormulaSet& store) {
 	iters<std::vector<FOLToken>::const_iterator> its(first, last);
 	doParseFormulas(store, its);
 }
 
 boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
 	std::vector<FOL::Event> events;
-	std::vector<WSentence> formulas;
+	//std::vector<WSentence> formulas;
+	FormulaSet formSet;
 
 	parseEventFile(eventfile, events);
 	std::cout << "Read " << events.size() << " events from file." << std::endl;
-	parseFormulaFile(formulafile, formulas);
-	std::cout << "Read " << formulas.size() << " formulas from file." << std::endl;
+	parseFormulaFile(formulafile, formSet);
+	std::cout << "Read " << formSet.sizeAll() << " formulas from file." << std::endl;
 
-	boost::shared_ptr<Domain> d(new Domain(events.begin(), events.end(),
-			formulas.begin(), formulas.end()));
+	boost::shared_ptr<Domain> d(new Domain(events.begin(), events.end(), formSet));
 
 	return d;
 };

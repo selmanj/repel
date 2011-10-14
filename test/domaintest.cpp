@@ -14,6 +14,7 @@
 #include "../src/fol/domain.h"
 #include "../src/fol/fol.h"
 #include "../src/fol/folparser.h"
+#include "../src/fol/formulaset.h"
 
 
 BOOST_AUTO_TEST_CASE( sat_test )
@@ -26,9 +27,9 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 
-	std::vector<WSentence> formulas;
+	FormulaSet formulas;
 
-	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+	Domain d(factvec.begin(), factvec.end(), formulas);
 	d.setMaxInterval(Interval(0,1000));
 	boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(factvec.front().atom());
 	SISet trueAt = d.satisfied(*query, d.defaultModel());
@@ -100,8 +101,8 @@ BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	std::vector<WSentence> formulas;
-	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+	FormulaSet formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query = getAsSentence("<>{mi} A(a)");
 	SISet trueAt = d.satisfied(*query, d.defaultModel());
@@ -120,8 +121,8 @@ BOOST_AUTO_TEST_CASE( conjunctionMeetsTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	std::vector<WSentence> formulas;
-	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+	FormulaSet formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query = getAsSentence("Q(a) ; R(a)");
 	SISet trueAt = d.satisfied(*query, d.defaultModel());
@@ -137,8 +138,8 @@ BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	std::vector<WSentence> formulas;
-	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+	FormulaSet formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query = getAsSentence("R(a) ^{o} R(a)");
 	SISet trueAt = d.satisfied(*query, d.defaultModel());
@@ -170,8 +171,8 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	std::vector<WSentence> formulas;
-	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end());
+	FormulaSet formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query;
 	SISet trueAt;
@@ -201,8 +202,8 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	std::vector<WSentence> formulas;
-	Domain d(factvec.begin(), factvec.end(), formulas.begin(), formulas.end(), false);
+	FormulaSet formulas;
+	Domain d(factvec.begin(), factvec.end(), formulas, false);
 
 	Model randomModel = d.randomModel();
 	BOOST_CHECK_EQUAL(randomModel.toString(), "Q(a) @ {[1:3], [17:18]}\n"

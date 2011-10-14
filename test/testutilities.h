@@ -5,6 +5,7 @@
 #include "../src/fol/fol.h"
 #include "../src/fol/folparser.h"
 #include "../src/fol/follexer.h"
+#include "../src/fol/formulaset.h"
 #include <istream>
 
 boost::shared_ptr<Sentence> getAsSentence(const std::string& str) {
@@ -21,11 +22,11 @@ Domain loadDomainWithStreams(const std::string& facts, const std::string& formul
 	std::vector<FOLToken> formulaTokens = FOLParse::tokenize(&formulasStream);
 
 	std::vector<FOL::Event> factvec;
-	std::vector<WSentence> formVec;
+	FormulaSet formulaSet;
 
 	FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec);
-	FOLParse::parseFormulas(formulaTokens.begin(), formulaTokens.end(), formVec);
-	return Domain(factvec.begin(), factvec.end(), formVec.begin(), formVec.end());
+	FOLParse::parseFormulas(formulaTokens.begin(), formulaTokens.end(), formulaSet);
+	return Domain(factvec.begin(), factvec.end(), formulaSet);
 }
 
 #endif

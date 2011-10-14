@@ -1343,23 +1343,37 @@ Model executeMove(const Domain& d, const Move& move, const Model& model) {
 	return currentModel;
 }
 
-Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel) {
+Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel) {
 	Model currentModel;
 	if (initialModel==0) currentModel = d.defaultModel();
 	else currentModel = *initialModel;
 
 	// filter out sentences we can't currently generate moves for
-	std::vector<int> movesForSentences;
-	for (int i = 0; i < d.formulas().size(); i++) {
-		if (canFindMovesFor(*(d.formulas().at(i).sentence()), d)) {
-			movesForSentences.push_back(i);
+	std::vector<int> validInit;
+	std::vector<int> validNorm;
+	FormulaSet formSet = d.formulas();
+	for (int i = 0; i < formSet.primaryFormulas().size(); i++) {
+		WSentence form = formSet.primaryFormulas().at(i);
+		if (canFindMovesFor(*(form.sentence()), d)) {
+			validInit.push_back(i);
 		} else {
 			// TODO: use a logging warning instead of stderr
 			//std::cerr << "WARNING: currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\"." << std::endl;
-			LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\".";
+			LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" <<form.sentence()->toString() << "\".";
 		}
 	}
-	if (movesForSentences.size()==0) {
+
+	for (int i = 0; i < formSet.secondaryFormulas().size(); i++) {
+		WSentence form = formSet.secondaryFormulas().at(i);
+		if (canFindMovesFor(*(form.sentence()), d)) {
+			validNorm.push_back(i);
+		} else {
+			// TODO: use a logging warning instead of stderr
+			//std::cerr << "WARNING: currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\"." << std::endl;
+			LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" <<form.sentence()->toString() << "\".";
+		}
+	}
+	if (validInit.size() + validNorm.size() ==0) {
 		// TODO: log an error
 		std::cerr << "ERROR: no valid sentences to generate moves for!" << std::endl;
 		return currentModel;
@@ -1370,6 +1384,11 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 	unsigned long bestScore = d.score(currentModel);
 	Model bestModel = currentModel;
 
+	bool workingOnInit = (validInit.size() > 0 ? true : false);
+	if (workingOnInit) {
+		d.setScoringInit(true);
+		LOG(LOG_DEBUG) << "working on initialization formulas.";
+	}
 	unsigned int showPeriodMod = (numIterations < 20 ? 1 : numIterations/20);
 
 	for (int iteration=1; iteration <= numIterations; iteration++) {
@@ -1380,11 +1399,13 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 		LOG(LOG_DEBUG) << "currentModel: " << currentModel.toString();
 		LOG(LOG_DEBUG) << "current score: " << d.score(currentModel);
 		// make a list of the current unsatisfied formulas we can calc moves for
-		std::vector<int> notFullySatisfied = movesForSentences;
+		std::vector<int> notFullySatisfied = (workingOnInit ? validInit : validNorm);
+		std::vector<WSentence> curFormulas = (workingOnInit ? d.formulas().primaryFormulas() : d.formulas().secondaryFormulas());
+
 		for (std::vector<int>::iterator it = notFullySatisfied.begin(); it != notFullySatisfied.end(); ) {
 			int i = *it;
 
-			WSentence wsent = d.formulas().at(i);
+			WSentence wsent = curFormulas.at(i);
 			//const WSentence *wsentence = *it;
 			if (maxSize*wsent.weight() == d.score(wsent, currentModel)) {
 				it = notFullySatisfied.erase(it);
@@ -1394,6 +1415,13 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 
 		}
 
+		if (notFullySatisfied.size()==0 && workingOnInit) {
+			LOG_PRINT(LOG_INFO) << "done initializing, switching to normal formulas";
+			workingOnInit = false;
+			d.setScoringInit(false);
+			continue;
+		}
+
 		if (notFullySatisfied.size()==0) {
 			// can't really improve on this
 			LOG_PRINT(LOG_INFO) << "no more sentences to satisfy!  exiting early after "<< iteration-1 << " iterations";
@@ -1401,7 +1429,7 @@ Model maxWalkSat(const Domain& d, int numIterations, double probOfRandomMove, co
 		}
 
 		// pick one at random
-		WSentence toImprove = d.formulas().at(notFullySatisfied[rand() % notFullySatisfied.size()]);
+		WSentence toImprove = curFormulas.at(notFullySatisfied[rand() % notFullySatisfied.size()]);
 		LOG(LOG_DEBUG) << "choosing sentence: " << toImprove.sentence()->toString() << " to improve.";
 		// find the set of moves that improve it
 		std::vector<Move> moves = findMovesFor(d, currentModel, *(toImprove.sentence()));
