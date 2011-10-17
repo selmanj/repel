@@ -191,6 +191,18 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondConjTest) {
 	BOOST_CHECK_EQUAL(moves[2].toString(), "toAdd: {}, toDel: {GoingDown(a) @ [5:5]}");
 }
 
+BOOST_AUTO_TEST_CASE(pelCNFDisjLiqTest) {
+	std::string facts("D-Driving(t1) @ [35:50]\n"
+			          "HasTrack(p1,t1) @ [1:50]\n"
+			          "Driving(p1) @ [35:50]");
+	std::string formulas("1: [!Driving(p1)] v [HasTrack(p1, t1) ^ D-Driving(t1)]");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	WSentence form1 = d.formulas().secondaryFormulas().at(0);
+	SISet sat = d.satisfied(*form1.sentence(), d.defaultModel());
+	BOOST_CHECK_EQUAL(sat.toString(), "{[1:34], [35:50]}");
+}
 
 BOOST_AUTO_TEST_CASE(maxWalkSatTest) {
 	std::string facts(	"D_P(a) @ [1:5]\n"

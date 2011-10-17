@@ -145,6 +145,7 @@ SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 		std::runtime_error e("Domain::satisfied not implemented yet!");
 		throw e;
 	}
+//	LOG_PRINT(LOG_DEBUG) << "sentence: " << s.toString() << " satisfied at " << toReturn.toString() << std::endl;
 	// add set to cache
 	cache_.insert(pair, toReturn);
 	return toReturn;
@@ -223,25 +224,29 @@ SISet Domain::satisfiedBoolLit(const BoolLit& b, const Model& m) const {
 
 
 SISet Domain::liqSatisfied(const Sentence& s, const Model& m) const {
+	SISet toReturn;
 	if (dynamic_cast<const Atom *>(&s) != 0) {
 		const Atom* a = dynamic_cast<const Atom *>(&s);
-		return liqSatisfiedAtom(*a, m);
+		toReturn = liqSatisfiedAtom(*a, m);
 	} else if (dynamic_cast<const Negation *>(&s) != 0) {
 		const Negation* n = dynamic_cast<const Negation *>(&s);
-		return liqSatisfiedNegation(*n, m);
+		toReturn = liqSatisfiedNegation(*n, m);
 	} else if (dynamic_cast<const Disjunction *>(&s) != 0) {
 		const Disjunction* d = dynamic_cast<const Disjunction *>(&s);
-		return liqSatisfiedDisjunction(*d, m);
+		toReturn = liqSatisfiedDisjunction(*d, m);
 	} else if (dynamic_cast<const Conjunction *>(&s) != 0) {
 		const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
-		return liqSatisfiedConjunction(*c, m);
+		toReturn = liqSatisfiedConjunction(*c, m);
 	} else if (dynamic_cast<const BoolLit *>(&s) != 0) {
 		const BoolLit* b = dynamic_cast<const BoolLit *>(&s);
-		return liqSatisfiedBoolLit(*b, m);
+		toReturn = liqSatisfiedBoolLit(*b, m);
+	} else {
+		// made it this far, unimplemented!
+		std::runtime_error e("Domain::liqSatisfied not implemented yet!");
+		throw e;
 	}
-	// made it this far, unimplemented!
-	std::runtime_error e("Domain::liqSatisfied not implemented yet!");
-	throw e;
+	//LOG_PRINT(LOG_DEBUG) << "in liqSatisfied, sentence " << s.toString() << " is satisfied at " << toReturn.toString() << std::endl;
+	return toReturn;
 }
 
 SISet Domain::liqSatisfiedAtom(const Atom& a, const Model& m) const {
@@ -251,10 +256,12 @@ SISet Domain::liqSatisfiedAtom(const Atom& a, const Model& m) const {
 	}
 	// make sure its in model
 	if (m.hasAtom(a)){
+	//	LOG_PRINT(LOG_DEBUG) << "atom " << a.toString() << " true in model." << std::endl;
 		SISet set = m.getAtom(a);
 		set.setForceLiquid(true);
 		return set;
 	} else {
+	//	LOG_PRINT(LOG_DEBUG) << "atom " << a.toString() << " NOT true in model." << std::endl;
 		return SISet(true, maxInterval_);
 	}
 }

@@ -1029,6 +1029,9 @@ bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence) {
 		}
 		return false;
 	}
+	if (boost::dynamic_pointer_cast<const LiquidOp>(sentence)) {
+		return true;
+	}
 
 	return false;
 }
