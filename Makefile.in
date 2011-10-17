@@ -77,6 +77,8 @@ am_pelnoise_OBJECTS = pelnoise.$(OBJEXT) formulaset.$(OBJEXT) \
 	variable.$(OBJEXT) siset.$(OBJEXT)
 pelnoise_OBJECTS = $(am_pelnoise_OBJECTS)
 pelnoise_LDADD = $(LDADD)
+pelnoise_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_query_sampling_OBJECTS = query_sampling.$(OBJEXT) \
 	formulaset.$(OBJEXT) si_histogram.$(OBJEXT) moves.$(OBJEXT) \
 	obsproxy.$(OBJEXT) interval.$(OBJEXT) domain.$(OBJEXT) \
@@ -85,9 +87,13 @@ am_query_sampling_OBJECTS = query_sampling.$(OBJEXT) \
 	namegenerator.$(OBJEXT) foltoken.$(OBJEXT) follexer.$(OBJEXT)
 query_sampling_OBJECTS = $(am_query_sampling_OBJECTS)
 query_sampling_LDADD = $(LDADD)
+query_sampling_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_atomtest_OBJECTS = atomtest.$(OBJEXT) constant.$(OBJEXT)
 test_atomtest_OBJECTS = $(am_test_atomtest_OBJECTS)
 test_atomtest_LDADD = $(LDADD)
+test_atomtest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_test_cnftest_OBJECTS = cnftest.$(OBJEXT) formulaset.$(OBJEXT) \
 	model.$(OBJEXT) moves.$(OBJEXT) interval.$(OBJEXT) \
@@ -103,10 +109,14 @@ am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) formulaset.$(OBJEXT) \
 	foltoken.$(OBJEXT) domain.$(OBJEXT)
 test_domaintest_OBJECTS = $(am_test_domaintest_OBJECTS)
 test_domaintest_LDADD = $(LDADD)
+test_domaintest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_follexertest_OBJECTS = follexertest.$(OBJEXT) \
 	follexer.$(OBJEXT) foltoken.$(OBJEXT) boollit.$(OBJEXT)
 test_follexertest_OBJECTS = $(am_test_follexertest_OBJECTS)
 test_follexertest_LDADD = $(LDADD)
+test_follexertest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
 	formulaset.$(OBJEXT) model.$(OBJEXT) namegenerator.$(OBJEXT) \
 	follexer.$(OBJEXT) boollit.$(OBJEXT) foltoken.$(OBJEXT) \
@@ -127,15 +137,21 @@ am_test_movestest_OBJECTS = movestest.$(OBJEXT) formulaset.$(OBJEXT) \
 	foltoken.$(OBJEXT) domain.$(OBJEXT) moves.$(OBJEXT)
 test_movestest_OBJECTS = $(am_test_movestest_OBJECTS)
 test_movestest_LDADD = $(LDADD)
+test_movestest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_si_histogramtest_OBJECTS = si_histogramtest.$(OBJEXT) \
 	spaninterval.$(OBJEXT) interval.$(OBJEXT) siset.$(OBJEXT) \
 	si_histogram.$(OBJEXT)
 test_si_histogramtest_OBJECTS = $(am_test_si_histogramtest_OBJECTS)
 test_si_histogramtest_LDADD = $(LDADD)
+test_si_histogramtest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_spanintervaltest_OBJECTS = spanintervaltest.$(OBJEXT) \
 	interval.$(OBJEXT) spaninterval.$(OBJEXT) siset.$(OBJEXT)
 test_spanintervaltest_OBJECTS = $(am_test_spanintervaltest_OBJECTS)
 test_spanintervaltest_LDADD = $(LDADD)
+test_spanintervaltest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 SCRIPTS = $(dist_noinst_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -271,7 +287,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
 AM_CXXFLAGS = $(BOOST_CPPFLAGS)
-AM_LDFLAGS = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
+LDADD = $(BOOST_LDFLAGS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 dist_noinst_SCRIPTS = autogen.sh
 pel_SOURCES = src/pel.cpp src/fol/formulaset.cpp src/fol/namegenerator.cpp src/fol/moves.cpp src/fol/model.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp src/fol/domain.cpp
 pelnoise_SOURCES = src/pelnoise.cpp src/fol/formulaset.cpp src/fol/model.cpp src/fol/domain.cpp src/fol/namegenerator.cpp src/interval.cpp src/spaninterval.cpp src/fol/boollit.cpp src/fol/constant.cpp src/fol/follexer.cpp src/fol/foltoken.cpp src/fol/variable.cpp src/siset.cpp 
