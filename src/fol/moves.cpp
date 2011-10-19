@@ -1054,7 +1054,12 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 	}
 	if (const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s)) {
 		// if it's a liquid operator, just use the moves for liquid operators
-		return findMovesForLiquid(d, m, s, si);
+		SpanInterval liqSi = si.toLiquid();
+		if (!liqSi.isEmpty()) {
+			moves = findMovesForLiquid(d, m, *liq->sentence(), liqSi);
+		}
+		return moves;
+
 	}
 	if (const Negation* n = dynamic_cast<const Negation*>(&s)) {
 		if (const Atom* a = dynamic_cast<const Atom*>(&*n->sentence())) {
@@ -1070,7 +1075,6 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 			return moves;
 		}
 		if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&*n->sentence())) {
-			// TODO: implement code that handles multiple diamond operators!
 			if (dia->relations().size() == 13) {
 				const Atom* a = dynamic_cast<const Atom*>(&*dia->sentence());
 				if (a) {
@@ -1083,8 +1087,25 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 				}
 			}
 			if (dia->relations().size() > 1) {
-				LOG_PRINT(LOG_ERROR) << "currently cannot handle moves for diamond ops with multiple relations!";
-				throw std::runtime_error("unimplemented moves found");
+				// TODO: this is a poor way to handle this
+				// ASSUME for now that our moves are all disjoint!  probably not a valid assumption, but need to do something here...
+				Move move;
+				BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
+					boost::optional<SpanInterval> siRel = si.satisfiesRelation(rel);
+					boost::shared_ptr<Sentence> insideClone(dia->sentence()->clone());
+					boost::shared_ptr<Negation> negatedInside(new Negation(insideClone));
+					if (siRel) {
+						std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *negatedInside->sentence(), siRel.get());
+						BOOST_FOREACH(Move localMove, localMoves) {
+							move.toAdd.insert(move.toAdd.end(), localMove.toAdd.begin(), localMove.toAdd.end());
+							move.toDel.insert(move.toAdd.end(), localMove.toDel.begin(), localMove.toDel.end());
+						}
+					}
+					moves.push_back(move);
+					return moves;
+				}
+				//LOG_PRINT(LOG_ERROR) << "currently cannot handle moves for diamond ops with multiple relations!";
+				//throw std::runtime_error("unimplemented moves found");
 			}
 			if (dia->relations().size() == 0) return moves;
 			// OK, we've got !<>{r} (phi), whether phi is liquid or an atom it should be relatively the same
@@ -1176,10 +1197,24 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 		// TODO: implement moves for ![phi]
 	}
 	if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&s)) {
+		// check for liq operator
+		if (const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&*dia->sentence())) {
+			// for now, just calculate the set of span intervals that meet the relations, and find a move for each one
+			BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
+				LOG_PRINT(LOG_DEBUG) << "si = " << si.toString() << std::endl;
+				boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel));
+				if (siRel) {
+					std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *liq, siRel.get());
+					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
+				}
+			}
+			return moves;
+		}
+
 		const Atom* a = dynamic_cast<const Atom*>(&*dia->sentence());
 
 		if (!a) {
-			LOG_PRINT(LOG_ERROR) << "must be an atom inside the diamond op! :" << s.toString();
+			LOG_PRINT(LOG_ERROR) << "must be an atom or liquid op inside the diamond op! :" << s.toString();
 			throw std::runtime_error("unable to calculate moves");
 		}
 		if (dia->relations().size() > 1) {

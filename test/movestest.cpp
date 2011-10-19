@@ -318,5 +318,21 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm3) {
 	BOOST_FOREACH(Move move, moves) {
 		std::cout << "form3 move: " << move.toString() << std::endl;
 	}
+}
 
+BOOST_AUTO_TEST_CASE(diamondLessThan) {
+	std::string facts(  "ElevatorEnter(a) @ [1:5]");
+	std::string formulas("100: [ !ElevatorEnter(a) ] v <>{>} [ GateExit(a) ]");
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+	d.setDontModifyObsPreds(false);
+	srand(0);
+	d.setMaxInterval(Interval(1,10));
+
+	const Sentence *s = &(*d.formulas().secondaryFormulas().at(0).sentence());
+	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *s);
+	BOOST_CHECK(moves.size()!=0);
+	BOOST_FOREACH(Move m, moves) {
+		std::cout << "move = " << m.toString() << std::endl;
+	}
 }
