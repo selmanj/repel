@@ -18,7 +18,7 @@ public:
 	    : primaryFormulas_(primaryFormulas), secondaryFormulas_(secondaryFormulas), curIt_(), onPrimary_(true) {
 		if (primaryFormulas_->begin() != primaryFormulas_->end()) {
 			curIt_= primaryFormulas_->begin();
-		} else if (secondaryFormulas_->begin() != secondaryFormulas->end()) {
+		} else if (secondaryFormulas_->begin() != secondaryFormulas_->end()) {
 			onPrimary_ = false;
 			curIt_ = secondaryFormulas_->begin();
 		} else {
