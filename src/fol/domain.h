@@ -7,7 +7,7 @@
 
 #ifndef DOMAIN_H_
 #define DOMAIN_H_
-#define DOMAIN_CACHE_SIZE 50000
+#define DOMAIN_CACHE_SIZE 0
 
 #include <set>
 #include <string>
