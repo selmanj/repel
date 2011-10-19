@@ -55,6 +55,7 @@ void LRUCache<K,V,C>::insert(K key, V value) {
 
 template<typename K, typename V, typename C>
 void LRUCache<K,V,C>::insert(ValuePair pair) {
+	if (maxCapacity_ == 0) return;
 	// check to see if we have something already, if so overwrite
 	K key = pair.first;
 	V value = pair.second;
