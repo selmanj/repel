@@ -1091,7 +1091,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 				// ASSUME for now that our moves are all disjoint!  probably not a valid assumption, but need to do something here...
 				Move move;
 				BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
-					boost::optional<SpanInterval> siRel = si.satisfiesRelation(rel);
+					boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel));
 					boost::shared_ptr<Sentence> insideClone(dia->sentence()->clone());
 					boost::shared_ptr<Negation> negatedInside(new Negation(insideClone));
 					if (siRel) {
@@ -1197,19 +1197,22 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 		// TODO: implement moves for ![phi]
 	}
 	if (const DiamondOp* dia = dynamic_cast<const DiamondOp*>(&s)) {
-		// check for liq operator
-		if (const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&*dia->sentence())) {
+		// check for liq operator or atom
+		if (dynamic_cast<const LiquidOp*>(&*dia->sentence()) || dynamic_cast<const Atom*>(&*dia->sentence())) {
 			// for now, just calculate the set of span intervals that meet the relations, and find a move for each one
+			const Sentence* sub = &*dia->sentence();
 			BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
-				LOG_PRINT(LOG_DEBUG) << "si = " << si.toString() << std::endl;
+				//LOG_PRINT(LOG_DEBUG) << "si = " << si.toString() << std::endl;
 				boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel));
 				if (siRel) {
-					std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *liq, siRel.get());
+					std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *sub, siRel.get());
 					moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 				}
 			}
 			return moves;
 		}
+
+		// TODO: below is unreachable for now!
 
 		const Atom* a = dynamic_cast<const Atom*>(&*dia->sentence());
 

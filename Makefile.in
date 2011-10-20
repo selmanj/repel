@@ -70,6 +70,9 @@ am_pel_OBJECTS = pel.$(OBJEXT) formulaset.$(OBJEXT) \
 	variable.$(OBJEXT) siset.$(OBJEXT) domain.$(OBJEXT)
 pel_OBJECTS = $(am_pel_OBJECTS)
 pel_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+pel_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_pelnoise_OBJECTS = pelnoise.$(OBJEXT) formulaset.$(OBJEXT) \
 	model.$(OBJEXT) domain.$(OBJEXT) namegenerator.$(OBJEXT) \
 	interval.$(OBJEXT) spaninterval.$(OBJEXT) boollit.$(OBJEXT) \
@@ -102,6 +105,8 @@ am_test_cnftest_OBJECTS = cnftest.$(OBJEXT) formulaset.$(OBJEXT) \
 	foltoken.$(OBJEXT) namegenerator.$(OBJEXT) follexer.$(OBJEXT)
 test_cnftest_OBJECTS = $(am_test_cnftest_OBJECTS)
 test_cnftest_LDADD = $(LDADD)
+test_cnftest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_domaintest_OBJECTS = domaintest.$(OBJEXT) formulaset.$(OBJEXT) \
 	model.$(OBJEXT) namegenerator.$(OBJEXT) boollit.$(OBJEXT) \
 	interval.$(OBJEXT) siset.$(OBJEXT) spaninterval.$(OBJEXT) \
@@ -124,12 +129,18 @@ am_test_folparsertest_OBJECTS = folparsertest.$(OBJEXT) \
 	siset.$(OBJEXT) interval.$(OBJEXT)
 test_folparsertest_OBJECTS = $(am_test_folparsertest_OBJECTS)
 test_folparsertest_LDADD = $(LDADD)
+test_folparsertest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_lrucachetest_OBJECTS = lrucachetest.$(OBJEXT)
 test_lrucachetest_OBJECTS = $(am_test_lrucachetest_OBJECTS)
 test_lrucachetest_LDADD = $(LDADD)
+test_lrucachetest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_modeltest_OBJECTS = modeltest.$(OBJEXT)
 test_modeltest_OBJECTS = $(am_test_modeltest_OBJECTS)
 test_modeltest_LDADD = $(LDADD)
+test_modeltest_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_movestest_OBJECTS = movestest.$(OBJEXT) formulaset.$(OBJEXT) \
 	model.$(OBJEXT) namegenerator.$(OBJEXT) boollit.$(OBJEXT) \
 	interval.$(OBJEXT) siset.$(OBJEXT) spaninterval.$(OBJEXT) \

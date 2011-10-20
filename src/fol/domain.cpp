@@ -145,6 +145,8 @@ SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 		std::runtime_error e("Domain::satisfied not implemented yet!");
 		throw e;
 	}
+	// for now, force it to be disjoint
+	toReturn.makeDisjoint();
 //	LOG_PRINT(LOG_DEBUG) << "sentence: " << s.toString() << " satisfied at " << toReturn.toString() << std::endl;
 	// add set to cache
 	cache_.insert(pair, toReturn);
