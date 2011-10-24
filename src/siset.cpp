@@ -463,6 +463,29 @@ SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVA
 	return spanned;
 }
 
+bool equalByInterval(const SISet& a, const SISet& b) {
+	// this is expensive
+	std::set<Interval> aIntervals;
+	std::set<Interval> bIntervals;
+
+	for (std::set<SpanInterval>::const_iterator it = a.set_.begin(); it != a.set_.end(); it++) {
+		SpanInterval si = *it;
+		aIntervals.insert(si.begin(), si.end());
+	}
+	for (std::set<SpanInterval>::const_iterator it = b.set_.begin(); it != b.set_.end(); it++) {
+		SpanInterval si = *it;
+		aIntervals.insert(si.begin(), si.end());
+	}
+
+	if (    std::includes(aIntervals.begin(), aIntervals.end(),
+			    bIntervals.begin(), bIntervals.end())
+	     &&
+			std::includes(bIntervals.begin(), bIntervals.end(),
+				aIntervals.begin(), aIntervals.end())
+	    ) return true;
+	return false;
+}
+
 unsigned long hammingDistance(const SISet& a, const SISet& b) {
 	// (a ^ !b) v (!a ^ b)
 	SISet aComp = a.compliment();

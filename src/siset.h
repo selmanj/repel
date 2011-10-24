@@ -47,11 +47,12 @@ public:
 
 	std::string toString() const;
 
-	bool operator ==(const SISet& a) const {return set_ == a.set_;}		// TODO: THIS MIGHT BE WRONG IN SOME CASES
+	bool operator ==(const SISet& a) const {return set_ == a.set_;}
 	bool operator !=(const SISet& a) const {return !(*this == a);}
 
 	friend SISet intersection(const SISet& a, const SISet& b);
 	friend SISet span(const SpanInterval& a, const SpanInterval& b);
+	friend bool equalByInterval(const SISet& a, const SISet& b);
 private:
 	bool forceLiquid_;
 	std::set<SpanInterval> set_;
@@ -62,6 +63,8 @@ SISet intersection(const SISet& a, const SpanInterval& si);
 SISet intersection(const SISet& a, const SISet& b);
 SISet span(const SpanInterval& a, const SpanInterval& b);
 SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION);
+bool equalByInterval(const SISet& a, const SISet& b);
+
 unsigned long hammingDistance(const SISet& a, const SISet& b);
 
 
