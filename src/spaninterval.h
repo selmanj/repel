@@ -26,10 +26,10 @@ public:
 	SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo,
 			const Interval& maxInterval=Interval(0, UINT_MAX));
 
-	typedef SpanIntervalIterator iterator;
+	typedef SpanIntervalIterator const_iterator;
 
-	iterator begin() const;
-	iterator end() const;
+	const_iterator begin() const;
+	const_iterator end() const;
 
 	Interval const& start() const {return start_;};
 	Interval const& finish() const {return finish_;};
@@ -102,14 +102,17 @@ SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
 
 class SpanIntervalIterator : public std::iterator<std::forward_iterator_tag, Interval> {
 public:
-	SpanIntervalIterator() : sp_(1,0,1,0), curr_(0,0) {};
-	SpanIntervalIterator(const SpanInterval& sp) : sp_(1,0,1,0), curr_(0,0) {
+	SpanIntervalIterator() : sp_(0,0,0,0), curr_(0,0), isDead_(true) {};
+	SpanIntervalIterator(const SpanInterval& sp) : sp_(0,0,0,0), curr_(0,0), isDead_(true) {
 		if (!sp.isEmpty()) {
 			sp_ = sp.normalize().get();
 			curr_ = Interval(sp_.start().start(), sp_.finish().start());
+			isDead_ = false;
 		}
 	}
 	bool operator==(const SpanIntervalIterator& other) const {
+		if (isDead_ && other.isDead_) return true;
+		if (isDead_ || other.isDead_) return false;
 		return (sp_==other.sp_ && curr_==curr_);
 	}
 	bool operator!=(const SpanIntervalIterator& other) const {
@@ -122,13 +125,15 @@ public:
 		return &curr_;
 	}
 	SpanIntervalIterator& operator++() {
-		if (sp_.isEmpty()) {return *this;}	// do nothing
+		if (isDead_) return *this;
 		if (curr_.start() == sp_.start().finish() && curr_.finish() == sp_.finish().finish()) {
 			// we're at the end, turn into a null value
-			sp_ = SpanInterval(1,0,1,0);
+			sp_ = SpanInterval(0,0,0,0);
 			curr_ = Interval(0,0);
+			isDead_ = true;
 			return *this;
 		}
+
 		if (curr_.finish() != sp_.finish().finish()) {
 			curr_.setFinish(curr_.finish()+1);
 		} else {
@@ -146,6 +151,7 @@ public:
 private:
 	SpanInterval sp_;
 	Interval curr_;
+	bool isDead_;
 };
 
 #endif /* SPANINTERVAL_H */

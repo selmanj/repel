@@ -33,10 +33,10 @@ SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigne
 {
 }
 
-SpanInterval::iterator SpanInterval::begin() const {
+SpanInterval::const_iterator SpanInterval::begin() const {
 	return SpanIntervalIterator(*this);
 }
-SpanInterval::iterator SpanInterval::end() const {
+SpanInterval::const_iterator SpanInterval::end() const {
 	return SpanIntervalIterator();
 }
 

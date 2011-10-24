@@ -17,6 +17,7 @@
 #include <iostream>
 #include <set>
 #include <iterator>
+#include <algorithm>
 
 BOOST_AUTO_TEST_CASE( basic_test )
 {
@@ -65,10 +66,10 @@ BOOST_AUTO_TEST_CASE( siset_test ) {
 	BOOST_CHECK(set.isDisjoint());
 
 	// TODO turn this part into a test
-	std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
+	//std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
 	SISet dcompliment = set.compliment().compliment();
 	dcompliment.makeDisjoint();
-	std::cout << "double compliment is " << dcompliment.toString() << std::endl;
+	//std::cout << "double compliment is " << dcompliment.toString() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( hammingliq_dist_test) {
@@ -116,7 +117,8 @@ BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
 	SpanInterval sp1(1,5,6,10, maxInterval);
 	boost::optional<SpanInterval> sp2 = sp1.satisfiesRelation(Interval::MEETS);
 	BOOST_CHECK(sp2);
-	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(7, 11), (7, 1000)]");
+	SpanInterval si = sp2.get();
+	BOOST_CHECK_EQUAL(si.toString(), "[(7, 11), (7, 1000)]");
 	sp1 = SpanInterval(999, 1000, 1000, 1000, maxInterval);
 	sp2 = sp1.satisfiesRelation(Interval::MEETS);
 	BOOST_CHECK(!sp2);
@@ -124,19 +126,23 @@ BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
 	sp1 = SpanInterval(1,4,7,9, maxInterval);
 	sp2 = sp1.satisfiesRelation(Interval::OVERLAPS);
 	BOOST_CHECK(sp2);
-	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(2, 9), (8, 1000)]");
+	si = sp2.get();
+	BOOST_CHECK_EQUAL(si.toString(), "[(2, 9), (8, 1000)]");
 
 	sp2 = sp1.satisfiesRelation(Interval::OVERLAPSI);
 	BOOST_CHECK(sp2);
-	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(0, 3), (1, 8)]");
+	si = sp2.get();
+	BOOST_CHECK_EQUAL(si.toString(), "[(0, 3), (1, 8)]");
 
 	sp2 = sp1.satisfiesRelation(Interval::STARTS);
 	BOOST_CHECK(sp2);
-	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(1, 4), (8, 1000)]");
+	si = sp2.get();
+	BOOST_CHECK_EQUAL(si.toString(), "[(1, 4), (8, 1000)]");
 
 	sp2 = sp1.satisfiesRelation(Interval::STARTSI);
 	BOOST_CHECK(sp2);
-	BOOST_CHECK_EQUAL(sp2.get().toString(), "[(1, 4), (1, 8)]");
+	si = sp2.get();
+	BOOST_CHECK_EQUAL(si.toString(), "[(1, 4), (1, 8)]");
 }
 
 BOOST_AUTO_TEST_CASE( spanIntervalspan ) {
@@ -144,6 +150,7 @@ BOOST_AUTO_TEST_CASE( spanIntervalspan ) {
 	SpanInterval sp2(3,7,9,11);
 
 	SISet set = span(sp1, sp2);
+	/*
 	BOOST_FOREACH(SpanInterval sp, set.set()) {
 		std::cout << "si = " << sp.toString() << std::endl;
 	}
@@ -152,6 +159,7 @@ BOOST_AUTO_TEST_CASE( spanIntervalspan ) {
 	BOOST_FOREACH(SpanInterval sp, set.set()) {
 		std::cout << "si = " << sp.toString() << std::endl;
 	}
+	*/
 }
 
 BOOST_AUTO_TEST_CASE( spanIntervalSize ) {
@@ -216,4 +224,22 @@ BOOST_AUTO_TEST_CASE( siSetComplimentTest) {
 	BOOST_CHECK_EQUAL(set.toString(), "{[(1, 9), (1, 20)], [(10, 10), (10, 19)], [(10, 18), (20, 20)], [(11, 18), (11, 19)], [19:20]}");
 	SISet compliment = set.compliment();
 	BOOST_CHECK_EQUAL(compliment.toString(), "{}");
+}
+
+BOOST_AUTO_TEST_CASE ( siIteratorTest) {
+	SpanInterval sp(1,10,1,10);
+	std::vector<Interval> intervals;
+
+	std::copy(sp.begin(), sp.end(), std::inserter(intervals, intervals.begin()));
+	BOOST_CHECK_EQUAL(sp.size(), intervals.size());
+
+	// make sure that every interval is in there
+	for (int start = 1; start <= 10; start++) {
+		for (int finish = start; finish <= 10; finish++) {
+			Interval interval(start, finish);
+			BOOST_CHECK(std::find(intervals.begin(), intervals.end(), interval) != intervals.end());
+		}
+	}
+
+
 }
