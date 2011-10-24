@@ -100,7 +100,7 @@ inline unsigned int SpanInterval::size() const {
 
 SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
 
-class SpanIntervalIterator {
+class SpanIntervalIterator : public std::iterator<std::forward_iterator_tag, Interval> {
 public:
 	SpanIntervalIterator() : sp_(1,0,1,0), curr_(0,0) {};
 	SpanIntervalIterator(const SpanInterval& sp) : sp_(1,0,1,0), curr_(0,0) {
