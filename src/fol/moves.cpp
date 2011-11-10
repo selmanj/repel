@@ -789,10 +789,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
 	localMoves = findMovesForLiquid(d, m, *precedent, b);
 	moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
-
 	return moves;
-
-
 }
 
 
