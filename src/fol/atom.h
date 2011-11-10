@@ -98,8 +98,12 @@ private:
 	virtual int doPrecedence() const {
 		return 0;
 	};
-
-
-
 };
+
+struct atomcmp {
+	bool operator()(const Atom& a, const Atom& b) const {
+		return a.toString() < b.toString();
+	}
+};
+
 #endif

@@ -1401,6 +1401,10 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 		}
 	}
 
+	// set up a mapping from atom to formula index.  this represents formulas where the atom occurs
+	PredCollector collector;
+
+
 	/*
 	for (int i = 0; i < formSet.secondaryFormulas().size(); i++) {
 		WSentence form = formSet.secondaryFormulas().at(i);

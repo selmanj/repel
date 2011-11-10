@@ -12,12 +12,6 @@
 #include "fol.h"
 #include "../siset.h"
 
-struct atomcmp {
-	bool operator()(const Atom& a, const Atom& b) const {
-		return a.toString() < b.toString();
-	}
-};
-
 class Model {
 public:
 	typedef std::map<Atom, SISet, atomcmp>::const_iterator const_iterator;

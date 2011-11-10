@@ -37,9 +37,6 @@ public:
 			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), maxInterval_(0,0),
 			  formulas_(formSet), generator_(), cache_(DOMAIN_CACHE_SIZE) {
 
-		// create a class for collecting predicate names
-		PredCollector predCollector;
-
 		// find the maximum interval of time
 		if (factsBegin == factsEnd) {
 			// what to do for time??
@@ -75,11 +72,10 @@ public:
 				obsPreds_.erase(a->name());
 				obsPreds_.insert(std::pair<std::string, SISet>(a->name(), curSet));
 			}
-			//it->first->visit(predCollector);
 		}
-	//	obsPreds_.insert(predCollector.preds.begin(), predCollector.preds.end());
 		// now collect all unobserved preds
-		//predCollector.preds.clear();
+
+		PredCollector predCollector;
 		for (FormulaSet::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
 			it->sentence()->visit(predCollector);
 		}
@@ -91,7 +87,11 @@ public:
 				it++) {
 			obsJustPreds.insert(it->first);
 		}
-		std::set_difference(predCollector.preds.begin(), predCollector.preds.end(),
+		std::set<std::string> foundPreds;
+		for (std::set<Atom>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
+			foundPreds.insert(it->toString());
+		}
+		std::set_difference(foundPreds.begin(), foundPreds.end(),
 				obsJustPreds.begin(), obsJustPreds.end(),
 				std::inserter(unobsPreds_, unobsPreds_.end()));
 

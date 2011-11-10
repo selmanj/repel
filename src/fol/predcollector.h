@@ -2,9 +2,7 @@
 #define PREDCOLLECTOR_H
 
 #include "sentencevisitor.h"
-
-class Sentence;
-class Atom;
+#include "atom.h"
 
 class PredCollector : public SentenceVisitor {
 public:
@@ -14,11 +12,11 @@ public:
 		// only care about atoms
 		const Atom* a = dynamic_cast<const Atom*>(&s);
 		if (a != NULL) {
-			preds.insert(a->name());
+			preds.insert(*a);
 		}
 	}
 
-	std::set<std::string> preds;
+	std::set<Atom, atomcmp> preds;
 };
 
 #endif
