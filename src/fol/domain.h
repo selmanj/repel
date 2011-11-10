@@ -29,12 +29,12 @@ std::string modelToString(const Model& m);
 
 class Domain {
 public:
-	Domain() : dontModifyObsPreds_(true), scoringInit_(false), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
+	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
 	template <class FactsForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormulaSet formSet,
 			bool assumeClosedWorld=true)
-			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), scoringInit_(false), maxInterval_(0,0),
+			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), maxInterval_(0,0),
 			  formulas_(formSet), generator_(), cache_(DOMAIN_CACHE_SIZE) {
 
 		// create a class for collecting predicate names
@@ -117,7 +117,7 @@ public:
 	};
 	virtual ~Domain() {};
 
-	const FormulaSet& formulas() const {return formulas_;};
+	const FormulaSet& formulaSet() const {return formulas_;};
 	void addObservedPredicate(const Atom& a);
 	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};	// TODO RENAME
 	SISet getModifiableSISet(const std::string& name) const;
@@ -133,10 +133,8 @@ public:
 	bool isLiquid(const std::string& predicate) const;
 	bool dontModifyObsPreds() const {return dontModifyObsPreds_;};
 	bool assumeClosedWorld() const {return assumeClosedWorld_;};
-	bool scoringInit() const {return scoringInit_;};
 	void setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
 	void setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
-	void setScoringInit(bool scoringInit) {scoringInit_ = scoringInit;};
 
 	unsigned long score(const WSentence& s, const Model& m) const;
 	unsigned long score(const Model& m) const;
@@ -161,7 +159,6 @@ private:
 
 	bool dontModifyObsPreds_;
 	bool assumeClosedWorld_;
-	bool scoringInit_;
 
 	std::map<std::string, SISet> obsPreds_;
 	std::set<std::string> unobsPreds_;

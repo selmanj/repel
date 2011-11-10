@@ -1390,13 +1390,13 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	else currentModel = *initialModel;
 
 	// filter out sentences we can't currently generate moves for
-	std::vector<int> validInit;
-	std::vector<int> validNorm;
-	FormulaSet formSet = d.formulas();
-	for (int i = 0; i < formSet.primaryFormulas().size(); i++) {
-		WSentence form = formSet.primaryFormulas().at(i);
+	std::vector<int> validForms;
+	//std::vector<int> validNorm;
+	FormulaSet formSet = d.formulaSet();
+	for (int i = 0; i < formSet.formulas().size(); i++) {
+		WSentence form = formSet.formulas().at(i);
 		if (canFindMovesFor(*(form.sentence()), d)) {
-			validInit.push_back(i);
+			validForms.push_back(i);
 		} else {
 			// TODO: use a logging warning instead of stderr
 			//std::cerr << "WARNING: currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\"." << std::endl;
@@ -1404,6 +1404,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 		}
 	}
 
+	/*
 	for (int i = 0; i < formSet.secondaryFormulas().size(); i++) {
 		WSentence form = formSet.secondaryFormulas().at(i);
 		if (canFindMovesFor(*(form.sentence()), d)) {
@@ -1414,7 +1415,8 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 			LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" <<form.sentence()->toString() << "\".";
 		}
 	}
-	if (validInit.size() + validNorm.size() ==0) {
+	*/
+	if (validForms.size() ==0) {
 		// TODO: log an error
 		std::cerr << "ERROR: no valid sentences to generate moves for!" << std::endl;
 		return currentModel;
@@ -1425,11 +1427,6 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	unsigned long bestScore = d.score(currentModel);
 	Model bestModel = currentModel;
 
-	bool workingOnInit = (validInit.size() > 0 ? true : false);
-	if (workingOnInit) {
-		d.setScoringInit(true);
-		LOG(LOG_DEBUG) << "working on initialization formulas.";
-	}
 	unsigned int showPeriodMod = (numIterations < 20 ? 1 : numIterations/20);
 
 	for (int iteration=1; iteration <= numIterations; iteration++) {
@@ -1440,8 +1437,8 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 		LOG(LOG_DEBUG) << "currentModel: " << currentModel.toString();
 		LOG(LOG_DEBUG) << "current score: " << d.score(currentModel);
 		// make a list of the current unsatisfied formulas we can calc moves for
-		std::vector<int> notFullySatisfied = (workingOnInit ? validInit : validNorm);
-		std::vector<WSentence> curFormulas = (workingOnInit ? d.formulas().primaryFormulas() : d.formulas().secondaryFormulas());
+		std::vector<int> notFullySatisfied = validForms;
+		std::vector<WSentence> curFormulas = d.formulaSet().formulas();
 
 		for (std::vector<int>::iterator it = notFullySatisfied.begin(); it != notFullySatisfied.end(); ) {
 			int i = *it;
@@ -1453,14 +1450,6 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 			} else {
 				it++;
 			}
-
-		}
-
-		if (notFullySatisfied.size()==0 && workingOnInit) {
-			LOG_PRINT(LOG_INFO) << "done initializing, switching to normal formulas";
-			workingOnInit = false;
-			d.setScoringInit(false);
-			continue;
 		}
 
 		if (notFullySatisfied.size()==0) {

@@ -94,16 +94,9 @@ unsigned long Domain::score(const WSentence& w, const Model& m) const {
 
 unsigned long Domain::score(const Model& m) const {
 	unsigned long sum = 0;
-	if (scoringInit_) {
-		for (std::vector<WSentence>::const_iterator it = formulas_.primaryFormulas().begin(); it != formulas_.primaryFormulas().end(); it++) {
-			sum += score(*it, m);
-		}
-	} else {
-		for (std::vector<WSentence>::const_iterator it = formulas_.secondaryFormulas().begin(); it != formulas_.secondaryFormulas().end(); it++) {
-			sum += score(*it, m);
-		}
+	for (std::vector<WSentence>::const_iterator it = formulas_.formulas().begin(); it != formulas_.formulas().end(); it++) {
+		sum += score(*it, m);
 	}
-
 	return sum;
 }
 

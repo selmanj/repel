@@ -11,32 +11,27 @@
 #include <iterator>
 #include "fol.h"
 
-class FormulaSetIterator;
+// class FormulaSetIterator;
 
 class FormulaSet {
 public:
-	typedef FormulaSetIterator const_iterator;
+	typedef std::vector<WSentence>::const_iterator const_iterator;
 
 	FormulaSet();
 	virtual ~FormulaSet();
 
-	const_iterator begin() const {return FormulaSetIterator(&primaryFormulas_, &secondaryFormulas_); }
-	const_iterator end() const {return FormulaSetIterator(); }
+	const_iterator begin() const {return formulas_.begin(); }
+	const_iterator end() const {return formulas_.end(); }
 
-	const std::vector<WSentence>& primaryFormulas() const {return primaryFormulas_;}
-	const std::vector<WSentence>& secondaryFormulas() const {return secondaryFormulas_;}
+	const std::vector<WSentence>& formulas() const {return formulas_;}
 
-	int sizeAll() const {return primaryFormulas_.size() + secondaryFormulas_.size();}
-	bool hasPrimaryFormulas() const {return !primaryFormulas_.empty();}
-
-	void addPrimaryFormula(const WSentence& sentence) {primaryFormulas_.push_back(sentence);}
-	void addSecondaryFormula(const WSentence& sentence) {secondaryFormulas_.push_back(sentence);}
+	int size() const {return formulas_.size();}
+	void addFormula(const WSentence& sentence) {formulas_.push_back(sentence);}
 
 private:
-	std::vector<WSentence> primaryFormulas_;
-	std::vector<WSentence> secondaryFormulas_;	// yeah i know i said this was a set, but we won't actually enforce that
+	std::vector<WSentence> formulas_;
 };
-
+/*
 class FormulaSetIterator : public std::iterator<std::forward_iterator_tag, WSentence> {
 public:
 	FormulaSetIterator() : primaryFormulas_(0), secondaryFormulas_(0), curIt_(), onPrimary_(false) {};
@@ -94,5 +89,5 @@ private:
 	const std::vector<WSentence>* secondaryFormulas_;
 	std::vector<WSentence>::const_iterator curIt_;
 };
-
+*/
 #endif /* FORMULASET_H_ */

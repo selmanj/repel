@@ -129,16 +129,15 @@ void doParseFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
-		} else if (peekTokenType(FOLParse::INIT, its)) {
-			doParseInitFormulas(store, its);
 		} else {
 			WSentence formula = doParseWeightedFormula(its);
-			store.addSecondaryFormula(formula);
+			store.addFormula(formula);
 			//store.push_back(formula);
 		}
 	}
 }
 
+/*
 template <class ForwardIterator>
 void doParseInitFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
 	consumeTokenType(FOLParse::INIT, its);
@@ -156,6 +155,7 @@ void doParseInitFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
 	}
 	consumeTokenType(FOLParse::CLOSE_BRACE, its);
 }
+*/
 
 template <class ForwardIterator>
 std::vector<FOL::Event> doParseEvent(iters<ForwardIterator> &its) {
@@ -629,7 +629,7 @@ boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, cons
 	parseEventFile(eventfile, events);
 	std::cout << "Read " << events.size() << " events from file." << std::endl;
 	parseFormulaFile(formulafile, formSet);
-	std::cout << "Read " << formSet.sizeAll() << " formulas from file." << std::endl;
+	std::cout << "Read " << formSet.size() << " formulas from file." << std::endl;
 
 	boost::shared_ptr<Domain> d(new Domain(events.begin(), events.end(), formSet));
 
