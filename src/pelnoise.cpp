@@ -74,7 +74,7 @@ ConfMatrix confusionMatrix(const Model& groundTruth, const Model& model, double 
 				continue;
 		}
 
-		BOOST_FOREACH(SpanInterval truthSi, set.set()) {
+		BOOST_FOREACH(SpanInterval truthSi, set.intervals()) {
 			// now, find ALL intervals that might intersect with htis
 			std::map<Atom, SpanInterval, atomcmp > intersects;
 			BOOST_FOREACH(Atom modelA, model.atoms()) {
@@ -84,7 +84,7 @@ ConfMatrix confusionMatrix(const Model& groundTruth, const Model& model, double 
 					continue;
 				}
 
-				BOOST_FOREACH(SpanInterval modelSi, setA.set()) {
+				BOOST_FOREACH(SpanInterval modelSi, setA.intervals()) {
 					if (intersection(modelSi, truthSi).size() > 0
 							&& (double)intersection(modelSi, truthSi).liqSize() / ((double)truthSi.liqSize()) >= threshhold) {
 						/*
@@ -136,14 +136,14 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 	BOOST_FOREACH(Atom a, groundTruth.atoms()) {
 		SISet set = groundTruth.getAtom(a);
 
-		BOOST_FOREACH(SpanInterval si, set.set()) {
+		BOOST_FOREACH(SpanInterval si, set.intervals()) {
 			SISet justSi(true, set.maxInterval());
 			justSi.add(si);
 			if (model.hasAtom(a)) {
 				SISet modelSet = model.getAtom(a);
 				SISet intersect = intersection(justSi, modelSet);
 				bool truePosFound = false;
-				BOOST_FOREACH(SpanInterval siInter, intersect.set()) {
+				BOOST_FOREACH(SpanInterval siInter, intersect.intervals()) {
 					if (((double)siInter.liqSize() / (double) si.liqSize()) >= threshhold) {
 						truePosFound = true;
 						break;
@@ -164,14 +164,14 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 		//Atom a = pair.first;
 		SISet set = model.getAtom(a);
 
-		BOOST_FOREACH(SpanInterval si, set.set()) {
+		BOOST_FOREACH(SpanInterval si, set.intervals()) {
 			SISet justSi(true, set.maxInterval());
 			justSi.add(si);
 			if (groundTruth.hasAtom(a)) {
 				SISet truthSet = groundTruth.getAtom(a);
 				SISet intersect = intersection(justSi, truthSet);
 				bool falsePosFound = true;
-				BOOST_FOREACH(SpanInterval siInter, intersect.set()) {
+				BOOST_FOREACH(SpanInterval siInter, intersect.intervals()) {
 					if (((double)siInter.liqSize() / (double) si.liqSize()) >= threshhold) {
 						falsePosFound = false;
 						break;
@@ -193,7 +193,7 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 		} else if (model.hasAtom(a)) {
 			// only in model
 			bool trueNegFound = true;
-			BOOST_FOREACH(SpanInterval si, model.getAtom(a).set()) {
+			BOOST_FOREACH(SpanInterval si, model.getAtom(a).intervals()) {
 				if ((double)si.liqSize() / (double)si.maxInterval().size() >= threshhold) {
 					trueNegFound = false;
 					break;
@@ -204,10 +204,10 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 			}
 		} else if (groundTruth.hasAtom(a)) {
 			// only in ground truth
-			trueNeg = trueNeg + groundTruth.getAtom(a).compliment().set().size();
+			trueNeg = trueNeg + groundTruth.getAtom(a).compliment().intervals().size();
 		} else {
 			// it's in both
-			BOOST_FOREACH(SpanInterval si, groundTruth.getAtom(a).compliment().set()) {
+			BOOST_FOREACH(SpanInterval si, groundTruth.getAtom(a).compliment().intervals()) {
 				SISet justSi(true, si.maxInterval());
 				justSi.add(si);
 				SISet intersect = intersection(justSi, model.getAtom(a));
@@ -215,7 +215,7 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 					trueNeg++;
 				} else {
 					bool trueNegFound = true;
-					BOOST_FOREACH(SpanInterval si2, intersect.set()) {
+					BOOST_FOREACH(SpanInterval si2, intersect.intervals()) {
 						if ((double)si2.liqSize() / (double)si.liqSize() >= threshhold) {
 							trueNegFound = false;
 							break;
@@ -358,7 +358,7 @@ int main(int argc, char* argv[]) {
 			// pick starting point
 			unsigned long sizeStart = rand() % falseAt.liqSize();
 			unsigned long start = 0;
-			BOOST_FOREACH(SpanInterval si, falseAt.set()) {
+			BOOST_FOREACH(SpanInterval si, falseAt.intervals()) {
 				if (si.liqSize() < sizeStart) {
 					// can't be here
 					sizeStart = sizeStart - si.liqSize();

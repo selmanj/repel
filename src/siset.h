@@ -8,6 +8,7 @@
 #ifndef SISET_H_
 #define SISET_H_
 #include <set>
+#include <list>
 #include "spaninterval.h"
 
 class SISet {
@@ -23,7 +24,7 @@ public:
 			const Interval& maxInterval=Interval(0, UINT_MAX))
 	: set_(begin, end), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
 
-	const std::set<SpanInterval>& set() const {return set_;};
+	std::set<SpanInterval> asSet() const;
 	bool forceLiquid() const {return forceLiquid_;};
 	// TODO make some of these friend functions
 	bool isDisjoint() const;
@@ -31,6 +32,7 @@ public:
 	Interval maxInterval() const;
 	unsigned int size() const;
 	unsigned int liqSize() const;
+	const std::list<SpanInterval>& intervals() const {return set_;}
 
 	// modifiers
 	void add(const SpanInterval &s);
@@ -44,6 +46,7 @@ public:
 	void subtract(const SISet& sis);
 
 	static SISet randomSISet(bool forceLiquid, const Interval& maxInterval);
+	SpanInterval randomSI() const;
 
 	std::string toString() const;
 
@@ -55,7 +58,7 @@ public:
 	friend bool equalByInterval(const SISet& a, const SISet& b);
 private:
 	bool forceLiquid_;
-	std::set<SpanInterval> set_;
+	std::list<SpanInterval> set_;
 	Interval maxInterval_;
 };
 

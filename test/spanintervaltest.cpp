@@ -15,7 +15,7 @@
 
 #include <boost/foreach.hpp>
 #include <iostream>
-#include <set>
+#include <list>
 #include <iterator>
 #include <algorithm>
 
@@ -31,24 +31,24 @@ BOOST_AUTO_TEST_CASE( basic_test )
 		BOOST_CHECK_EQUAL(end.start(), 1);
 		BOOST_CHECK_EQUAL(end.finish(), 11);
 
-		std::set<SpanInterval> removed;
-		sp1.subtract(sp2,removed);
+		std::list<SpanInterval> removed;
+		sp1.subtract(sp2,back_inserter(removed));
 
 		BOOST_CHECK(removed.size() == 3);
-		BOOST_CHECK(removed.find(SpanInterval(1,4,1,11)) != removed.end());
-		BOOST_CHECK(removed.find(SpanInterval(11,11,11,11)) != removed.end());
-		BOOST_CHECK(removed.find(SpanInterval(5,10,11,11)) != removed.end());
+		BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(1,4,1,11)) != removed.end());
+		BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(11,11,11,11)) != removed.end());
+		BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(5,10,11,11)) != removed.end());
 	}
 	{
 		SpanInterval sp1(1,11, 10,14);
 		SpanInterval sp2(5,7, 5,9);
-		std::set<SpanInterval> removed;
-		sp1.subtract(sp2,removed);
+		std::list<SpanInterval> removed;
+		sp1.subtract(sp2,back_inserter(removed));
 
 		BOOST_CHECK(removed.size() == 3);
-		BOOST_CHECK(removed.find(SpanInterval(1,4,10,14))!=removed.end());
-		BOOST_CHECK(removed.find(SpanInterval(5,7,10,14))!=removed.end());
-		BOOST_CHECK(removed.find(SpanInterval(8,11,10,14))!=removed.end());
+		BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(1,4,10,14))!=removed.end());
+		BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(5,7,10,14))!=removed.end());
+		BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(8,11,10,14))!=removed.end());
 	}
 
 }
@@ -176,10 +176,8 @@ BOOST_AUTO_TEST_CASE ( subtractTest) {
 	SpanInterval sp1(1,10,1,10);
 	SpanInterval sp2(5,5,5,5);
 
-	std::set<SpanInterval> result;
-	sp1.subtract(sp2, result);
-
-	std::vector<SpanInterval> rVec(result.begin(), result.end());
+	std::vector<SpanInterval> rVec;
+	sp1.subtract(sp2, back_inserter(rVec));
 
 	BOOST_REQUIRE_EQUAL(rVec.size(),3);
 	BOOST_CHECK_EQUAL(rVec[0].toString(), "[(1, 4), (1, 10)]");

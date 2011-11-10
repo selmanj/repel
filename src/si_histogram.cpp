@@ -36,11 +36,11 @@ void SIHistogram::add(const SISet& siset) {
 			SISet before(forceLiquid_, maxInterval_);
 			before.add(*it);
 			before.subtract(inter);
-			BOOST_FOREACH(SpanInterval beforesi, before.set()) {
+			BOOST_FOREACH(SpanInterval beforesi, before.intervals()) {
 				sisNew.insert(beforesi);
 				countsNew.insert(std::pair<SpanInterval, int>(beforesi, counts_[*it]));
 			}
-			BOOST_FOREACH(SpanInterval intersi, inter.set()) {
+			BOOST_FOREACH(SpanInterval intersi, inter.intervals()) {
 				sisNew.insert(intersi);
 				countsNew.insert(std::pair<SpanInterval, int>(intersi, counts_[*it]+1));
 			}
@@ -52,7 +52,7 @@ void SIHistogram::add(const SISet& siset) {
 		}
 	}
 	if (leftToAdd.size() > 0) {
-		BOOST_FOREACH(SpanInterval si, leftToAdd.set()) {
+		BOOST_FOREACH(SpanInterval si, leftToAdd.intervals()) {
 			sisNew.insert(si);
 			countsNew.insert(std::pair<SpanInterval, int>(si, 1));
 		}

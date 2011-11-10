@@ -188,7 +188,7 @@ SISet Domain::satisfiedDisjunction(const Disjunction& d, const Model& m) const {
 SISet Domain::satisfiedDiamond(const DiamondOp& d, const Model& m) const {
 	SISet sat = satisfied(*(d.sentence()), m);
 	SISet newsat(false, sat.maxInterval());
-	BOOST_FOREACH(SpanInterval sp, sat.set()) {
+	BOOST_FOREACH(SpanInterval sp, sat.intervals()) {
 		BOOST_FOREACH(Interval::INTERVAL_RELATION rel, d.relations()) {
 			boost::optional<SpanInterval> spR = sp.satisfiesRelation(rel);
 			if (spR) newsat.add(spR.get());
@@ -203,8 +203,8 @@ SISet Domain::satisfiedConjunction(const Conjunction& c, const Model& m) const {
 
 	SISet result(false, leftSat.maxInterval());
 
-	BOOST_FOREACH(SpanInterval i, leftSat.set()) {
-		BOOST_FOREACH(SpanInterval j, rightSat.set()) {
+	BOOST_FOREACH(SpanInterval i, leftSat.intervals()) {
+		BOOST_FOREACH(SpanInterval j, rightSat.intervals()) {
 			BOOST_FOREACH(Interval::INTERVAL_RELATION rel, c.relations()) {
 				result.add(composedOf(i, j, rel));
 			}

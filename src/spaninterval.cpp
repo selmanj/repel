@@ -12,6 +12,8 @@
 #include <sstream>
 #include <boost/optional.hpp>
 #include <iostream>
+#include <list>
+#include <iterator>
 #include "interval.h"
 #include "spaninterval.h"
 #include "log.h"
@@ -128,49 +130,6 @@ boost::optional<SpanInterval> SpanInterval::normalize() const {
 	return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, finish_.finish(), maxInterval_));
 }
 
-void SpanInterval::compliment(std::set<SpanInterval>& collect) const {
-	/*
-	SpanInterval a(maxInterval_.start(), maxInterval_.end(), maxInterval_.start(), end().start()-1);
-	a.normalize(collect);
-	SpanInterval b(maxInterval_.start(), maxInterval_.end(), end().end()+1, maxInterval_.end());
-	b.normalize(collect);
-	SpanInterval c(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.end());
-	c.normalize(collect);
-	SpanInterval d(start().end()+1, maxInterval_.end(), maxInterval_.start(), maxInterval_.end());
-	d.normalize(collect);
-	*/
-	// I think the following ends up the same as the previous, just disjoint
-	if (start().start() != maxInterval_.start()) {
-		SpanInterval a(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.finish(), maxInterval_);
-		if (a.normalize()) collect.insert(a.normalize().get());
-	}
-	if (finish().start() != maxInterval_.start()) {
-		SpanInterval b(start().start(), start().finish(), maxInterval_.start(), finish().start()-1, maxInterval_);
-		if (b.normalize()) collect.insert(b.normalize().get());
-	}
-	if (finish().finish() != maxInterval_.finish()) {
-		SpanInterval c(start().start(), start().finish(), finish().finish()+1, maxInterval_.finish(), maxInterval_);
-		if (c.normalize()) collect.insert(c.normalize().get());
-	}
-	if (start().finish() != maxInterval_.finish()) {
-		SpanInterval d(start().finish()+1, maxInterval_.finish(), maxInterval_.start(), maxInterval_.finish(), maxInterval_);
-		if (d.normalize()) collect.insert(d.normalize().get());
-	}
-}
-
-void SpanInterval::liqCompliment(std::set<SpanInterval>& collect) const {
-	// at most two intervals
-	if (start().start() != maxInterval_.start()) {
-		unsigned int end = start().start()-1;
-		SpanInterval a(maxInterval_.start(), end, maxInterval_.start(), end, maxInterval_);
-		collect.insert(a);
-	}
-	if (finish().finish() != maxInterval_.finish()) {
-		unsigned int start = finish().finish()+1;
-		SpanInterval b(start, maxInterval_.finish(), start, maxInterval_.finish(), maxInterval_);
-		collect.insert(b);
-	}
-}
 
 boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation) const {
 	unsigned int neg_inf = maxInterval_.start();
@@ -249,35 +208,6 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
 	}
 
 	//return result;
-}
-
-void SpanInterval::subtract(const SpanInterval &remove, std::set<SpanInterval>& collect) const {
-	/*
-	SpanInterval a(start().start(), remove.start().start()-1, end().start(), remove.end().start()-1);
-	a.normalize(collect);
-	SpanInterval b(start().start(), remove.start().start()-1, remove.end().end()+1, end().end());
-	b.normalize(collect);
-	SpanInterval c(remove.start().end()+1, start().end(), end().start(), remove.end().start()-1);
-	c.normalize(collect);
-	SpanInterval d(remove.start().end()+1, start().end(), remove.end().end()+1, end().end());
-	d.normalize(collect);
-	*/
-	std::set<SpanInterval> compliment;
-	remove.compliment(compliment);
-	for (std::set<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
-		SpanInterval intersect = intersection(*this, *it);
-		if (intersect.size() > 0) collect.insert(intersect);
-	}
-}
-
-void SpanInterval::liqSubtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const {
-	// well this is easy
-	std::set<SpanInterval> compliment;
-	remove.liqCompliment(compliment);
-	for (std::set<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
-		SpanInterval intersect = intersection(*this, *it);
-		if (intersect.size() > 0) collect.insert(intersect);
-	}
 }
 
 std::string SpanInterval::toString() const {

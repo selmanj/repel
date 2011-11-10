@@ -15,6 +15,8 @@
 #include <climits>
 #include <set>
 #include <vector>
+#include <list>
+#include <iterator>
 
 class SpanIntervalIterator;
 
@@ -51,12 +53,17 @@ public:
 	bool isLiquid() const;
 	SpanInterval toLiquid() const;
 	boost::optional<SpanInterval> normalize() const;
-	void compliment(std::set<SpanInterval>& collect) const;
-	void liqCompliment(std::set<SpanInterval>& collect) const;
+
+	template <class OutputIterator>
+	void compliment(OutputIterator out) const;
+	template <class OutputIterator>
+	void liqCompliment(OutputIterator out) const;
 	boost::optional<SpanInterval> satisfiesRelation(Interval::INTERVAL_RELATION relation) const;
 
-	void subtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const;
-	void liqSubtract(const SpanInterval& remove, std::set<SpanInterval>& collect) const;
+	template <class OutputIterator>
+	void subtract(const SpanInterval& remove, OutputIterator out) const;
+	template <class OutputIterator>
+	void liqSubtract(const SpanInterval& remove, OutputIterator out) const;
 
 	std::string toString() const;
 
@@ -97,6 +104,102 @@ inline unsigned int SpanInterval::size() const {
 
 }
 
+template <class OutputIterator>
+void SpanInterval::compliment(OutputIterator out) const {
+	/*
+	SpanInterval a(maxInterval_.start(), maxInterval_.end(), maxInterval_.start(), end().start()-1);
+	a.normalize(collect);
+	SpanInterval b(maxInterval_.start(), maxInterval_.end(), end().end()+1, maxInterval_.end());
+	b.normalize(collect);
+	SpanInterval c(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.end());
+	c.normalize(collect);
+	SpanInterval d(start().end()+1, maxInterval_.end(), maxInterval_.start(), maxInterval_.end());
+	d.normalize(collect);
+	*/
+	// I think the following ends up the same as the previous, just disjoint
+	if (start().start() != maxInterval_.start()) {
+		SpanInterval a(maxInterval_.start(), start().start()-1, maxInterval_.start(), maxInterval_.finish(), maxInterval_);
+		if (a.normalize()) {
+			*out = (a.normalize().get());
+			out++;
+		}
+	}
+	if (finish().start() != maxInterval_.start()) {
+		SpanInterval b(start().start(), start().finish(), maxInterval_.start(), finish().start()-1, maxInterval_);
+		if (b.normalize()) {
+			*out = b.normalize().get();
+			out++;
+		}
+	}
+	if (finish().finish() != maxInterval_.finish()) {
+		SpanInterval c(start().start(), start().finish(), finish().finish()+1, maxInterval_.finish(), maxInterval_);
+		if (c.normalize()) {
+			*out = c.normalize().get();
+			out++;
+		}
+	}
+	if (start().finish() != maxInterval_.finish()) {
+		SpanInterval d(start().finish()+1, maxInterval_.finish(), maxInterval_.start(), maxInterval_.finish(), maxInterval_);
+		if (d.normalize()) {
+			*out = d.normalize().get();
+			out++;
+		}
+	}
+}
+
+template <class OutputIterator>
+void SpanInterval::liqCompliment(OutputIterator out) const {
+	// at most two intervals
+	if (start().start() != maxInterval_.start()) {
+		unsigned int end = start().start()-1;
+		SpanInterval a(maxInterval_.start(), end, maxInterval_.start(), end, maxInterval_);
+		*out = a;
+		out++;
+	}
+	if (finish().finish() != maxInterval_.finish()) {
+		unsigned int start = finish().finish()+1;
+		SpanInterval b(start, maxInterval_.finish(), start, maxInterval_.finish(), maxInterval_);
+		*out = b;
+		out++;
+	}
+}
+
+template <class OutputIterator>
+void SpanInterval::subtract(const SpanInterval &remove, OutputIterator out) const {
+	/*
+	SpanInterval a(start().start(), remove.start().start()-1, end().start(), remove.end().start()-1);
+	a.normalize(collect);
+	SpanInterval b(start().start(), remove.start().start()-1, remove.end().end()+1, end().end());
+	b.normalize(collect);
+	SpanInterval c(remove.start().end()+1, start().end(), end().start(), remove.end().start()-1);
+	c.normalize(collect);
+	SpanInterval d(remove.start().end()+1, start().end(), remove.end().end()+1, end().end());
+	d.normalize(collect);
+	*/
+	std::list<SpanInterval> compliment;
+	remove.compliment(back_inserter(compliment));
+	for (std::list<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
+		SpanInterval intersect = intersection(*this, *it);
+		if (intersect.size() > 0) {
+			*out = intersect;
+			out++;
+		}
+	}
+}
+
+template <class OutputIterator>
+void SpanInterval::liqSubtract(const SpanInterval& remove, OutputIterator out) const {
+	// well this is easy
+	std::list<SpanInterval> compliment;
+	remove.liqCompliment(back_inserter(compliment));
+	for (std::list<SpanInterval>::const_iterator it = compliment.begin(); it != compliment.end(); it++) {
+		SpanInterval intersect = intersection(*this, *it);
+		if (intersect.size() > 0) {
+			*out = intersect;
+			out++;
+		}
+	}
+}
 
 SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
 

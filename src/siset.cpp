@@ -11,9 +11,11 @@
 #include <iostream>
 #include <cstdlib>
 #include <boost/foreach.hpp>
+#include <iterator>
 #include "siset.h"
 #include "spaninterval.h"
 #include "log.h"
+#include "infix_ostream_iterator.h"
 
 /*
 SISet::SISet(const SpanInterval& si, bool forceLiquid,
@@ -24,6 +26,11 @@ SISet::SISet(const SpanInterval& si, bool forceLiquid,
 	set_.insert(copy);
 }
 */
+
+std::set<SpanInterval> SISet::asSet() const {
+	return std::set<SpanInterval>(set_.begin(), set_.end());
+}
+
 
 SISet SISet::compliment() const {
 	if (size() == 0) {
@@ -40,13 +47,13 @@ SISet SISet::compliment() const {
 	// {A U B U C U.. }^c = A^c I B^c I ...
 	// {A U B U ..} intersect {C U D U } .. intersect D
 	// expensive operation!  faster way to do this?
-	std::list<std::set<SpanInterval> > intersections;
-	for (std::set<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
-		std::set<SpanInterval> compliment;
+	std::list<std::list<SpanInterval> > intersections;
+	for (std::list<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
+		std::list<SpanInterval> compliment;
 		if (forceLiquid_) {
-			it->liqCompliment(compliment);
+			it->liqCompliment(std::inserter(compliment, compliment.end()));
 		} else {
-			it->compliment(compliment);
+			it->compliment(std::inserter(compliment, compliment.end()));
 		}
 		intersections.push_back(compliment);
 	}
@@ -54,16 +61,16 @@ SISet SISet::compliment() const {
 	// now we have a list of set unions that we need to intersect; perform pairwise intersection
 	while (intersections.size() > 1) {
 		// merge the first two sets
-		std::set<SpanInterval> first = intersections.front();
+		std::list<SpanInterval> first = intersections.front();
 		intersections.pop_front();
-		std::set<SpanInterval> second = intersections.front();
+		std::list<SpanInterval> second = intersections.front();
 		intersections.pop_front();
-		std::set<SpanInterval> intersected;
-		for (std::set<SpanInterval>::const_iterator lIt = first.begin(); lIt != first.end(); lIt++) {
-			for (std::set<SpanInterval>::const_iterator sIt = second.begin(); sIt != second.end(); sIt++) {
+		std::list<SpanInterval> intersected;
+		for (std::list<SpanInterval>::const_iterator lIt = first.begin(); lIt != first.end(); lIt++) {
+			for (std::list<SpanInterval>::const_iterator sIt = second.begin(); sIt != second.end(); sIt++) {
 				SpanInterval intersect = intersection(*lIt, *sIt);
 				if (!intersect.isEmpty()) {
-					intersected.insert(intersect);
+					intersected.push_back(intersect);
 				}
 			}
 		}
@@ -87,7 +94,7 @@ unsigned int SISet::size() const {
 	copy.makeDisjoint();
 
 	unsigned int sum = 0;
-	BOOST_FOREACH(SpanInterval sp, copy.set()) {
+	BOOST_FOREACH(SpanInterval sp, copy.set_) {
 		sum += sp.size();
 	}
 	return sum;
@@ -98,7 +105,7 @@ unsigned int SISet::liqSize() const {
 	copy.makeDisjoint();
 
 	unsigned int sum = 0;
-	BOOST_FOREACH(SpanInterval sp, copy.set()) {
+	BOOST_FOREACH(SpanInterval sp, copy.set_) {
 		sum += sp.liqSize();
 	}
 	return sum;
@@ -106,8 +113,8 @@ unsigned int SISet::liqSize() const {
 
 // O(n^2) for every call :(  perhaps set a flag instead?
 bool SISet::isDisjoint() const {
-	for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
-		for (std::set<SpanInterval>::const_iterator sIt = fIt; sIt != set_.end(); sIt++) {
+	for (std::list<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
+		for (std::list<SpanInterval>::const_iterator sIt = fIt; sIt != set_.end(); sIt++) {
 			// dont compare to yourself
 			if (sIt == fIt) {
 				continue;
@@ -122,12 +129,12 @@ bool SISet::isDisjoint() const {
 
 void SISet::setMaxInterval(const Interval& maxInterval) {
 	maxInterval_ = maxInterval;
-	std::set<SpanInterval> resized;
-	for (std::set<SpanInterval>::iterator it = set_.begin(); it != set_.end(); it++) {
+	std::list<SpanInterval> resized;
+	for (std::list<SpanInterval>::iterator it = set_.begin(); it != set_.end(); it++) {
 		SpanInterval si = *it;
 		boost::optional<SpanInterval> siOpt = si.setMaxInterval(maxInterval);
 		if (siOpt) {
-			resized.insert(siOpt.get());
+			resized.push_back(siOpt.get());
 		}
 	}
 	set_.swap(resized);
@@ -144,7 +151,7 @@ void SISet::add(const SpanInterval &s) {
 	}
 	if (forceLiquid_) {
 		// we have to merge this with pre-existing intervals
-		for (std::set<SpanInterval>::iterator it = set_.begin(); it != set_.end();) {
+		for (std::list<SpanInterval>::iterator it = set_.begin(); it != set_.end();) {
 			SpanInterval b = *it;
 			Interval sInt = sCopy.start();
 			Interval bInt = b.start();
@@ -154,7 +161,7 @@ void SISet::add(const SpanInterval &s) {
 					|| sInt.finishes(bInt) || sInt.finishesI(bInt)
 					|| sInt.during(bInt) || sInt.duringI(bInt)) {
 				// they intersect, pull it out
-				std::set<SpanInterval>::iterator toErase(it);
+				std::list<SpanInterval>::iterator toErase(it);
 				it++;
 				set_.erase(toErase);
 
@@ -171,24 +178,27 @@ void SISet::add(const SpanInterval &s) {
 			}
 		}
 		// now insert our element into the list
-		set_.insert(sCopy);
+		set_.push_back(sCopy);
 	} else {
-		set_.insert(sCopy);
+		set_.push_back(sCopy);
 	}
 }
 
 void SISet::add(const SISet &b) {
-	for (std::set<SpanInterval>::const_iterator it = b.set_.begin(); it != b.set_.end(); it++) {
+	for (std::list<SpanInterval>::const_iterator it = b.set_.begin(); it != b.set_.end(); it++) {
 		add(*it);
 	}
 }
 
 void SISet::makeDisjoint() {
 	if (forceLiquid_) {
+		// we are already disjoint
+		return;
+		/*
 		// all our intervals are liquid so we can make them disjoint by
 		// merging them
-		for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
-			std::set<SpanInterval>::const_iterator sIt = fIt;
+		for (std::list<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
+			std::list<SpanInterval>::const_iterator sIt = fIt;
 			sIt++;
 			if (sIt != set_.end() && !intersection(*fIt, *sIt).isEmpty()) {
 				// merge the two
@@ -200,18 +210,18 @@ void SISet::makeDisjoint() {
 				fIt = set_.insert(merged).first;
 			}
 		}
+		*/
 	} else {
-		std::set<SpanInterval> setCopy;
+		std::list<SpanInterval> setCopy;
 
 		BOOST_FOREACH(SpanInterval siToAdd, set_) {
 			SISet sisetToAdd(false, maxInterval_);
 			sisetToAdd.add(siToAdd);
 			// subtract whats already stored and only add if there is some left over
 			BOOST_FOREACH(SpanInterval siAlreadyIn, setCopy) {
-
 				sisetToAdd.subtract(siAlreadyIn);
 			}
-			setCopy.insert(sisetToAdd.set().begin(), sisetToAdd.set().end());
+			setCopy.insert(setCopy.end(), sisetToAdd.set_.begin(), sisetToAdd.set_.end());
 		}
 		set_ = setCopy;
 
@@ -253,12 +263,15 @@ void SISet::makeDisjoint() {
 
 void SISet::setForceLiquid(bool forceLiquid) {
 	if (forceLiquid && !forceLiquid_) {
-		std::set<SpanInterval> newSet;
+		// first, make it disjoint
+		makeDisjoint();
+
+		std::list<SpanInterval> newSet;
 		BOOST_FOREACH(SpanInterval sp, set_) {
 			sp = sp.toLiquid();
 			if (!sp.isEmpty()) {
 				sp.normalize();
-				newSet.insert(sp);
+				newSet.push_back(sp);
 			}
 		}
 		set_.swap(newSet);
@@ -267,23 +280,25 @@ void SISet::setForceLiquid(bool forceLiquid) {
 };
 
 void SISet::subtract(const SpanInterval& si) {
-	std::set<SpanInterval> newSet;
+	std::list<SpanInterval> newSet;
 
 	if (set_.size() == 0) return;
 	if (si.size() == 0) return;
 
 	BOOST_FOREACH(SpanInterval siInSet, set_) {
 		if (intersection(siInSet, si).size() > 0) {
-			if (forceLiquid_) siInSet.liqSubtract(si, newSet);
-			else siInSet.subtract(si, newSet);
+			if (forceLiquid_) siInSet.liqSubtract(si, back_inserter(newSet));
+			else siInSet.subtract(si, back_inserter(newSet));
 		} else {
-			newSet.insert(siInSet);
+			newSet.push_back(siInSet);
 		}
 	}
 	set_ = newSet;
 }
 
 void SISet::subtract(const SISet& sis) {
+	// TODO why not just subtract each item individually??
+
 	//LOG_PRINT(LOG_DEBUG) << "called SISet::subtract with *this=" << this->toString() << " and sis=" << sis.toString();
 	std::list<SISet> toIntersect;
 
@@ -355,15 +370,39 @@ SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
 	return start;
 }
 
+SpanInterval SISet::randomSI() const {
+	if (size() == 0) {
+		LOG_PRINT(LOG_ERROR) << "called randomSI() on an empty SISet.";
+		std::runtime_error e("called randomSI() on an empty SISet.");
+		throw e;
+	}
+	// choose a random number from 0 to size
+	int index = rand() % set_.size();
+	std::list<SpanInterval>::const_iterator it = set_.begin();
+	while (index != 0) {
+		it++;
+		index--;
+	}
+	return *it;
+}
+
 std::string SISet::toString() const {
 	std::stringstream sstream;
 	sstream << "{";
-	for (std::set<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
+	std::list<std::string> siStrings;
+	std::list<SpanInterval> copy(set_);
+	copy.sort();
+	for (std::list<SpanInterval>::const_iterator it = copy.begin(); it != copy.end(); it++) {
+		siStrings.push_back(it->toString());
+		/*
 		if (it != set_.begin()) {
 			sstream << ", ";
 		}
 		sstream << it->toString();
+		*/
 	}
+	infix_ostream_iterator<std::string> oIt(sstream, ", ");
+	std::copy(siStrings.begin(), siStrings.end(), oIt);
 	sstream << "}";
 	return sstream.str();
 }
@@ -468,11 +507,11 @@ bool equalByInterval(const SISet& a, const SISet& b) {
 	std::set<Interval> aIntervals;
 	std::set<Interval> bIntervals;
 
-	for (std::set<SpanInterval>::const_iterator it = a.set_.begin(); it != a.set_.end(); it++) {
+	for (std::list<SpanInterval>::const_iterator it = a.set_.begin(); it != a.set_.end(); it++) {
 		SpanInterval si = *it;
 		aIntervals.insert(si.begin(), si.end());
 	}
-	for (std::set<SpanInterval>::const_iterator it = b.set_.begin(); it != b.set_.end(); it++) {
+	for (std::list<SpanInterval>::const_iterator it = b.set_.begin(); it != b.set_.end(); it++) {
 		SpanInterval si = *it;
 		aIntervals.insert(si.begin(), si.end());
 	}

@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( sat_test )
 
 	query = getAsSentence("<>{s,f} Q(a,b)");
 	trueAt = d.satisfied(*query, d.defaultModel());
-	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(0, 14), (5, 15)], [(5, 14), (16, 1000)], [(15, 15), (15, 1000)]}");
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[(0, 4), (5, 15)], [5:5], [(5, 15), (6, 1000)]}");
 
 	// conjunction
 	query = getAsSentence("P(a,b) ; Q(a,b)");

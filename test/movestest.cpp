@@ -5,7 +5,7 @@
  *      Author: joe
  */
 
-#define BOOST_TEST_MODULE SpanInterval
+#define BOOST_TEST_MODULE Moves
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
 	// initialize seed
 	srand(0);
 	moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
-	BOOST_CHECK_EQUAL(moves.size(), 1);
+	BOOST_REQUIRE_EQUAL(moves.size(), 1);
 	move = moves[0];
 	BOOST_CHECK_EQUAL(move.toString(), "toAdd: {Q(a, b) @ [1:5]}, toDel: {}");
 
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(pelCNFNegAtomTest) {
 BOOST_AUTO_TEST_CASE(pelCNFDisjunctionTest) {
 	std::string facts("P(a,b) @ [1:5]\n"
 			"S(a) @ [1:2]\n");
-	std::string formulas("1: P(a,b) v S(a)");
+	std::string formulas("1: [P(a,b) v S(a)]");
 
 	Domain d = loadDomainWithStreams(facts, formulas);
 	d.setMaxInterval(Interval(1,10));
@@ -140,13 +140,9 @@ BOOST_AUTO_TEST_CASE(pelCNFDisjunctionTest) {
 	srand(0);
 
 	std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *form1.sentence());
-	BOOST_CHECK_EQUAL(moves.size(), 6);
-	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {S(a) @ [1:10]}, toDel: {}");
-	BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {P(a, b) @ [1:10]}, toDel: {}");
-	BOOST_CHECK_EQUAL(moves[2].toString(), "toAdd: {S(a) @ [3:10]}, toDel: {}");
-	BOOST_CHECK_EQUAL(moves[3].toString(), "toAdd: {P(a, b) @ [3:10]}, toDel: {}");
-	BOOST_CHECK_EQUAL(moves[4].toString(), "toAdd: {S(a) @ [6:10]}, toDel: {}");
-	BOOST_CHECK_EQUAL(moves[5].toString(), "toAdd: {P(a, b) @ [6:10]}, toDel: {}");
+	BOOST_REQUIRE_EQUAL(moves.size(), 2);
+	BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {P(a, b) @ [6:10]}, toDel: {}");
+	BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {S(a) @ [6:10]}, toDel: {}");
 
 }
 
