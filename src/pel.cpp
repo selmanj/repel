@@ -28,6 +28,7 @@ namespace po = boost::program_options;
 #include "fol/domain.h"
 #include "log.h"
 #include "fol/moves.h"
+#include "fol/maxwalksat.h"
 #include "fol/formulaset.h"
 
 int main(int argc, char* argv[]) {

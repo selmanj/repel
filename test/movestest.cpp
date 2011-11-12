@@ -20,6 +20,7 @@
 #include <vector>
 #include "../src/fol/fol.h"
 #include "../src/fol/moves.h"
+#include "../src/fol/maxwalksat.h"
 #include "testutilities.h"
 
 BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {

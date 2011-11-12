@@ -14,7 +14,7 @@
 #include <cstdlib>
 #include <climits>
 #include "../si_histogram.h"
-
+#include "maxwalksat.h"
 
 
 ObsProxy::ObsProxy(const Domain &d, const Atom& queryAtom, const SISet& querySet)
