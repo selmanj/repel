@@ -13,6 +13,8 @@
 #include <set>
 #include <map>
 #include <boost/foreach.hpp>
+#include <ostream>
+#include <iterator>
 #include "../log.h"
 #include "atom.h"
 
@@ -23,7 +25,7 @@ namespace {
 typedef std::set<int> FormSet;
 typedef std::map<Atom, FormSet, atomcmp> AtomOccurences;
 
-AtomOccurences findAtomOccurances(const std::vector<WSentence>& sentences);
+AtomOccurences findAtomOccurences(const std::vector<WSentence>& sentences);
 }
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel) {
@@ -52,7 +54,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 		return currentModel;
 	}
 
-	AtomOccurences occurs = findAtomOccurances(formSet.formulas());
+	AtomOccurences occurs = findAtomOccurences(formSet.formulas());
 
 	SpanInterval maxSI = SpanInterval(d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval());
 	unsigned long maxSize = maxSI.size();
@@ -150,26 +152,27 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	return bestModel;
 }
 
-AtomOccurences findAtomOccurances(const std::vector<WSentence>& sentences) {
-	// set up a mapping from atom to formula index.  this represents formulas where the atom occurs
-	PredCollector collector;
-	AtomOccurences occurs;
-	for (int i = 0; i < sentences.size(); i++) {
-		WSentence formula = sentences.at(i);
+namespace {
+	AtomOccurences findAtomOccurences(const std::vector<WSentence>& sentences) {
+		// set up a mapping from atom to formula index.  this represents formulas where the atom occurs
+		PredCollector collector;
+		AtomOccurences occurs;
+		for (int i = 0; i < sentences.size(); i++) {
+			WSentence formula = sentences.at(i);
 
-		collector.preds.clear();
-		formula.sentence()->visit(collector);
-		// add this index to all occurrences of our atom
-		BOOST_FOREACH(Atom a, collector.preds) {
-			FormSet set = occurs[a];
-			if (set.count(i) == 0) {
-				set.insert(i);
-				occurs[a] = set;
+			collector.preds.clear();
+			formula.sentence()->visit(collector);
+			// add this index to all occurrences of our atom
+			BOOST_FOREACH(Atom a, collector.preds) {
+				FormSet set = occurs[a];
+				if (set.count(i) == 0) {
+					set.insert(i);
+					occurs[a] = set;
+				}
 			}
 		}
+
+		return occurs;
 	}
-
-	return occurs;
 }
-
 #endif /* MAXWALKSAT_H_ */
