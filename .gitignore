@@ -1,0 +1,11 @@
+/.deps
+/autom4te.cache
+/.cproject
+/.project
+/config.status
+/Makefile
+/pelnoise
+/pel
+/stamp-h1
+/query_sampling
+/config.h
