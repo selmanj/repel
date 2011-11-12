@@ -9,11 +9,25 @@
 #define MAXWALKSAT_H_
 
 #include <cstdlib>
+#include <vector>
+#include <set>
+#include <map>
+#include <boost/foreach.hpp>
 #include "../log.h"
+#include "atom.h"
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model& initialModel);
 
+namespace {
+
+typedef std::set<int> FormSet;
+typedef std::map<Atom, FormSet, atomcmp> AtomOccurences;
+
+AtomOccurences findAtomOccurances(const std::vector<WSentence>& sentences);
+}
+
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel) {
+
 	Model currentModel;
 	if (initialModel==0) currentModel = d.defaultModel();
 	else currentModel = *initialModel;
@@ -32,31 +46,13 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 			LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" <<form.sentence()->toString() << "\".";
 		}
 	}
-
-	// set up a mapping from atom to formula index.  this represents formulas where the atom occurs
-	PredCollector collector;
-	for (int i = 0; i < formSet.size(); i++) {
-		WSentence formula = formSet.formulas().at(i);
-		formula.sentence()->visit(collector);
-	}
-
-	/*
-	for (int i = 0; i < formSet.secondaryFormulas().size(); i++) {
-		WSentence form = formSet.secondaryFormulas().at(i);
-		if (canFindMovesFor(*(form.sentence()), d)) {
-			validNorm.push_back(i);
-		} else {
-			// TODO: use a logging warning instead of stderr
-			//std::cerr << "WARNING: currently cannot generate moves for sentence: \"" << d.formulas().at(i).sentence()->toString() << "\"." << std::endl;
-			LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" <<form.sentence()->toString() << "\".";
-		}
-	}
-	*/
 	if (validForms.size() ==0) {
 		// TODO: log an error
 		std::cerr << "ERROR: no valid sentences to generate moves for!" << std::endl;
 		return currentModel;
 	}
+
+	AtomOccurences occurs = findAtomOccurances(formSet.formulas());
 
 	SpanInterval maxSI = SpanInterval(d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval());
 	unsigned long maxSize = maxSI.size();
@@ -154,6 +150,26 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	return bestModel;
 }
 
+AtomOccurences findAtomOccurances(const std::vector<WSentence>& sentences) {
+	// set up a mapping from atom to formula index.  this represents formulas where the atom occurs
+	PredCollector collector;
+	AtomOccurences occurs;
+	for (int i = 0; i < sentences.size(); i++) {
+		WSentence formula = sentences.at(i);
 
+		collector.preds.clear();
+		formula.sentence()->visit(collector);
+		// add this index to all occurrences of our atom
+		BOOST_FOREACH(Atom a, collector.preds) {
+			FormSet set = occurs[a];
+			if (set.count(i) == 0) {
+				set.insert(i);
+				occurs[a] = set;
+			}
+		}
+	}
+
+	return occurs;
+}
 
 #endif /* MAXWALKSAT_H_ */
