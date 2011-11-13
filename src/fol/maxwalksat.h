@@ -38,8 +38,9 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	std::vector<int> validForms;
 	//std::vector<int> validNorm;
 	FormulaSet formSet = d.formulaSet();
-	for (int i = 0; i < formSet.formulas().size(); i++) {
-		WSentence form = formSet.formulas().at(i);
+	std::vector<WSentence> formulas = formSet.formulas();
+	for (int i = 0; i < formulas.size(); i++) {
+		WSentence form = formulas[i];
 		if (canFindMovesFor(*(form.sentence()), d)) {
 			validForms.push_back(i);
 		} else {
@@ -54,11 +55,37 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 		return currentModel;
 	}
 
-	AtomOccurences occurs = findAtomOccurences(formSet.formulas());
+	AtomOccurences occurs = findAtomOccurences(formulas);
+	std::vector<unsigned long> formScores;
+	unsigned long currentScore = 0;
+	for (unsigned int i = 0; i < formulas.size(); i++) {
+		WSentence formula = formulas[i];
+		unsigned long localScore = d.score(formula, currentModel);
+		formScores.push_back(localScore);
+		currentScore += localScore;
+	}
+	/*
+	{
+		std::stringstream stream;
+		stream << "occurs = ";
+		for(AtomOccurences::const_iterator it = occurs.begin(); it != occurs.end(); it++) {
+			Atom a = it->first;
+			FormSet set = it->second;
+
+			stream << a.toString() << " -> (";
+			for(FormSet::const_iterator it = set.begin(); it != set.end(); it++) {
+				stream << *it << ", ";
+			}
+			stream << ")\n";
+		}
+		LOG(LOG_DEBUG) << stream.str();
+	}
+	*/
 
 	SpanInterval maxSI = SpanInterval(d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval());
 	unsigned long maxSize = maxSI.size();
-	unsigned long bestScore = d.score(currentModel);
+	// initialize best score to the current score
+	unsigned long bestScore = currentScore;
 	Model bestModel = currentModel;
 
 	unsigned int showPeriodMod = (numIterations < 20 ? 1 : numIterations/20);
@@ -69,10 +96,10 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 			std::cout.flush();
 		}
 		LOG(LOG_DEBUG) << "currentModel: " << currentModel.toString();
-		LOG(LOG_DEBUG) << "current score: " << d.score(currentModel);
+		LOG(LOG_DEBUG) << "current score: " << currentScore;
 		// make a list of the current unsatisfied formulas we can calc moves for
 		std::vector<int> notFullySatisfied = validForms;
-		std::vector<WSentence> curFormulas = d.formulaSet().formulas();
+		std::vector<WSentence> curFormulas = formulas;
 
 		for (std::vector<int>::iterator it = notFullySatisfied.begin(); it != notFullySatisfied.end(); ) {
 			int i = *it;
