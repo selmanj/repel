@@ -17,6 +17,7 @@
 #include <iterator>
 #include "../log.h"
 #include "atom.h"
+#include "moves.h"
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model& initialModel);
 
@@ -25,7 +26,19 @@ namespace {
 typedef std::set<int> FormSet;
 typedef std::map<Atom, FormSet, atomcmp> AtomOccurences;
 
+struct score_pair {
+	unsigned long totalScore;
+	std::vector<unsigned long> formScores;
+};
+
 AtomOccurences findAtomOccurences(const std::vector<WSentence>& sentences);
+// note, model m is assumed to have had move applied already!
+score_pair computeScoresForMove(const Domain& d,
+		const Model& m,
+		const Move& move,
+		unsigned long currentScore,
+		const std::vector<unsigned long>& curFormScores,
+		const AtomOccurences& occurs);
 }
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel) {
@@ -106,7 +119,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 
 			WSentence wsent = curFormulas.at(i);
 			//const WSentence *wsentence = *it;
-			if (maxSize*wsent.weight() == d.score(wsent, currentModel)) {
+			if (maxSize*wsent.weight() == formScores[i]) {
 				it = notFullySatisfied.erase(it);
 			} else {
 				it++;
@@ -200,6 +213,47 @@ namespace {
 		}
 
 		return occurs;
+	}
+
+	score_pair computeScoresForMove(const Domain& d,
+			const Model& m,
+			const Move& move,
+			unsigned long currentScore,
+			const std::vector<unsigned long>& curFormScores,
+			const AtomOccurences& occurs) {
+		// first, find the formulas we need to recompute
+		std::set<int> formsToRescore;
+		std::vector<Move::change> allchanges(move.toAdd);
+		std::copy(move.toDel.begin(), move.toDel.end(), std::back_inserter(allchanges));
+
+		BOOST_FOREACH(Move::change change, allchanges) {
+			Atom a = change.get<0>();
+			if (occurs.count(a) > 0) {
+				AtomOccurences::const_iterator it = occurs.find(a);
+				FormSet changedForms = it->second;
+				std::copy(changedForms.begin(), changedForms.end(), std::inserter(formsToRescore, formsToRescore.end()));
+			}
+		}
+
+		score_pair pair;
+		pair.formScores = curFormScores;
+		pair.totalScore = currentScore;
+
+		// start recomputing, adjusting the total score as necessary
+		std::vector<WSentence> formulas = d.formulaSet().formulas();
+		for (std::set<int>::const_iterator it = formsToRescore.begin(); it != formsToRescore.end(); it++) {
+			int formNum = *it;
+			WSentence sentence = formulas[formNum];
+
+			unsigned long score = d.score(sentence, m);
+			if (score != curFormScores.at(formNum)) {
+				unsigned long difference = score - curFormScores.at(formNum);
+				pair.formScores[formNum] = score;
+				pair.totalScore += difference;
+			}
+		}
+
+		return pair;
 	}
 }
 #endif /* MAXWALKSAT_H_ */
