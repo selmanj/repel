@@ -155,37 +155,49 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 			Move aMove = moves[rand() % moves.size()];
 			LOG(LOG_DEBUG) << "taking random move: " << aMove.toString();
 			currentModel = executeMove(d, aMove, currentModel);
+			score_pair scorePair = computeScoresForMove(d, currentModel, aMove, currentScore, formScores, occurs);
+			currentScore = scorePair.totalScore;
+			formScores = scorePair.formScores;
 		} else {
 			// find the models resulting from each move, and choose the highest scoring model as our next model
 			unsigned long bestLocalScore = 0;
 			std::vector<Model> bestLocalModels;
 			std::vector<Move> bestLocalMoves;
-			bestLocalModels.push_back(currentModel);
+			std::vector<score_pair> bestLocalScorePairs;
+
+			//bestLocalModels.push_back(currentModel);
 			for (std::vector<Move>::const_iterator it=moves.begin(); it != moves.end(); it++) {
 				Model nextModel = executeMove(d, *it, currentModel);
-				unsigned long nextScore = d.score(nextModel);
+				score_pair scorePair = computeScoresForMove(d, nextModel, *it, currentScore, formScores, occurs);
+				unsigned long nextScore = scorePair.totalScore;
 				if (nextScore > bestLocalScore) {
 					bestLocalModels.clear();
 					bestLocalMoves.clear();
+					bestLocalScorePairs.clear();
+
 					bestLocalScore = nextScore;
 					bestLocalModels.push_back(nextModel);
 					bestLocalMoves.push_back(*it);
+					bestLocalScorePairs.push_back(scorePair);
 				} else if (nextScore == bestLocalScore) {
 					bestLocalModels.push_back(nextModel);
 					bestLocalMoves.push_back(*it);
+					bestLocalScorePairs.push_back(scorePair);
 				}
 			}
 			int idx = rand() % bestLocalModels.size();	// choose one at random
 			currentModel = bestLocalModels[idx];
+			score_pair scorePair = bestLocalScorePairs[idx];
+			currentScore = scorePair.totalScore;
+			formScores = scorePair.formScores;
 			LOG(LOG_DEBUG) << "choosing best local move: " << bestLocalMoves[idx].toString();
 		}
 		d.clearCache();
 		// evaluate and see if our model is better than any found so far
-		unsigned long newScore = d.score(currentModel);
-		if (newScore > bestScore) {
+		if (currentScore > bestScore) {
 			LOG(LOG_DEBUG) << "remembering this model as best scoring so far";
 			bestModel = currentModel;
-			bestScore = newScore;
+			bestScore = currentScore;
 		}
 	}
 
