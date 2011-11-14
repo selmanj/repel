@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE( event_test)
 	BOOST_REQUIRE_EQUAL(events.size(), 1);
 	FOL::Event e = events[0];
 	BOOST_CHECK_EQUAL(e.atom()->name(), "mrManager");
-	BOOST_CHECK_EQUAL(e.atom()->at(0)->name(), "georgeMichael");
-	BOOST_CHECK_EQUAL(e.atom()->at(1)->name(), "bananaStand");
+	BOOST_CHECK_EQUAL(e.atom()->at(0).name(), "georgeMichael");
+	BOOST_CHECK_EQUAL(e.atom()->at(1).name(), "bananaStand");
 }
 
 BOOST_AUTO_TEST_CASE( multipleEvent_test)
@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE( multipleEvent_test)
 	FOL::Event e2 = events[0];
 	BOOST_CHECK_EQUAL(e.atom(), e2.atom());
 	BOOST_CHECK_EQUAL(e.atom()->name(), "mrManager");
-	BOOST_CHECK_EQUAL(e.atom()->at(0)->name(), "georgeMichael");
-	BOOST_CHECK_EQUAL(e.atom()->at(1)->name(), "bananaStand");
+	BOOST_CHECK_EQUAL(e.atom()->at(0).name(), "georgeMichael");
+	BOOST_CHECK_EQUAL(e.atom()->at(1).name(), "bananaStand");
 }
 
 BOOST_AUTO_TEST_CASE( atom_test) 
@@ -75,10 +75,10 @@ BOOST_AUTO_TEST_CASE( atom_test)
 	boost::shared_ptr<Atom> a = FOLParse::parseAtom(tokens.begin(), tokens.end());
 	BOOST_CHECK_EQUAL(a->name(), "love");
 	BOOST_CHECK_EQUAL(a->arity(), 2);
-	BOOST_CHECK_EQUAL(a->at(0)->name(), "cats");
-	BOOST_CHECK_EQUAL(a->at(1)->name(), "meowmix");
-	BOOST_CHECK(boost::dynamic_pointer_cast<Variable>(a->at(0)) != NULL);
-	BOOST_CHECK(boost::dynamic_pointer_cast<Constant>(a->at(1)) != NULL);
+	BOOST_CHECK_EQUAL(a->at(0).name(), "cats");
+	BOOST_CHECK_EQUAL(a->at(1).name(), "meowmix");
+	BOOST_CHECK(dynamic_cast<Variable*>(&a->at(0)) != NULL);
+	BOOST_CHECK(dynamic_cast<Constant*>(&a->at(1)) != NULL);
 }
 
 BOOST_AUTO_TEST_CASE( static_formula_test )
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( static_formula_test )
 	boost::shared_ptr<Atom> a = boost::dynamic_pointer_cast<Atom>(s);
 	BOOST_CHECK(a != NULL);
 	BOOST_CHECK_EQUAL(a->name(), "p");
-	BOOST_CHECK(boost::dynamic_pointer_cast<Variable>(a->at(0)) != NULL);
+	BOOST_CHECK(dynamic_cast<Variable*>(&a->at(0)) != NULL);
 
 	std::istringstream stream2("p(x) ^ q(x) -> r(x)");
 	tokens = FOLParse::tokenize(&stream2);

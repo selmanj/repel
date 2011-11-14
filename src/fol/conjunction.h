@@ -70,39 +70,39 @@ private:
 		return (*left_ == *(con->left_) && *right_ == *(con->right_) && rels_ == con->rels_);
 	};
 
-	virtual void doToString(std::string& str) const {
+	virtual void doToString(std::stringstream& str) const {
 		if (left_->precedence() > precedence()) {
-			str += "(";
-			str += left_->toString();
-			str += ")";
+			str << "(";
+			str << left_->toString();
+			str << ")";
 		} else {
-			str += left_->toString();
+			str << left_->toString();
 		}
 		if (rels_ == defaultRelations()) {
-			str += " ^ ";
+			str << " ^ ";
 		} else if (rels_.size() == 1 && rels_.find(Interval::MEETS) != rels_.end()) {
-			str += " ; ";
+			str << " ; ";
 		} else {
-			str += " ^{";
+			str << " ^{";
 			if (!rels_.empty())	{	// better be safe, not sure if this could happen but still...
 				std::set<Interval::INTERVAL_RELATION>::const_iterator it = rels_.begin();
-				str += Interval::relationToString(*it);
+				str << Interval::relationToString(*it);
 				it++;
 				for (; it!= rels_.end(); it++) {
-					str += ", ";
-					str += Interval::relationToString(*it);
+					str << ", ";
+					str << Interval::relationToString(*it);
 				}
 			}
 
-			str += "} ";
+			str << "} ";
 		}
 
 		if (right_->precedence() > precedence()) {
-			str += "(";
-			str += right_->toString();
-			str += ")";
+			str << "(";
+			str << right_->toString();
+			str << ")";
 		} else {
-			str += right_->toString();
+			str << right_->toString();
 		}
 	};
 

@@ -22,7 +22,7 @@ public:
 private:
 	bool val_;
 
-	virtual void doToString(std::string& str) const;
+	virtual void doToString(std::stringstream& str) const;
 	virtual Sentence* doClone() const { return new BoolLit(*this);};
 	virtual bool doEquals(const Sentence& t) const;
 	virtual int doPrecedence() const;

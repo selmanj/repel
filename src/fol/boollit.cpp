@@ -5,6 +5,7 @@
  *      Author: joe
  */
 
+#include <sstream>
 #include "boollit.h"
 
 BoolLit::~BoolLit() {
@@ -15,11 +16,11 @@ void BoolLit::visit(SentenceVisitor& s) const {
 	s.accept(*this);
 }
 
-void BoolLit::doToString(std::string& str) const {
+void BoolLit::doToString(std::stringstream& str) const {
 	if (val_) {
-		str += "true";
+		str << "true";
 	} else {
-		str += "false";
+		str << "false";
 	}
 }
 

@@ -26,14 +26,14 @@ std::set<Atom, atomcmp> generateValidPreds() {
 	std::set<Atom, atomcmp> validPreds;
 	BOOST_FOREACH(std::string pred, player_preds) {
 		BOOST_FOREACH(std::string obj, player_objs) {
-			boost::shared_ptr<Term> cons(new Constant(obj));
+			std::auto_ptr<Term> cons(new Constant(obj));
 			Atom atom(pred, cons);
 			validPreds.insert(atom);
 		}
 	}
 	BOOST_FOREACH(std::string pred, ref_preds) {
 		BOOST_FOREACH(std::string obj, ref_objs) {
-			boost::shared_ptr<Term> cons(new Constant(obj));
+			std::auto_ptr<Term> cons(new Constant(obj));
 			Atom atom(pred, cons);
 			validPreds.insert(atom);
 		}
@@ -45,8 +45,9 @@ std::set<Atom, atomcmp> generateValidPreds() {
 
 	// finally, dont forget about BallContact(them)
 	{
-		boost::shared_ptr<Term> them(new Constant("them"));
-		Atom atom("D-BallContact", them);
+		std::auto_ptr<Term> them(new Constant("them"));
+		Atom atom("D-BallContact");
+		atom.push_back(them);
 		validPreds.insert(atom);
 	}
 	return validPreds;

@@ -28,12 +28,12 @@ private:
 		return *s_ == *(liq->s_);
 	};
 
-	virtual void doToString(std::string& str) const {
-		str += "[ ";
+	virtual void doToString(std::stringstream& str) const {
+		str << "[ ";
 		if (s_ != NULL) {
-			str += s_->toString();
+			str << s_->toString();
 		}
-		str += " ]";
+		str << " ]";
 	};
 
 	virtual int doPrecedence() const { return 2; };

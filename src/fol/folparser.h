@@ -253,11 +253,11 @@ boost::shared_ptr<Atom> doParseGroundAtom(iters<ForwardIterator> &its) {
 		consumeTokenType(FOLParse::CLOSE_PAREN, its);
 		return a;
 	}
-	boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
+	std::auto_ptr<Term> c(new Constant(consumeIdent(its)));
 	a->push_back(c); // ownership transfered to atom
 	while (peekTokenType(FOLParse::COMMA, its)) {
 		consumeTokenType(FOLParse::COMMA, its);
-		boost::shared_ptr<Constant> cnext(new Constant(consumeIdent(its)));
+		std::auto_ptr<Term> cnext(new Constant(consumeIdent(its)));
 		a->push_back(cnext);
 	}
 	consumeTokenType(FOLParse::CLOSE_PAREN, its);
@@ -274,10 +274,10 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 
 	consumeTokenType(FOLParse::OPEN_PAREN, its);
 	if (peekTokenType(FOLParse::IDENT, its)) {
-		boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
+		std::auto_ptr<Term> c(new Constant(consumeIdent(its)));
 		a->push_back(c);
 	} else if (peekTokenType(FOLParse::VARIABLE, its)){
-		boost::shared_ptr<Variable> v(new Variable(consumeVariable(its)));
+		std::auto_ptr<Term> v(new Variable(consumeVariable(its)));
 		a->push_back(v);
 	} else {
 		// atom with no args
@@ -287,10 +287,10 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 	while (peekTokenType(FOLParse::COMMA, its)) {
 		consumeTokenType(FOLParse::COMMA, its);
 		if (peekTokenType(FOLParse::IDENT, its)) {
-			boost::shared_ptr<Constant> c(new Constant(consumeIdent(its)));
+			std::auto_ptr<Term> c(new Constant(consumeIdent(its)));
 			a->push_back(c);
 		} else {
-			boost::shared_ptr<Variable> v(new Variable(consumeVariable(its)));
+			std::auto_ptr<Term> v(new Variable(consumeVariable(its)));
 			a->push_back(v);
 		}
 	}

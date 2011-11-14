@@ -31,15 +31,15 @@ private:
 		return *s_ == *(neg->s_);
 	};
 
-	virtual void doToString(std::string& str) const {
-		str += "!";
+	virtual void doToString(std::stringstream& str) const {
+		str << "!";
 		if (s_ != NULL) {
 			if (s_->precedence() > precedence()) {
-				str += "(";
-				str += s_->toString();
-				str += ")";
+				str << "(";
+				str << s_->toString();
+				str << ")";
 			} else {
-				str += s_->toString();
+				str << s_->toString();
 			}
 		}
 	};

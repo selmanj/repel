@@ -38,21 +38,21 @@ private:
 		return (*left_ == *(con->left_) && *right_ == *(con->right_));
 	};
 
-	virtual void doToString(std::string& str) const {
+	virtual void doToString(std::stringstream& str) const {
 		if (left_->precedence() > precedence()) {
-			str += "(";
-			str += left_->toString();
-			str += ")";
+			str << "(";
+			str << left_->toString();
+			str << ")";
 		} else {
-			str += left_->toString();
+			str << left_->toString();
 		}
-		str += " v ";
+		str << " v ";
 		if (right_->precedence() > precedence()) {
-			str += "(";
-			str += right_->toString();
-			str += ")";
+			str << "(";
+			str << right_->toString();
+			str << ")";
 		} else {
-			str += right_->toString();
+			str << right_->toString();
 		}
 	};
 
