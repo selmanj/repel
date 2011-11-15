@@ -209,7 +209,7 @@ namespace {
 		// set up a mapping from atom to formula index.  this represents formulas where the atom occurs
 		PredCollector collector;
 		AtomOccurences occurs;
-		for (int i = 0; i < sentences.size(); i++) {
+		for (std::vector<WSentence>::size_type i = 0; i < sentences.size(); i++) {
 			WSentence formula = sentences.at(i);
 
 			collector.preds.clear();

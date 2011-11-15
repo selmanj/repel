@@ -35,7 +35,8 @@ private:
 template <class LogPolicy>
 class Log {
 public:
-	Log(bool printStdOut=false) : stream_(), printStdOut_(printStdOut) {};
+	Log(bool printStdOut=false)
+	  : stream_(), printStdOut_(printStdOut), logLevel_(LOG_INFO) {};
 	virtual ~Log();
 
 	static LOG_LEVEL& globalLogLevel();
@@ -47,9 +48,9 @@ private:
 
 	static LOG_LEVEL globalLogLevel_;
 
+	std::ostringstream stream_;
 	bool printStdOut_;
 	LOG_LEVEL logLevel_;
-	std::ostringstream stream_;
 
 };
 

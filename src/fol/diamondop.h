@@ -9,20 +9,20 @@
 class DiamondOp : public Sentence {
 public:
 	DiamondOp(boost::shared_ptr<Sentence> sentence)
-		: s_(sentence) {
+		: rels_(), s_(sentence) {
 			rels_ = std::set<Interval::INTERVAL_RELATION>(DiamondOp::defaultRelations().begin(), DiamondOp::defaultRelations().end());
 	}
 	DiamondOp(boost::shared_ptr<Sentence> sentence,
 			Interval::INTERVAL_RELATION relation)
-		: s_(sentence), rels_() {
+		: rels_(), s_(sentence) {
 		rels_.insert(relation);
 	}
 	template <class InputIterator>
 	DiamondOp(boost::shared_ptr<Sentence> sentence,
 			InputIterator begin,
 			InputIterator end)
-			: s_(sentence), rels_(begin, end) {};
-	DiamondOp(const DiamondOp& dia) : s_(dia.s_) , rels_(dia.rels_) {}; // shallow copy
+			: rels_(begin, end), s_(sentence) {};
+	DiamondOp(const DiamondOp& dia) : rels_(dia.rels_), s_(dia.s_) {}; // shallow copy
 	virtual ~DiamondOp() {};
 
 	boost::shared_ptr<Sentence>& sentence() {return s_;};
