@@ -52,7 +52,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	//std::vector<int> validNorm;
 	FormulaSet formSet = d.formulaSet();
 	std::vector<WSentence> formulas = formSet.formulas();
-	for (int i = 0; i < formulas.size(); i++) {
+	for (std::vector<WSentence>::size_type i = 0; i < formulas.size(); i++) {
 		WSentence form = formulas[i];
 		if (canFindMovesFor(*(form.sentence()), d)) {
 			validForms.push_back(i);
