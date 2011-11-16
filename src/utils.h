@@ -12,8 +12,8 @@
 #include <stdexcept>
 
 template <class T>
-T set_at(const std::set<T> &set, int index) {
-	if (index >= set.size() || index < 0) {
+T set_at(const std::set<T> &set, unsigned int index) {
+	if (index >= set.size()) {
 		throw std::runtime_error("tried to get index out of bounds on set in set_at()");
 	}
 	typename std::set<T>::const_iterator it = set.begin();
