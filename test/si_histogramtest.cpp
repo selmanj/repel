@@ -17,7 +17,7 @@
 #endif
 #include <iostream>
 #include <string>
-#include "../src/si_histogram.h"
+#include "si_histogram.h"
 
 BOOST_AUTO_TEST_CASE( si_histogram )
 {

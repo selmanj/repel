@@ -9,8 +9,8 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <boost/shared_ptr.hpp>
-#include "../src/fol/atom.h"
-#include "../src/fol/constant.h"
+#include "fol/atom.h"
+#include "fol/constant.h"
 #include <iostream>
 #include <string>
 

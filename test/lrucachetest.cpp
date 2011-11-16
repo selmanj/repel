@@ -10,7 +10,7 @@
 #endif
 #include <boost/test/unit_test.hpp>
 #include <string>
-#include "../src/lrucache.h"
+#include "lrucache.h"
 
 BOOST_AUTO_TEST_CASE( lrucache_basic_test)
 {

@@ -16,9 +16,9 @@
 #else
 #include <boost/test/included/unit_test.hpp>
 #endif
-#include "../src/fol/model.h"
-#include "../src/siset.h"
-#include "../src/fol/fol.h"
+#include "fol/model.h"
+#include "siset.h"
+#include "fol/fol.h"
 
 // TODO: write some test cases fool!
 BOOST_AUTO_TEST_CASE(basicModelTest) {

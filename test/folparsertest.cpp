@@ -9,11 +9,11 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <boost/test/unit_test.hpp>
-#include "../src/fol/folparser.h"
-#include "../src/fol/follexer.h"
-#include "../src/fol/foltoken.h"
-#include "../src/fol/fol.h"
-#include "../src/spaninterval.h"
+#include "fol/folparser.h"
+#include "fol/follexer.h"
+#include "fol/foltoken.h"
+#include "fol/fol.h"
+#include "spaninterval.h"
 #include <iostream>
 #include <algorithm>
 #include <string>

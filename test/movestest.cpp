@@ -18,9 +18,9 @@
 #include <boost/optional.hpp>
 #include <cstdio>
 #include <vector>
-#include "../src/fol/fol.h"
-#include "../src/fol/moves.h"
-#include "../src/fol/maxwalksat.h"
+#include "fol/fol.h"
+#include "fol/moves.h"
+#include "fol/maxwalksat.h"
 #include "testutilities.h"
 
 BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {

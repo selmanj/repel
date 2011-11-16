@@ -8,8 +8,8 @@
 #else
 #include <boost/test/included/unit_test.hpp>
 #endif
-#include "../src/fol/follexer.h"
-#include "../src/fol/foltoken.h"
+#include "fol/follexer.h"
+#include "fol/foltoken.h"
 #include <iostream>
 #include <string>
 #include <vector>

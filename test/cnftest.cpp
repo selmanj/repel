@@ -16,8 +16,8 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <vector>
-#include "src/fol/fol.h"
-#include "src/fol/moves.h"
+#include "fol/fol.h"
+#include "fol/moves.h"
 #include "testutilities.h"
 
 BOOST_AUTO_TEST_CASE(simpleNegations) {

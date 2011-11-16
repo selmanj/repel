@@ -11,10 +11,10 @@
 #include <sstream>
 #include <cstdlib>
 #include "testutilities.h"
-#include "../src/fol/domain.h"
-#include "../src/fol/fol.h"
-#include "../src/fol/folparser.h"
-#include "../src/fol/formulaset.h"
+#include "fol/domain.h"
+#include "fol/fol.h"
+#include "fol/folparser.h"
+#include "fol/formulaset.h"
 
 
 BOOST_AUTO_TEST_CASE( sat_test )

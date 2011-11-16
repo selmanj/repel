@@ -9,9 +9,9 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 #include <boost/optional.hpp>
-#include "../src/spaninterval.h"
-#include "../src/interval.h"
-#include "../src/siset.h"
+#include "spaninterval.h"
+#include "interval.h"
+#include "siset.h"
 
 #include <boost/foreach.hpp>
 #include <iostream>
