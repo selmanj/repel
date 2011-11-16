@@ -26,7 +26,5 @@ BOOST_AUTO_TEST_CASE( atom )
 	vec.push_back(Constant("b"));
 
 	Atom x(std::string("blarg"), vec.begin(), vec.end());
-
-	BOOST_CHECK_EQUAL("a", "b");
 }
 
