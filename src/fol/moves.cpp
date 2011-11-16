@@ -598,19 +598,17 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
 	SISet toIntersect(true, d.maxInterval());
 	toIntersect.add(SpanInterval(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish()));
 	SISet toScan = intersection(phiPrimeTrueAt, toIntersect);
-	unsigned int t;
+	unsigned int t=0;
 	if (toScan.size() != 0) {
 		// pick the first element
 		t = set_at(toScan.asSet(), 0).start().start()-1;
 		// choose local moves adding phik between b and t
 		std::vector<Move> localMoves = findMovesForLiquid(d, m, *phik, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
 		moves.insert(moves.end(), localMoves.begin(), localMoves.end());
-	}
-
-	// CASE 2: extend phiPrime to satisfy violation at b
-	if (toScan.size() == 0) {
+	} else { // CASE 2: extend phiPrime to satisfy violation at b
 		t = b+1;
 	}
+
 	std::vector<Move> localMoves = findMovesForLiquid(d, m, *phiPrime, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
 	moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
