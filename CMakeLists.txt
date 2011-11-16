@@ -10,12 +10,17 @@ configure_file (
   )
 
 include_directories("${PROJECT_BINARY_DIR}/src")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 find_package(Boost COMPONENTS program_options REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
 set(pel_LIBRARIES ${Boost_LIBRARIES})
 
+enable_testing()
+
 add_subdirectory(src)
+add_subdirectory(test)
+
