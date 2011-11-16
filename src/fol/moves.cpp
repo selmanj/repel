@@ -1454,7 +1454,7 @@ boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence
 		boost::shared_ptr<Sentence> disLeft = moveNegationsInward(dis->left());
 		boost::shared_ptr<Sentence> disRight = moveNegationsInward(dis->right());
 
-		if (disLeft == dis->left() & disRight == dis->right()) {
+		if (disLeft == dis->left() && disRight == dis->right()) {
 			// just return the original sentence
 			return sentence;
 		}
@@ -1467,7 +1467,7 @@ boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence
 		boost::shared_ptr<Sentence> conLeft = moveNegationsInward(con->left());
 		boost::shared_ptr<Sentence> conRight = moveNegationsInward(con->right());
 
-		if (conLeft == con->left() & conRight == con->right()) {
+		if (conLeft == con->left() && conRight == con->right()) {
 			// just return the original sentence
 			return sentence;
 		}
