@@ -12,7 +12,7 @@
 #include <stdexcept>
 
 template <class T>
-T set_at(const std::set<T> &set, int index) {
+T set_at(const std::set<T> &set, typename std::set<T>::size_type index) {
 	if (index >= set.size() || index < 0) {
 		throw std::runtime_error("tried to get index out of bounds on set in set_at()");
 	}
