@@ -1,4 +1,4 @@
-set(test_LIBRARIES ${pel_LIBRARIES} pel-fol pel-spaninterval)
+set(test_LIBRARIES ${pel_LIBRARIES} boost_unit_test_framework pel-fol pel-spaninterval)
 
 add_executable(atomtest atomtest.cpp)
 add_executable(cnftest cnftest.cpp)

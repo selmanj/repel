@@ -6,15 +6,8 @@
  */
 
 #define BOOST_TEST_MODULE SIHistogram
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-#ifdef HAVE_BOOST_UNIT_TEST_FRAMEWORK
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#else
-#include <boost/test/included/unit_test.hpp>
-#endif
 #include <iostream>
 #include <string>
 #include "si_histogram.h"

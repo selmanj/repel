@@ -1,13 +1,6 @@
 #define BOOST_TEST_MODULE Atom
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-#ifdef HAVE_BOOST_UNIT_TEST_FRAMEWORK
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#else
-#include <boost/test/included/unit_test.hpp>
-#endif
 #include <boost/shared_ptr.hpp>
 #include "fol/atom.h"
 #include "fol/constant.h"
