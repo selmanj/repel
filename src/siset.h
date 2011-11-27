@@ -15,7 +15,7 @@ class SISet {
 public:
 	SISet(bool forceLiquid=false,
 			const Interval& maxInterval=Interval(0, UINT_MAX))
-	: forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
+	: set_(), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
 //	SISet(const SpanInterval& si, bool forceLiquid=false,
 //			const Interval& maxInterval=Interval(0, UINT_MAX));
 	template <class InputIterator>
@@ -57,8 +57,8 @@ public:
 	friend SISet span(const SpanInterval& a, const SpanInterval& b);
 	friend bool equalByInterval(const SISet& a, const SISet& b);
 private:
-	bool forceLiquid_;
 	std::list<SpanInterval> set_;
+	bool forceLiquid_;
 	Interval maxInterval_;
 };
 
