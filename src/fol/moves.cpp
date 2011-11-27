@@ -605,10 +605,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
 		// choose local moves adding phik between b and t
 		std::vector<Move> localMoves = findMovesForLiquid(d, m, *phik, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
 		moves.insert(moves.end(), localMoves.begin(), localMoves.end());
-	}
-
-	// CASE 2: extend phiPrime to satisfy violation at b
-	if (toScan.size() == 0) {
+	} else { 	// CASE 2: extend phiPrime to satisfy violation at b
 		t = b+1;
 	}
 	std::vector<Move> localMoves = findMovesForLiquid(d, m, *phiPrime, SpanInterval(b+1,t,b+1,t, d.maxInterval()));

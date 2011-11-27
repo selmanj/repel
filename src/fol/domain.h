@@ -34,8 +34,16 @@ public:
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormulaSet formSet,
 			bool assumeClosedWorld=true)
-			: assumeClosedWorld_(assumeClosedWorld), dontModifyObsPreds_(true), maxInterval_(0,0),
-			  formulas_(formSet), generator_(), cache_(DOMAIN_CACHE_SIZE) {
+			: assumeClosedWorld_(assumeClosedWorld),
+			  dontModifyObsPreds_(true),
+			  obsPreds_(),
+			  unobsPreds_(),
+			  constants_(),
+			  maxInterval_(0,0),
+			  formulas_(formSet),
+			  observations_(),
+			  generator_(),
+			  cache_(DOMAIN_CACHE_SIZE) {
 
 		// find the maximum interval of time
 		if (factsBegin == factsEnd) {
@@ -157,8 +165,8 @@ public:
 private:
 	typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
 
-	bool dontModifyObsPreds_;
 	bool assumeClosedWorld_;
+	bool dontModifyObsPreds_;
 
 	std::map<std::string, SISet> obsPreds_;
 	std::set<std::string> unobsPreds_;
