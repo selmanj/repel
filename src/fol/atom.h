@@ -27,22 +27,13 @@ public:
 	Atom(const Atom& a)
 	  : pred(a.pred), terms(a.terms) {};	// shallow copy
 
-	bool isGrounded() const {
-		for (boost::ptr_vector<Term>::const_iterator it = terms.begin(); it != terms.end(); it++) {
-			if (dynamic_cast<const Constant*>(&(*it)) == NULL) return false;
-		}
-		return true;
-	};
+	bool isGrounded() const;
 
 	int arity() const {return terms.size();};
 	std::string name() const {return pred;};
 	std::string& name() {return pred;};
 
-	Atom& operator=(const Atom& b) {							// TODO add this to all subclasses of sentence!
-		pred = b.pred;
-		terms = b.terms;
-		return *this;
-	}
+	Atom& operator=(const Atom& b);
 	//Term& operator[] (boost::ptr_vector<Term>::size_type n) {return terms[n];};
 	//const Term& operator[] (boost::ptr_vector<Term>::size_type n) const {return terms[n];};
 	// TODO make the at() function throw an exception
@@ -60,32 +51,11 @@ private:
 
 	virtual Sentence* doClone() const {return new Atom(*this);};
 
-	virtual bool doEquals(const Sentence& t) const {
-		const Atom *at = dynamic_cast<const Atom*>(&t);
-		if (at == NULL) {
-			return false;
-		}
+	virtual bool doEquals(const Sentence& t) const;
 
-		return (pred == at->pred)
-				&& (terms == at->terms);
-	};
+	virtual void doToString(std::stringstream& str) const;
 
-	virtual void doToString(std::stringstream& str) const {
-		str << pred << "(";
-		for (boost::ptr_vector<Term>::const_iterator it = terms.begin();
-				it != terms.end();
-				it++) {
-			str << it->toString();
-			if (it + 1 != terms.end()) {
-				str << ", ";
-			}
-		}
-		str << ")";
-	};
-
-	virtual int doPrecedence() const {
-		return 0;
-	};
+	virtual int doPrecedence() const {return 0;};
 };
 
 struct atomcmp {

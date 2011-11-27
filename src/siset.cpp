@@ -530,7 +530,6 @@ unsigned long hammingDistance(const SISet& a, const SISet& b) {
 	SISet aComp = a.compliment();
 	SISet bComp = b.compliment();
 
-	unsigned long sum = 0;
 	SISet abC = intersection(a, bComp);
 	SISet aCb = intersection(aComp, b);
 	SISet result(abC);

@@ -1,4 +1,5 @@
 add_library(pel-fol
+  atom.cpp
   boollit.cpp
   constant.cpp
   domain.cpp
