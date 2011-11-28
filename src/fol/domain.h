@@ -33,96 +33,7 @@ public:
 	template <class FactsForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormulaSet formSet,
-			bool assumeClosedWorld=true)
-			: assumeClosedWorld_(assumeClosedWorld),
-			  dontModifyObsPreds_(true),
-			  obsPreds_(),
-			  unobsPreds_(),
-			  constants_(),
-			  maxInterval_(0,0),
-			  formulas_(formSet),
-			  observations_(),
-			  generator_(),
-			  cache_(DOMAIN_CACHE_SIZE) {
-
-		// find the maximum interval of time
-		if (factsBegin == factsEnd) {
-			// what to do for time??
-			std::runtime_error e("no facts given: currently need at least one fact to determine the interval to reason over!");
-			throw e;
-		}
-		unsigned int smallest=UINT_MAX, largest=0;
-		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			SpanInterval interval = it->where();
-
-			boost::optional<SpanInterval> norm = interval.normalize();
-			if (!norm) {
-				continue;
-			}
-			interval = norm.get();
-			smallest = (std::min)(interval.start().start(), smallest);
-			largest = (std::max)(interval.finish().finish(), largest);
-		}
-		maxInterval_ = Interval(smallest, largest);
-
-		// collect all fact predicates
-		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			boost::shared_ptr<const Atom> a = it->atom();
-			SpanInterval si = it->where();
-
-			if (obsPreds_.find(a->name()) == obsPreds_.end()) {
-				SISet newSet(true, maxInterval_);		// TODO: assumes all unobs are liquid!!!
-				newSet.add(si);
-				obsPreds_.insert(std::pair<std::string, SISet>(a->name(), newSet));
-			} else {
-				SISet curSet = obsPreds_.find(a->name())->second;
-				curSet.add(si);
-				obsPreds_.erase(a->name());
-				obsPreds_.insert(std::pair<std::string, SISet>(a->name(), curSet));
-			}
-		}
-		// now collect all unobserved preds
-
-		PredCollector predCollector;
-		for (FormulaSet::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
-			it->sentence()->visit(predCollector);
-		}
-
-		// remove the predicates we know are observed
-		std::set<std::string> obsJustPreds;
-		for (std::map<std::string, SISet>::const_iterator it = obsPreds_.begin();
-				it != obsPreds_.end();
-				it++) {
-			obsJustPreds.insert(it->first);
-		}
-		std::set<std::string> foundPreds;
-		for (std::set<Atom>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
-			foundPreds.insert(it->toString());
-		}
-		std::set_difference(foundPreds.begin(), foundPreds.end(),
-				obsJustPreds.begin(), obsJustPreds.end(),
-				std::inserter(unobsPreds_, unobsPreds_.end()));
-
-		// initialize observations
-		for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
-			boost::shared_ptr<const Atom> atom = it->atom();
-			SpanInterval interval = it->where();
-
-			// reinforce the max interval
-			boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval_);
-			if (!opt) continue;
-			interval = opt.get();
-			// TODO: we are hardwired for liquidity, come back and fix this later
-
-			if (it->truthVal()) {
-				SISet set(true, maxInterval_);
-
-				set.add(interval);
-				observations_.setAtom(*atom, set);
-			}
-		}
-
-	};
+			bool assumeClosedWorld);
 	virtual ~Domain() {};
 
 	const FormulaSet& formulaSet() const {return formulas_;};
@@ -190,4 +101,97 @@ private:
 	mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
 };
 
+template <class FactsForwardIterator>
+Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
+		FormulaSet formSet,
+		bool assumeClosedWorld=true)
+		: assumeClosedWorld_(assumeClosedWorld),
+		  dontModifyObsPreds_(true),
+		  obsPreds_(),
+		  unobsPreds_(),
+		  constants_(),
+		  maxInterval_(0,0),
+		  formulas_(formSet),
+		  observations_(),
+		  generator_(),
+		  cache_(DOMAIN_CACHE_SIZE) {
+
+	// find the maximum interval of time
+	if (factsBegin == factsEnd) {
+		// what to do for time??
+		std::runtime_error e("no facts given: currently need at least one fact to determine the interval to reason over!");
+		throw e;
+	}
+	unsigned int smallest=UINT_MAX, largest=0;
+	for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
+		SpanInterval interval = it->where();
+
+		boost::optional<SpanInterval> norm = interval.normalize();
+		if (!norm) {
+			continue;
+		}
+		interval = norm.get();
+		smallest = (std::min)(interval.start().start(), smallest);
+		largest = (std::max)(interval.finish().finish(), largest);
+	}
+	maxInterval_ = Interval(smallest, largest);
+
+	// collect all fact predicates
+	for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
+		boost::shared_ptr<const Atom> a = it->atom();
+		SpanInterval si = it->where();
+
+		if (obsPreds_.find(a->name()) == obsPreds_.end()) {
+			SISet newSet(true, maxInterval_);		// TODO: assumes all unobs are liquid!!!
+			newSet.add(si);
+			obsPreds_.insert(std::pair<std::string, SISet>(a->name(), newSet));
+		} else {
+			SISet curSet = obsPreds_.find(a->name())->second;
+			curSet.add(si);
+			obsPreds_.erase(a->name());
+			obsPreds_.insert(std::pair<std::string, SISet>(a->name(), curSet));
+		}
+	}
+	// now collect all unobserved preds
+
+	PredCollector predCollector;
+	for (FormulaSet::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+		it->sentence()->visit(predCollector);
+	}
+
+	// remove the predicates we know are observed
+	std::set<std::string> obsJustPreds;
+	for (std::map<std::string, SISet>::const_iterator it = obsPreds_.begin();
+			it != obsPreds_.end();
+			it++) {
+		obsJustPreds.insert(it->first);
+	}
+	std::set<std::string> foundPreds;
+	for (std::set<Atom>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
+		foundPreds.insert(it->toString());
+	}
+	std::set_difference(foundPreds.begin(), foundPreds.end(),
+			obsJustPreds.begin(), obsJustPreds.end(),
+			std::inserter(unobsPreds_, unobsPreds_.end()));
+
+	// initialize observations
+	for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
+		boost::shared_ptr<const Atom> atom = it->atom();
+		SpanInterval interval = it->where();
+
+		// reinforce the max interval
+		boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval_);
+		if (!opt) continue;
+		interval = opt.get();
+		// TODO: we are hardwired for liquidity, come back and fix this later
+
+		if (it->truthVal()) {
+			SISet set(true, maxInterval_);
+
+			set.add(interval);
+			observations_.setAtom(*atom, set);
+		}
+	}
+
+};
 #endif /* DOMAIN_H_ */
