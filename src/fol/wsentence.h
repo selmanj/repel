@@ -25,6 +25,7 @@ public:
 	void setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
 	void setWeight(unsigned int w) {w_ = w;};
 
+private:
 	boost::shared_ptr<Sentence> s_;
 	unsigned int w_;
 
