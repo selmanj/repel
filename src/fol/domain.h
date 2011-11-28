@@ -33,7 +33,7 @@ public:
 	template <class FactsForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormulaSet formSet,
-			bool assumeClosedWorld);
+			bool assumeClosedWorld=true);
 	virtual ~Domain() {};
 
 	const FormulaSet& formulaSet() const {return formulas_;};
@@ -104,7 +104,7 @@ private:
 template <class FactsForwardIterator>
 Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 		FormulaSet formSet,
-		bool assumeClosedWorld=true)
+		bool assumeClosedWorld)
 		: assumeClosedWorld_(assumeClosedWorld),
 		  dontModifyObsPreds_(true),
 		  obsPreds_(),
