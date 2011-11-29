@@ -11,4 +11,4 @@ add_library(pel-fol
   namegenerator.cpp
   variable.cpp)
 
-set_target_properties(pel-fol PROPERTIES COMPILE_FLAGS "-O3 -Wall")
+# set_target_properties(pel-fol PROPERTIES COMPILE_FLAGS "-O3 -Wall")
