@@ -5,14 +5,14 @@ add_library(pel-spaninterval
   spaninterval.cpp
   siset.cpp)
 
-set_target_properties(pel-spaninterval PROPERTIES COMPILE_FLAGS "-O3 -Wall")
+# set_target_properties(pel-spaninterval PROPERTIES COMPILE_FLAGS "-O3 -Wall")
 
 set (pel_SOURCES siset.cpp)
 set (pel_LIBRARIES ${pel_LIBRARIES} pel-fol pel-spaninterval)
 
 add_executable(pel pel.cpp ${pel_SOURCES})
 
-set_target_properties(pel PROPERTIES COMPILE_FLAGS "-O3 -Wall")
+# set_target_properties(pel PROPERTIES COMPILE_FLAGS "-O3 -Wall")
 
 target_link_libraries(pel ${pel_LIBRARIES})
 
