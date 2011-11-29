@@ -5,13 +5,7 @@
 
 //============================================================================
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
-#ifndef PACKAGE_STRING
-#define PACKAGE_STRING "pel 0.8-svn"
-#endif
+#include "PELConfig.h"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -62,12 +56,12 @@ int main(int argc, char* argv[]) {
 	po::notify(vm);
 
 	if (vm.count("version")) {
-		std::cout << PACKAGE_STRING << std::endl;
+		std::cout << "pelmap version " << PEL_VERSION_MAJOR << "." << PEL_VERSION_MINOR << std::endl;
 		return 0;
 	}
 
 	if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
-	    std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
+	    std::cout << "Usage: pelmap [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
 		std::cout << desc << std::endl;
 	    return 1;
 	}
