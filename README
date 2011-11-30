@@ -1,12 +1,14 @@
 Probabilistic Event Logic
 --------------------------
 
-This is a work in progress.  Expect more details in here soon.
+This is a work in progress.  Please do not distribute.
 
 To build
 --------
 me@myhost:~/git/pel$ mkdir build; cd build
 me@myhost:~/git/pel/build$ cmake ../
+[ stuff happens ]
+me@myhost:~/git/pel/build$ make
 
 Eclipse instructions
 --------------------
