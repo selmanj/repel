@@ -2,10 +2,10 @@
 #define TESTUTILITIES_H
 
 #include <boost/shared_ptr.hpp>
-#include "../src/fol/fol.h"
-#include "../src/fol/folparser.h"
-#include "../src/fol/follexer.h"
-#include "../src/fol/formulaset.h"
+#include "logic/fol.h"
+#include "logic/folparser.h"
+#include "logic/follexer.h"
+#include "logic/formulaset.h"
 #include <istream>
 
 boost::shared_ptr<Sentence> getAsSentence(const std::string& str) {

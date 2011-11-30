@@ -4,10 +4,10 @@
 #include <sstream>
 #include <cstdlib>
 #include "testutilities.h"
-#include "fol/domain.h"
-#include "fol/fol.h"
-#include "fol/folparser.h"
-#include "fol/formulaset.h"
+#include "logic/domain.h"
+#include "logic/fol.h"
+#include "logic/folparser.h"
+#include "logic/formulaset.h"
 
 
 BOOST_AUTO_TEST_CASE( sat_test )

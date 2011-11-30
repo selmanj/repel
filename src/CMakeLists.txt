@@ -1,4 +1,4 @@
-add_subdirectory(fol)
+add_subdirectory(logic)
 
 add_library(pel-spaninterval
   interval.cpp

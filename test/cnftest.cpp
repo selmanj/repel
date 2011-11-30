@@ -9,8 +9,8 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <vector>
-#include "fol/fol.h"
-#include "fol/moves.h"
+#include "logic/fol.h"
+#include "logic/moves.h"
 #include "testutilities.h"
 
 BOOST_AUTO_TEST_CASE(simpleNegations) {

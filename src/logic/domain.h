@@ -15,6 +15,7 @@
 #include <utility>
 #include <algorithm>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <boost/optional.hpp>
 #include "fol.h"
@@ -122,7 +123,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 		std::runtime_error e("no facts given: currently need at least one fact to determine the interval to reason over!");
 		throw e;
 	}
-	unsigned int smallest=UINT_MAX, largest=0;
+	unsigned int smallest=std::numeric_limits<unsigned int>::max(), largest=0;
 	for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
 		SpanInterval interval = it->where();
 

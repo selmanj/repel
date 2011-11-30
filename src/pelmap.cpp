@@ -18,13 +18,13 @@ namespace po = boost::program_options;
 #include <utility>
 #include <ctime>
 #include <map>
-#include "fol/fol.h"
-#include "fol/folparser.h"
-#include "fol/domain.h"
+#include "logic/fol.h"
+#include "logic/folparser.h"
+#include "logic/domain.h"
 #include "log.h"
-#include "fol/moves.h"
-#include "fol/maxwalksat.h"
-#include "fol/formulaset.h"
+#include "logic/moves.h"
+#include "logic/maxwalksat.h"
+#include "logic/formulaset.h"
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.

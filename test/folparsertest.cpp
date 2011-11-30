@@ -1,10 +1,10 @@
 #define BOOST_TEST_MODULE FOLParser
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include "fol/folparser.h"
-#include "fol/follexer.h"
-#include "fol/foltoken.h"
-#include "fol/fol.h"
+#include "logic/folparser.h"
+#include "logic/follexer.h"
+#include "logic/foltoken.h"
+#include "logic/fol.h"
 #include "spaninterval.h"
 #include <iostream>
 #include <algorithm>
