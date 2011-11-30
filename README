@@ -10,10 +10,6 @@ me@myhost:~/git/pel/build$ cmake ../
 
 Eclipse instructions
 --------------------
-Make a directory adjacent to the pel directory called pel-eclipse or something
-similar (ie if pel is in src/pel, then the build directory is
-src/pel-eclipse).  Inside that directory, type:
 
-cmake -G"Eclipse CDT4 - Unix Makefiles" -DECLIPSE_CDT4_GENERATE_SOURCE_PROJECT=TRUE ../pel
-
-Then once that's done, import the directory into eclipse.
+See this page for setting up a UNIX Makefile project within eclipse:
+http://www.cmake.org/Wiki/CMake:Eclipse_UNIX_Tutorial
