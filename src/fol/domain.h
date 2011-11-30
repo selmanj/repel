@@ -59,6 +59,8 @@ public:
 	unsigned long score(const Model& m) const;
 
 	SISet satisfied(const Sentence& s, const Model& m) const;
+
+private:
 	SISet satisfiedAtom(const Atom& a, const Model& m) const;
 	SISet satisfiedNegation(const Negation& n, const Model& m) const;
 	SISet satisfiedDisjunction(const Disjunction& d, const Model& m) const;
@@ -73,7 +75,6 @@ public:
 	SISet liqSatisfiedConjunction(const Conjunction& c, const Model& m) const;
 	SISet liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const;
 
-private:
 	typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
 
 	bool assumeClosedWorld_;

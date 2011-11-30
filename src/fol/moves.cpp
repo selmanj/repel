@@ -578,7 +578,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
 	/////// DONE PARSING OUT IMPORTANT PIECES /////////
 
 	// pick an interval to satisfy where this sentence is violated
-	SISet violations = d.satisfiedDisjunction(dis, m);
+	SISet violations = d.satisfied(dis, m);
 	violations = violations.compliment();
 
 	if (violations.size() == 0) {
@@ -1245,7 +1245,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 			// unfortunately we can only add (or extend) phi to satisfy this relation
 			if (!si.satisfiesRelation(Interval::MEETSI)) return moves;
 			SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETSI).get();
-			SISet insideSatisfiedAt = d.satisfiedAtom(*a,m);
+			SISet insideSatisfiedAt = d.satisfied(*a,m);
 			insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
 			unsigned int j = whereToSat.finish().finish();
 
@@ -1273,7 +1273,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 			// unfortunately we can only add (or extend) phi to satisfy this relation
 			if (!si.satisfiesRelation(Interval::MEETS)) return moves;
 			SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETS).get();
-			SISet insideSatisfiedAt = d.satisfiedAtom(*a,m);
+			SISet insideSatisfiedAt = d.satisfied(*a,m);
 			insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
 			unsigned int j = whereToSat.start().start();
 
