@@ -8,6 +8,7 @@
 #include "PELConfig.h"
 
 #include <boost/program_options.hpp>
+#include <boost/tuple/tuple.hpp>
 namespace po = boost::program_options;
 #include <boost/foreach.hpp>
 #include <iostream>

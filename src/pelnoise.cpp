@@ -263,7 +263,8 @@ boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> getThreshho
 			}
 		}
 		*/
-	return boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int>(truePos, falsePos, trueNeg, falseNeg);
+	boost::tuple<unsigned int, unsigned int, unsigned int, unsigned int> val(truePos, falsePos, trueNeg, falseNeg);
+	return val;
 }
 
 
