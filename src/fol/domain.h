@@ -58,8 +58,7 @@ public:
 	unsigned long score(const WSentence& s, const Model& m) const;
 	unsigned long score(const Model& m) const;
 
-	SISet satisfied(const Sentence& s, const Model& m) const;
-
+	SISet satisfied(const Sentence& s, const Model& m, const SISet* where=NULL) const;
 private:
 	SISet satisfiedAtom(const Atom& a, const Model& m) const;
 	SISet satisfiedNegation(const Negation& n, const Model& m) const;

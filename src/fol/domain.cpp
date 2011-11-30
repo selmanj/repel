@@ -100,7 +100,8 @@ unsigned long Domain::score(const Model& m) const {
 	return sum;
 }
 
-SISet Domain::satisfied(const Sentence& s, const Model& m) const {
+SISet Domain::satisfied(const Sentence& s, const Model& m, const SISet* where) const {
+
 	// check in our cache first!
 	ModelSentencePair pair(&m,&s);
 	if (cache_.count(pair) == 1) {
@@ -141,6 +142,10 @@ SISet Domain::satisfied(const Sentence& s, const Model& m) const {
 	// for now, force it to be disjoint
 	toReturn.makeDisjoint();
 //	LOG_PRINT(LOG_DEBUG) << "sentence: " << s.toString() << " satisfied at " << toReturn.toString() << std::endl;
+	// mask it with where
+	if (where != NULL) {
+		toReturn = intersection(toReturn, *where);
+	}
 	// add set to cache
 	cache_.insert(pair, toReturn);
 	return toReturn;

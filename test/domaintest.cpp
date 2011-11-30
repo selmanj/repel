@@ -86,6 +86,37 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:10]}");
 }
 
+BOOST_AUTO_TEST_CASE( sat_where ) {
+	std::stringstream facts;
+	facts << "P(a,b) @ [1:10]";
+	facts << "Q(a,b) @ [5:15]";
+
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+	std::vector<FOL::Event> factvec;
+	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+
+	FormulaSet formulas;
+
+	Domain d(factvec.begin(), factvec.end(), formulas);
+	//d.setMaxInterval(Interval(0,1000));
+
+	boost::shared_ptr<Sentence> query = getAsSentence("[Q(a,b) -> P(a,b)]");
+	SISet trueAt = d.satisfied(*query, d.defaultModel());
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[1:10]}");
+
+	// now try only doing it at timepoints [5:7]
+	SISet someTime(true, d.maxInterval());
+	someTime.add(SpanInterval(5,7,5,7,d.maxInterval()));
+
+	trueAt = d.satisfied(*query, d.defaultModel(), &someTime);
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:7]}");
+
+	query = getAsSentence("[!(Q(a,b) -> P(a,b))]");
+	trueAt = d.satisfied(*query, d.defaultModel(), &someTime);
+	BOOST_CHECK_EQUAL(trueAt.toString(), "{}");
+
+}
+
 BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
 	std::stringstream facts;
 	facts << "A(a) @ [1:10]";
