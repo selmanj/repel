@@ -16,7 +16,7 @@
 #include <ostream>
 #include <iterator>
 #include "../log.h"
-#include "atom.h"
+#include "el_syntax.h"
 #include "moves.h"
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model& initialModel);

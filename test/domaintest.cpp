@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include "testutilities.h"
 #include "logic/domain.h"
-#include "logic/fol.h"
+#include "logic/el_syntax.h"
 #include "logic/folparser.h"
 #include "logic/formulaset.h"
 

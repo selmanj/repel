@@ -18,7 +18,7 @@
 #include <limits>
 #include <stdexcept>
 #include <boost/optional.hpp>
-#include "fol.h"
+#include "el_syntax.h"
 #include "predcollector.h"
 #include "model.h"
 #include "../siset.h"

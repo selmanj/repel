@@ -1,6 +1,5 @@
 #include "domain.h"
-#include "fol.h"
-#include "atom.h"
+#include "el_syntax.h"
 #include "model.h"
 #include "../log.h"
 

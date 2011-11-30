@@ -2,7 +2,7 @@
 #define TESTUTILITIES_H
 
 #include <boost/shared_ptr.hpp>
-#include "logic/fol.h"
+#include "logic/el_syntax.h"
 #include "logic/folparser.h"
 #include "logic/follexer.h"
 #include "logic/formulaset.h"

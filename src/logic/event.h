@@ -9,7 +9,7 @@
 #define EVENT_H_
 
 #include <boost/shared_ptr.hpp>
-#include "fol.h"
+#include "el_syntax.h"
 #include "../spaninterval.h"
 
 namespace FOL {

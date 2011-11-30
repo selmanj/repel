@@ -14,8 +14,7 @@
 #include "formulaset.h"
 #include "../spaninterval.h"
 #include "../interval.h"
-#include "fol.h"
-#include "constant.h"
+#include "el_syntax.h"
 #include "../log.h"
 
 // anonymous namespace for helper functions

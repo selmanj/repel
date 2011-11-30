@@ -1,12 +1,12 @@
 /*
- * fol.h
+ * el_syntax.h
  *
  *  Created on: May 21, 2011
  *      Author: joe
  */
 
-#ifndef FOL_H_
-#define FOL_H_
+#ifndef EL_SYNTAX_H_
+#define EL_SYNTAX_H_
 
 #include <boost/shared_ptr.hpp>
 #include <utility>
@@ -14,20 +14,20 @@
 #include <deque>
 
 /* include all the elements needed for FOL sentences */
-#include "atom.h"
-#include "boollit.h"
-#include "conjunction.h"
-#include "constant.h"
-#include "diamondop.h"
-#include "disjunction.h"
+#include "syntax/atom.h"
+#include "syntax/boollit.h"
+#include "syntax/conjunction.h"
+#include "syntax/constant.h"
+#include "syntax/diamondop.h"
+#include "syntax/disjunction.h"
 #include "event.h"
-#include "liquidop.h"
-#include "negation.h"
-#include "sentence.h"
-#include "term.h"
-#include "variable.h"
-#include "wsentence.h"
-#include "sentencevisitor.h"
+#include "syntax/liquidop.h"
+#include "syntax/negation.h"
+#include "syntax/sentence.h"
+#include "syntax/term.h"
+#include "syntax/variable.h"
+#include "syntax/wsentence.h"
+#include "syntax/sentencevisitor.h"
 #include "../spaninterval.h"
 
 /*
@@ -125,4 +125,4 @@ inline boost::shared_ptr<Conjunction> wrapInMeetsConjunction(const std::vector<c
 	return con;
 }
 
-#endif /* FOL_H_ */
+#endif /* EL_SYNTAX_H_ */

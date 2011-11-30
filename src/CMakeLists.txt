@@ -8,7 +8,7 @@ add_library(pel-spaninterval
 # set_target_properties(pel-spaninterval PROPERTIES COMPILE_FLAGS "-O3 -Wall")
 
 set (pel_SOURCES siset.cpp)
-set (pel_LIBRARIES ${pel_LIBRARIES} pel-fol pel-spaninterval)
+set (pel_LIBRARIES ${pel_LIBRARIES} pel-logic pel-syntax pel-spaninterval)
 
 add_executable(pelmap pelmap.cpp ${pel_SOURCES})
 

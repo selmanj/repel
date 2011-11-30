@@ -4,14 +4,14 @@
 #include <utility>
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <stdexcept>
 #include <utility>
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include "fol.h"
+#include "el_syntax.h"
 #include "domain.h"
-#include "sentence.h"
 #include "model.h"
 #include "../siset.h"
 #include "../log.h"

@@ -1,8 +1,8 @@
 #ifndef PREDCOLLECTOR_H
 #define PREDCOLLECTOR_H
 
-#include "sentencevisitor.h"
-#include "atom.h"
+#include "syntax/sentencevisitor.h"
+#include "syntax/atom.h"
 
 class PredCollector : public SentenceVisitor {
 public:

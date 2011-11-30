@@ -18,7 +18,7 @@ namespace po = boost::program_options;
 #include <utility>
 #include <ctime>
 #include <map>
-#include "logic/fol.h"
+#include "logic/el_syntax.h"
 #include "logic/folparser.h"
 #include "logic/domain.h"
 #include "log.h"

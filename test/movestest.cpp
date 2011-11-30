@@ -11,7 +11,7 @@
 #include <boost/optional.hpp>
 #include <cstdio>
 #include <vector>
-#include "logic/fol.h"
+#include "logic/el_syntax.h"
 #include "logic/moves.h"
 #include "logic/maxwalksat.h"
 #include "testutilities.h"

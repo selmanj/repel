@@ -9,7 +9,7 @@
 #define FORMULASET_H_
 #include <vector>
 #include <iterator>
-#include "fol.h"
+#include "el_syntax.h"
 
 // class FormulaSetIterator;
 

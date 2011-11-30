@@ -11,7 +11,7 @@
 #include <boost/test/unit_test.hpp>
 #include "logic/model.h"
 #include "siset.h"
-#include "logic/fol.h"
+#include "logic/el_syntax.h"
 
 // TODO: write some test cases fool!
 BOOST_AUTO_TEST_CASE(basicModelTest) {

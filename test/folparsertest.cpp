@@ -4,7 +4,7 @@
 #include "logic/folparser.h"
 #include "logic/follexer.h"
 #include "logic/foltoken.h"
-#include "logic/fol.h"
+#include "logic/el_syntax.h"
 #include "spaninterval.h"
 #include <iostream>
 #include <algorithm>

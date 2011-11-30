@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include "sentence.h"
 #include "sentencevisitor.h"
-#include "../interval.h"
+#include "../../interval.h"
 
 class Conjunction : public Sentence {
 public:

@@ -9,7 +9,7 @@
 #define MODEL_H_
 
 #include <map>
-#include "fol.h"
+#include "el_syntax.h"
 #include "../siset.h"
 
 class Model {
