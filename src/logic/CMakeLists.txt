@@ -7,5 +7,6 @@ add_library(pel-logic
   foltoken.cpp
   model.cpp
   moves.cpp
-  namegenerator.cpp)
+  namegenerator.cpp
+  unit_prop.cpp)
 

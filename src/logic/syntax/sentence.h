@@ -11,6 +11,7 @@ public:
 	virtual ~Sentence() {};
 	Sentence* clone() const { return doClone(); };
 	bool operator==(const Sentence& b) const {return doEquals(b);};
+	bool operator!=(const Sentence& b) const {return !(*this == b);};
 	std::string toString() const {
 		std::stringstream str;
 		doToString(str);
