@@ -10,6 +10,7 @@
 #define WSENTENCE_H_
 
 #include <boost/shared_ptr.hpp>
+#include <stdexcept>
 #include "sentence.h"
 
 class WSentence {
@@ -24,7 +25,12 @@ public:
 	boost::shared_ptr<Sentence> sentence() { return s_;}
 	const boost::shared_ptr<const Sentence> sentence() const {return s_;}
 	bool hasInfWeight() const {return hasInfWeight_;}
-	unsigned int weight() const {return w_;};
+	unsigned int weight() const {
+		if (hasInfWeight_) {
+			throw std::logic_error("logic error: cannot return infinite weight");
+		}
+		return w_;
+	};
 
 	void setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
 	void setWeight(unsigned int w) {w_ = w; hasInfWeight_ = false;};
