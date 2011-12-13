@@ -14,6 +14,8 @@
 
 namespace FOL {
 
+// TODO: this is now replaced by wsentence
+
 class Event {
 public:
 	Event(boost::shared_ptr<Atom> atom, const SpanInterval& where, bool truthVal)
