@@ -84,7 +84,7 @@ bool Domain::isLiquid(const std::string& predicate) const {
 	return true;
 }
 
-unsigned long Domain::score(const WSentence& w, const Model& m) const {
+unsigned long Domain::score(const ELSentence& w, const Model& m) const {
 	const Sentence& s = *(w.sentence());
 	SISet sat = satisfied(s, m);
 	if (!sat.isDisjoint()) sat.makeDisjoint();
@@ -93,7 +93,7 @@ unsigned long Domain::score(const WSentence& w, const Model& m) const {
 
 unsigned long Domain::score(const Model& m) const {
 	unsigned long sum = 0;
-	for (std::vector<WSentence>::const_iterator it = formulas_.formulas().begin(); it != formulas_.formulas().end(); it++) {
+	for (std::vector<ELSentence>::const_iterator it = formulas_.formulas().begin(); it != formulas_.formulas().end(); it++) {
 		sum += score(*it, m);
 	}
 	return sum;

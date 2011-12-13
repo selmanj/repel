@@ -31,7 +31,7 @@ struct score_pair {
 	std::vector<unsigned long> formScores;
 };
 
-AtomOccurences findAtomOccurences(const std::vector<WSentence>& sentences);
+AtomOccurences findAtomOccurences(const std::vector<ELSentence>& sentences);
 // note, model m is assumed to have had move applied already!
 score_pair computeScoresForMove(const Domain& d,
 		const Model& m,
@@ -51,9 +51,9 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	std::vector<int> validForms;
 	//std::vector<int> validNorm;
 	FormulaSet formSet = d.formulaSet();
-	std::vector<WSentence> formulas = formSet.formulas();
-	for (std::vector<WSentence>::size_type i = 0; i < formulas.size(); i++) {
-		WSentence form = formulas[i];
+	std::vector<ELSentence> formulas = formSet.formulas();
+	for (std::vector<ELSentence>::size_type i = 0; i < formulas.size(); i++) {
+		ELSentence form = formulas[i];
 		if (canFindMovesFor(*(form.sentence()), d)) {
 			validForms.push_back(i);
 		} else {
@@ -72,7 +72,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	std::vector<unsigned long> formScores;
 	unsigned long currentScore = 0;
 	for (unsigned int i = 0; i < formulas.size(); i++) {
-		WSentence formula = formulas[i];
+		ELSentence formula = formulas[i];
 		unsigned long localScore = d.score(formula, currentModel);
 		formScores.push_back(localScore);
 		currentScore += localScore;
@@ -112,12 +112,12 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 		LOG(LOG_DEBUG) << "current score: " << currentScore;
 		// make a list of the current unsatisfied formulas we can calc moves for
 		std::vector<int> notFullySatisfied = validForms;
-		std::vector<WSentence> curFormulas = formulas;
+		std::vector<ELSentence> curFormulas = formulas;
 
 		for (std::vector<int>::iterator it = notFullySatisfied.begin(); it != notFullySatisfied.end(); ) {
 			int i = *it;
 
-			WSentence wsent = curFormulas.at(i);
+			ELSentence wsent = curFormulas.at(i);
 			//const WSentence *wsentence = *it;
 			if (maxSize*wsent.weight() == formScores[i]) {
 				it = notFullySatisfied.erase(it);
@@ -133,7 +133,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 		}
 
 		// pick one at random
-		WSentence toImprove = curFormulas.at(notFullySatisfied[rand() % notFullySatisfied.size()]);
+		ELSentence toImprove = curFormulas.at(notFullySatisfied[rand() % notFullySatisfied.size()]);
 		LOG(LOG_DEBUG) << "choosing sentence: " << toImprove.sentence()->toString() << " to improve.";
 		// find the set of moves that improve it
 		std::vector<Move> moves = findMovesFor(d, currentModel, *(toImprove.sentence()));
@@ -205,12 +205,12 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 }
 
 namespace {
-	AtomOccurences findAtomOccurences(const std::vector<WSentence>& sentences) {
+	AtomOccurences findAtomOccurences(const std::vector<ELSentence>& sentences) {
 		// set up a mapping from atom to formula index.  this represents formulas where the atom occurs
 		PredCollector collector;
 		AtomOccurences occurs;
-		for (std::vector<WSentence>::size_type i = 0; i < sentences.size(); i++) {
-			WSentence formula = sentences.at(i);
+		for (std::vector<ELSentence>::size_type i = 0; i < sentences.size(); i++) {
+			ELSentence formula = sentences.at(i);
 
 			collector.preds.clear();
 			formula.sentence()->visit(collector);
@@ -252,10 +252,10 @@ namespace {
 		pair.totalScore = currentScore;
 
 		// start recomputing, adjusting the total score as necessary
-		std::vector<WSentence> formulas = d.formulaSet().formulas();
+		std::vector<ELSentence> formulas = d.formulaSet().formulas();
 		for (std::set<int>::const_iterator it = formsToRescore.begin(); it != formsToRescore.end(); it++) {
 			int formNum = *it;
-			WSentence sentence = formulas[formNum];
+			ELSentence sentence = formulas[formNum];
 
 			unsigned long score = d.score(sentence, m);
 			if (score != curFormScores.at(formNum)) {

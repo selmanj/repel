@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 		unsigned long sum = 0;
 		// evaluate the weight of each formula in the domain
 		for(FormulaSet::const_iterator it = d->formulaSet().begin(); it != d->formulaSet().end(); it++) {
-			WSentence formula = *it;
+			ELSentence formula = *it;
 			SISet satisfied = d->satisfied(*(formula.sentence()), model);
 			unsigned long weight = d->score(formula, model);
 			sum += weight;

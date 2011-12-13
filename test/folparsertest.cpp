@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( static_formula_test )
 BOOST_AUTO_TEST_CASE( weighted_formula_test ) {
 	std::istringstream stream("10: p(?x,y)");	// simple atom case
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	WSentence form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
+	ELSentence form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
 
 	BOOST_CHECK_EQUAL(form.weight(), 10);
 	BOOST_CHECK_EQUAL(form.sentence()->toString(), "p(?x, y)");

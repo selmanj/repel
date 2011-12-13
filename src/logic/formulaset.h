@@ -15,7 +15,7 @@
 
 class FormulaSet {
 public:
-	typedef std::vector<WSentence>::const_iterator const_iterator;
+	typedef std::vector<ELSentence>::const_iterator const_iterator;
 
 	FormulaSet();
 	virtual ~FormulaSet();
@@ -23,13 +23,13 @@ public:
 	const_iterator begin() const {return formulas_.begin(); }
 	const_iterator end() const {return formulas_.end(); }
 
-	const std::vector<WSentence>& formulas() const {return formulas_;}
+	const std::vector<ELSentence>& formulas() const {return formulas_;}
 
 	int size() const {return formulas_.size();}
-	void addFormula(const WSentence& sentence) {formulas_.push_back(sentence);}
+	void addFormula(const ELSentence& sentence) {formulas_.push_back(sentence);}
 
 private:
-	std::vector<WSentence> formulas_;
+	std::vector<ELSentence> formulas_;
 };
 /*
 class FormulaSetIterator : public std::iterator<std::forward_iterator_tag, WSentence> {

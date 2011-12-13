@@ -26,7 +26,7 @@
 #include "syntax/sentence.h"
 #include "syntax/term.h"
 #include "syntax/variable.h"
-#include "syntax/wsentence.h"
+#include "syntax/elsentence.h"
 #include "syntax/sentencevisitor.h"
 #include "../spaninterval.h"
 

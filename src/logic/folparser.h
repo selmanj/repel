@@ -129,7 +129,7 @@ void doParseFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
-			WSentence formula = doParseWeightedFormula(its);
+			ELSentence formula = doParseWeightedFormula(its);
 			store.addFormula(formula);
 			//store.push_back(formula);
 		}
@@ -298,11 +298,11 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 }
 
 template <class ForwardIterator>
-WSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
+ELSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
 	unsigned int weight = consumeNumber(its);
 	consumeTokenType(FOLParse::COLON, its);
 	boost::shared_ptr<Sentence> p = doParseFormula(its);
-	return WSentence(p, weight);
+	return ELSentence(p, weight);
 }
 
 template <class ForwardIterator>
@@ -684,7 +684,7 @@ boost::shared_ptr<Sentence> parseStaticFormula(const ForwardIterator &first,
 }
 
 template <class ForwardIterator>
-WSentence parseWeightedFormula(const ForwardIterator &first,
+ELSentence parseWeightedFormula(const ForwardIterator &first,
 		const ForwardIterator &last) {
 	iters<ForwardIterator> its(first, last);
 	return doParseWeightedFormula(its);

@@ -56,7 +56,7 @@ public:
 	void setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
 	void setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
 
-	unsigned long score(const WSentence& s, const Model& m) const;
+	unsigned long score(const ELSentence& s, const Model& m) const;
 	unsigned long score(const Model& m) const;
 
 	SISet satisfied(const Sentence& s, const Model& m, const SISet* where=NULL) const;
