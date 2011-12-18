@@ -197,17 +197,17 @@ SpanInterval doParseInterval2(iters<ForwardIterator> &its) {
 		unsigned int i = consumeNumber(its);
 		return doParseInterval3(i, its);
 	} else {
-		consumeTokenType(FOLParse::OPEN_BRACKET, its);
+		consumeTokenType(FOLParse::OPEN_PAREN, its);
 		unsigned int i = consumeNumber(its);
 		consumeTokenType(FOLParse::COMMA, its);
 		unsigned int j = consumeNumber(its);
-		consumeTokenType(FOLParse::CLOSE_BRACKET, its);
+		consumeTokenType(FOLParse::CLOSE_PAREN, its);
 		consumeTokenType(FOLParse::COMMA, its);
-		consumeTokenType(FOLParse::OPEN_BRACKET, its);
+		consumeTokenType(FOLParse::OPEN_PAREN, its);
 		unsigned int k = consumeNumber(its);
 		consumeTokenType(FOLParse::COMMA, its);
 		unsigned int l = consumeNumber(its);
-		consumeTokenType(FOLParse::CLOSE_BRACKET, its);
+		consumeTokenType(FOLParse::CLOSE_PAREN, its);
 		consumeTokenType(FOLParse::CLOSE_BRACKET, its);
 
 		return SpanInterval(Interval(i,j), Interval(k,l));
@@ -301,7 +301,28 @@ ELSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
 	unsigned int weight = consumeNumber(its);
 	consumeTokenType(FOLParse::COLON, its);
 	boost::shared_ptr<Sentence> p = doParseFormula(its);
-	return ELSentence(p, weight);
+	// check to see if it's quantified
+	if (peekTokenType(FOLParse::AT, its)) {
+		consumeTokenType(FOLParse::AT, its);
+		SISet set;
+		if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
+			consumeTokenType(FOLParse::OPEN_BRACE, its);
+			while (!peekTokenType(FOLParse::CLOSE_BRACE, its)) {
+				SpanInterval si = doParseInterval(its);
+				set.add(si);
+				if (!peekTokenType(FOLParse::CLOSE_BRACE, its)) {
+					consumeTokenType(FOLParse::COMMA, its);
+				}
+			}
+			consumeTokenType(FOLParse::CLOSE_BRACE, its);
+		} else {
+			SpanInterval si = doParseInterval(its);
+			set.add(si);
+		}
+		return ELSentence(p, weight, set);
+	} else {
+		return ELSentence(p, weight);
+	}
 }
 
 template <class ForwardIterator>

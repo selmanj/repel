@@ -129,3 +129,24 @@ BOOST_AUTO_TEST_CASE( weighted_formula_test ) {
 	BOOST_CHECK(boost::dynamic_pointer_cast<Disjunction>(form.sentence()));
 
 }
+
+BOOST_AUTO_TEST_CASE( quantified_formula_test ) {
+	std::istringstream stream("10: p(?x,y) @ [1:10]");	// simple atom case
+	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
+	ELSentence form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
+
+	BOOST_CHECK_EQUAL(form.weight(), 10);
+	BOOST_CHECK_EQUAL(form.sentence()->toString(), "p(?x, y)");
+	BOOST_REQUIRE(form.isQuantified());
+	BOOST_CHECK_EQUAL(form.quantification().toString(), "{[1:10]}");
+
+	std::istringstream stream2("10: p(?x, y) v q(a) @ {[1:10], [11:12], [(13, 13), (14, 15)] }");	// simple atom case
+	tokens = FOLParse::tokenize(&stream2);
+	form = FOLParse::parseWeightedFormula(tokens.begin(), tokens.end());
+
+	BOOST_CHECK_EQUAL(form.weight(), 10);
+	BOOST_CHECK_EQUAL(form.sentence()->toString(), "p(?x, y) v q(a)");
+	BOOST_REQUIRE(form.isQuantified());
+	BOOST_CHECK_EQUAL(form.quantification().toString(), "{[1:10], [11:12], [(13, 13), (14, 15)]}");
+
+}
