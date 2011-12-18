@@ -50,8 +50,8 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 	// filter out sentences we can't currently generate moves for
 	std::vector<int> validForms;
 	//std::vector<int> validNorm;
-	FormulaSet formSet = d.formulaSet();
-	std::vector<ELSentence> formulas = formSet.formulas();
+	FormulaList formulas = d.formulas();
+	//std::vector<ELSentence> formulas = formSet.formulas();
 	for (std::vector<ELSentence>::size_type i = 0; i < formulas.size(); i++) {
 		ELSentence form = formulas[i];
 		if (canFindMovesFor(*(form.sentence()), d)) {
@@ -252,7 +252,7 @@ namespace {
 		pair.totalScore = currentScore;
 
 		// start recomputing, adjusting the total score as necessary
-		std::vector<ELSentence> formulas = d.formulaSet().formulas();
+		FormulaList formulas = d.formulas();
 		for (std::set<int>::const_iterator it = formsToRescore.begin(); it != formsToRescore.end(); it++) {
 			int formNum = *it;
 			ELSentence sentence = formulas[formNum];

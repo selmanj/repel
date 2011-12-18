@@ -7,7 +7,6 @@
 #include "logic/domain.h"
 #include "logic/el_syntax.h"
 #include "logic/folparser.h"
-#include "logic/formulaset.h"
 
 
 BOOST_AUTO_TEST_CASE( sat_test )
@@ -20,7 +19,7 @@ BOOST_AUTO_TEST_CASE( sat_test )
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 
-	FormulaSet formulas;
+	FormulaList formulas;
 
 	Domain d(factvec.begin(), factvec.end(), formulas);
 	d.setMaxInterval(Interval(0,1000));
@@ -95,7 +94,7 @@ BOOST_AUTO_TEST_CASE( sat_where ) {
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 
-	FormulaSet formulas;
+	FormulaList formulas;
 
 	Domain d(factvec.begin(), factvec.end(), formulas);
 	//d.setMaxInterval(Interval(0,1000));
@@ -125,7 +124,7 @@ BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	FormulaSet formulas;
+	FormulaList formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query = getAsSentence("<>{mi} A(a)");
@@ -145,7 +144,7 @@ BOOST_AUTO_TEST_CASE( conjunctionMeetsTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	FormulaSet formulas;
+	FormulaList formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query = getAsSentence("Q(a) ; R(a)");
@@ -162,7 +161,7 @@ BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	FormulaSet formulas;
+	FormulaList formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query = getAsSentence("R(a) ^{o} R(a)");
@@ -195,7 +194,7 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	FormulaSet formulas;
+	FormulaList formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas);
 
 	boost::shared_ptr<Sentence> query;
@@ -226,7 +225,7 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
 	std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
 	std::vector<FOL::Event> factvec;
 	FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
-	FormulaSet formulas;
+	FormulaList formulas;
 	Domain d(factvec.begin(), factvec.end(), formulas, false);
 
 	Model randomModel = d.randomModel();

@@ -11,7 +11,6 @@
 #include "foltoken.h"
 #include "domain.h"
 #include "bad_parse.h"
-#include "formulaset.h"
 #include "../spaninterval.h"
 #include "../interval.h"
 #include "el_syntax.h"
@@ -124,13 +123,13 @@ void doParseEvents(std::vector<FOL::Event>& store, iters<ForwardIterator> &its) 
 }
 
 template <class ForwardIterator>
-void doParseFormulas(FormulaSet& store, iters<ForwardIterator> &its) {
+void doParseFormulas(FormulaList& store, iters<ForwardIterator> &its) {
 	while (!endOfTokens(its)) {
 		if (peekTokenType(FOLParse::ENDL, its)) {
 			consumeTokenType(FOLParse::ENDL, its);
 		} else {
 			ELSentence formula = doParseWeightedFormula(its);
-			store.addFormula(formula);
+			store.push_back(formula);
 			//store.push_back(formula);
 		}
 	}
@@ -601,7 +600,7 @@ void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store)
 	file.close();
 };
 
-void parseFormulaFile(const std::string &filename, FormulaSet& store) {
+void parseFormulaFile(const std::string &filename, FormulaList& store) {
 	std::ifstream file(filename.c_str());
 	if (!file.is_open()) {
 		std::runtime_error e("unable to open event file for parsing");
@@ -615,7 +614,7 @@ void parseFormulaFile(const std::string &filename, FormulaSet& store) {
 
 template <class ForwardIterator>
 void parseFormulas(const ForwardIterator &first,
-		const ForwardIterator &last, FormulaSet& store) {
+		const ForwardIterator &last, FormulaList& store) {
 	iters<std::vector<FOLToken>::const_iterator> its(first, last);
 	doParseFormulas(store, its);
 }
@@ -623,7 +622,7 @@ void parseFormulas(const ForwardIterator &first,
 boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
 	std::vector<FOL::Event> events;
 	//std::vector<WSentence> formulas;
-	FormulaSet formSet;
+	FormulaList formSet;
 
 	parseEventFile(eventfile, events);
 	std::cout << "Read " << events.size() << " events from file." << std::endl;

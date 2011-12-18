@@ -5,7 +5,6 @@
 #include "logic/el_syntax.h"
 #include "logic/folparser.h"
 #include "logic/follexer.h"
-#include "logic/formulaset.h"
 #include <istream>
 
 boost::shared_ptr<Sentence> getAsSentence(const std::string& str) {
@@ -22,7 +21,7 @@ Domain loadDomainWithStreams(const std::string& facts, const std::string& formul
 	std::vector<FOLToken> formulaTokens = FOLParse::tokenize(&formulasStream);
 
 	std::vector<FOL::Event> factvec;
-	FormulaSet formulaSet;
+	FormulaList formulaSet;
 
 	FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec);
 	FOLParse::parseFormulas(formulaTokens.begin(), formulaTokens.end(), formulaSet);

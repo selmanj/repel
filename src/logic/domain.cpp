@@ -93,7 +93,7 @@ unsigned long Domain::score(const ELSentence& w, const Model& m) const {
 
 unsigned long Domain::score(const Model& m) const {
 	unsigned long sum = 0;
-	for (std::vector<ELSentence>::const_iterator it = formulas_.formulas().begin(); it != formulas_.formulas().end(); it++) {
+	for (FormulaList::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
 		sum += score(*it, m);
 	}
 	return sum;

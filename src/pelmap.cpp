@@ -24,7 +24,6 @@ namespace po = boost::program_options;
 #include "log.h"
 #include "logic/moves.h"
 #include "logic/maxwalksat.h"
-#include "logic/formulaset.h"
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
@@ -107,7 +106,7 @@ int main(int argc, char* argv[]) {
 		LOG(LOG_INFO) << "evaluating model...";
 		unsigned long sum = 0;
 		// evaluate the weight of each formula in the domain
-		for(FormulaSet::const_iterator it = d->formulaSet().begin(); it != d->formulaSet().end(); it++) {
+		for(FormulaList::const_iterator it = d->formulas().begin(); it != d->formulas().end(); it++) {
 			ELSentence formula = *it;
 			SISet satisfied = d->satisfied(*(formula.sentence()), model);
 			unsigned long weight = d->score(formula, model);

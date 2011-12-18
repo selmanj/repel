@@ -24,7 +24,6 @@
 #include "../siset.h"
 #include "namegenerator.h"
 #include "../lrucache.h"
-#include "formulaset.h"
 
 std::string modelToString(const Model& m);
 
@@ -33,11 +32,11 @@ public:
 	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
 	template <class FactsForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
-			FormulaSet formSet,
+			FormulaList formSet,
 			bool assumeClosedWorld=true);
 	virtual ~Domain() {};
 
-	const FormulaSet& formulaSet() const {return formulas_;};
+	const FormulaList& formulas() const {return formulas_;};
 	void addObservedPredicate(const Atom& a);
 	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};	// TODO RENAME
 	SISet getModifiableSISet(const std::string& name) const;
@@ -85,7 +84,7 @@ private:
 	std::set<std::string> constants_;
 	Interval maxInterval_;
 
-	FormulaSet formulas_;
+	FormulaList formulas_;
 	Model observations_;
 
 	NameGenerator generator_;
@@ -104,7 +103,7 @@ private:
 
 template <class FactsForwardIterator>
 Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
-		FormulaSet formSet,
+		FormulaList formSet,
 		bool assumeClosedWorld)
 		: assumeClosedWorld_(assumeClosedWorld),
 		  dontModifyObsPreds_(true),
@@ -156,7 +155,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 	// now collect all unobserved preds
 
 	PredCollector predCollector;
-	for (FormulaSet::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+	for (FormulaList::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
 		it->sentence()->visit(predCollector);
 	}
 

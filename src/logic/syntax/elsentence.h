@@ -76,4 +76,6 @@ private:
 
 };
 
+typedef std::vector<ELSentence> FormulaList;
+
 #endif /* ELSENTENCE_H_ */
