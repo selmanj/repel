@@ -26,7 +26,14 @@ public:
 		: s_(s), w_(w), hasInfWeight_(false), isQuantified_(true), quantification_(q) {};
 	virtual ~ELSentence() {};
 
-	//bool operator==(const ELSentence& b) const {return (*s_ == *b.s_ && w_ == b.w_ && hasInfWeight_ == b.hasInfWeight_);};
+	bool operator==(const ELSentence& b) const {
+		if (*s_ != *b.s_) return false;
+		if (hasInfWeight_ != b.hasInfWeight_) return false;
+		if (!hasInfWeight_ && w_ != b.w_) return false;
+		if (isQuantified_ != b.isQuantified_) return false;
+		if (isQuantified_ && quantification_ != b.quantification_) return false;
+		return true;
+	};
 	boost::shared_ptr<Sentence> sentence() { return s_;}
 	const boost::shared_ptr<const Sentence> sentence() const {return s_;}
 
@@ -50,7 +57,8 @@ public:
 	void setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
 	void setWeight(unsigned int w) {w_ = w; hasInfWeight_ = false;};
 	void setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
-	void setHasInfWeight() {w_ = 1; hasInfWeight_ = true;};
+	void setHasInfWeight(bool b) { hasInfWeight_ = b;};
+	void setIsQuantified(bool b) { isQuantified_ = b;};
 
 	std::string toString() const {
 		std::stringstream str;

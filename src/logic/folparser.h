@@ -298,9 +298,26 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 
 template <class ForwardIterator>
 ELSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
-	unsigned int weight = consumeNumber(its);
+	bool hasWeight;
+	unsigned int weight;
+	if (peekTokenType(FOLParse::NUMBER, its)) {
+		hasWeight = true;
+		weight = consumeNumber(its);
+	} else {
+		if (peekTokenType(FOLParse::INF, its)) {
+			consumeTokenType(FOLParse::INF, its);
+		}
+		hasWeight = false;
+		weight = 0;
+	}
 	consumeTokenType(FOLParse::COLON, its);
 	boost::shared_ptr<Sentence> p = doParseFormula(its);
+	ELSentence sentence(p);
+	if (hasWeight) {
+		sentence.setWeight(weight);
+	} else {
+		sentence.setHasInfWeight(true);
+	}
 	// check to see if it's quantified
 	if (peekTokenType(FOLParse::AT, its)) {
 		consumeTokenType(FOLParse::AT, its);
@@ -319,10 +336,11 @@ ELSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
 			SpanInterval si = doParseInterval(its);
 			set.add(si);
 		}
-		return ELSentence(p, weight, set);
+		sentence.setQuantification(set);
 	} else {
-		return ELSentence(p, weight);
+		sentence.setIsQuantified(false);
 	}
+	return sentence;
 }
 
 template <class ForwardIterator>
