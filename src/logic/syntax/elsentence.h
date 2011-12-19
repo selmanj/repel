@@ -18,63 +18,28 @@
 
 class ELSentence {
 public:
-	ELSentence(const boost::shared_ptr<Sentence>& s)
-		: s_(s), w_(1), hasInfWeight_(true), isQuantified_(false), quantification_() {};
-	ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w)
-		: s_(s), w_(w), hasInfWeight_(false), isQuantified_(false), quantification_() {};
-	ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q)
-		: s_(s), w_(w), hasInfWeight_(false), isQuantified_(true), quantification_(q) {};
-	virtual ~ELSentence() {};
+	ELSentence(const boost::shared_ptr<Sentence>& s);
+	ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w);
+	ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q);
+	virtual ~ELSentence();
 
-	bool operator==(const ELSentence& b) const {
-		if (*s_ != *b.s_) return false;
-		if (hasInfWeight_ != b.hasInfWeight_) return false;
-		if (!hasInfWeight_ && w_ != b.w_) return false;
-		if (isQuantified_ != b.isQuantified_) return false;
-		if (isQuantified_ && quantification_ != b.quantification_) return false;
-		return true;
-	};
-	boost::shared_ptr<Sentence> sentence() { return s_;}
-	const boost::shared_ptr<const Sentence> sentence() const {return s_;}
+	bool operator==(const ELSentence& b) const;
+	boost::shared_ptr<Sentence> sentence();
+	const boost::shared_ptr<const Sentence> sentence() const;
 
-	unsigned int weight() const {
-		if (hasInfWeight_) {
-			throw std::logic_error("logic error: cannot return infinite weight");
-		}
-		return w_;
-	};
+	unsigned int weight() const;
+	const SISet quantification() const;
 
-	const SISet quantification() const {
-		if (!isQuantified_) {
-			throw std::logic_error("logic error: no quantification applied; check with isQuantified() first");
-		}
-		return quantification_;
-	}
+	bool hasInfWeight() const;
+	bool isQuantified() const;
 
-	bool hasInfWeight() const {return hasInfWeight_;}
-	bool isQuantified() const { return isQuantified_; }
+	void setSentence(const boost::shared_ptr<Sentence>& s);
+	void setWeight(unsigned int w);
+	void setQuantification(const SISet& s);
+	void setHasInfWeight(bool b);
+	void setIsQuantified(bool b);
 
-	void setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
-	void setWeight(unsigned int w) {w_ = w; hasInfWeight_ = false;};
-	void setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
-	void setHasInfWeight(bool b) { hasInfWeight_ = b;};
-	void setIsQuantified(bool b) { isQuantified_ = b;};
-
-	std::string toString() const {
-		std::stringstream str;
-
-		if (hasInfWeight_) {
-			str << "inf: ";
-		} else {
-			str << w_ << ": ";
-		}
-		str << s_->toString();
-		if (isQuantified_) {
-			str << " @ " << quantification_.toString();
-		}
-
-		return str.str();
-	}
+	std::string toString() const;
 private:
 	boost::shared_ptr<Sentence> s_;
 	unsigned int w_;
@@ -86,4 +51,40 @@ private:
 
 typedef std::vector<ELSentence> FormulaList;
 
+inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s)
+	: s_(s), w_(1), hasInfWeight_(true), isQuantified_(false), quantification_() {}
+
+inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w)
+	: s_(s), w_(w), hasInfWeight_(false), isQuantified_(false), quantification_() {}
+
+inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q)
+	: s_(s), w_(w), hasInfWeight_(false), isQuantified_(true), quantification_(q) {}
+
+inline ELSentence::~ELSentence() {}
+
+inline boost::shared_ptr<Sentence> ELSentence::sentence() { return s_;}
+
+inline const boost::shared_ptr<const Sentence> ELSentence::sentence() const {return s_;}
+
+inline unsigned int ELSentence::weight() const {
+	if (hasInfWeight_) {
+		throw std::logic_error("logic error: cannot return infinite weight");
+	}
+	return w_;
+}
+
+inline const SISet ELSentence::quantification() const {
+	if (!isQuantified_) {
+		throw std::logic_error("logic error: no quantification applied; check with isQuantified() first");
+	}
+	return quantification_;
+}
+inline bool ELSentence::hasInfWeight() const {return hasInfWeight_;}
+inline bool ELSentence::isQuantified() const {return isQuantified_; }
+
+inline void ELSentence::setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
+inline void ELSentence::setWeight(unsigned int w) {w_ = w; hasInfWeight_ = false;};
+inline void ELSentence::setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
+inline void ELSentence::setHasInfWeight(bool b) { hasInfWeight_ = b;};
+inline void ELSentence::setIsQuantified(bool b) { isQuantified_ = b;};
 #endif /* ELSENTENCE_H_ */
