@@ -6,6 +6,8 @@
  */
 
 #include "atom.h"
+#include "term.h"
+#include <boost/ptr_container/ptr_vector.hpp>
 
 bool Atom::isGrounded() const {
 	for (boost::ptr_vector<Term>::const_iterator it = terms.begin(); it != terms.end(); it++) {
@@ -35,7 +37,9 @@ void Atom::doToString(std::stringstream& str) const {
 		for (boost::ptr_vector<Term>::const_iterator it = terms.begin();
 				it != terms.end();
 				it++) {
-			str << it->toString();
+			const Term *t = &(*it);
+
+			str << t->toString();
 			if (it + 1 != terms.end()) {
 				str << ", ";
 			}
