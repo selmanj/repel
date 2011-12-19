@@ -24,9 +24,9 @@ public:
 	virtual ~ELSentence();
 
 	bool operator==(const ELSentence& b) const;
+
 	boost::shared_ptr<Sentence> sentence();
 	const boost::shared_ptr<const Sentence> sentence() const;
-
 	unsigned int weight() const;
 	const SISet quantification() const;
 
