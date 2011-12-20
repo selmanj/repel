@@ -135,3 +135,17 @@ CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s) {
 	return c;
 }
 
+QCNFClause convertToQCNFClause(const ELSentence& el) {
+	boost::shared_ptr<Sentence> copy(el.sentence()->clone());
+	CNFClause c = convertToCNFClause(copy);
+	if (!el.isQuantified()) {
+		throw std::logic_error("logic error: given an ELSentence with no quantification and asked to convert to QCNFClause");
+	}
+	SISet s = el.quantification();
+	QCNFClause qc;
+	qc.first = c;
+	qc.second = s;
+
+	return qc;
+}
+
