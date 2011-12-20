@@ -26,7 +26,7 @@ inline Constant::Constant(std::string name) : name_(name) {}
 inline Constant::Constant(const Constant& c) : name_(c.name_) {}
 inline Constant::~Constant() {}
 
-inline Constant& Constant::operator=(const Constant& other) { if (this != &other) name_ = other.name_;}
+inline Constant& Constant::operator=(const Constant& other) { if (this != &other) name_ = other.name_; return *this;}
 
 // protected members
 inline void Constant::doToString(std::string& str) const {str += name_;}
