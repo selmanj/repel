@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <map>
 #include <list>
+#include <queue>
 #include "unit_prop.h"
 #include "logic/predcollector.h"
 #include "log.h"
@@ -96,5 +97,41 @@ namespace {
 		}
 		return false;
 	}
+}
+
+CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s) {
+	CNFClause c;
+	boost::shared_ptr<Disjunction> d = boost::dynamic_pointer_cast<Disjunction>(s);
+	if (d.get() == NULL) {
+		// not given a disjunction, this is the only literal
+		c.push_back(s);
+		return c;
+	}
+	std::queue<boost::shared_ptr<Disjunction> > disjQueue;
+	disjQueue.push(d);
+
+	while (!disjQueue.empty()) {
+		boost::shared_ptr<Disjunction> curDisj = disjQueue.front();
+		disjQueue.pop();
+		boost::shared_ptr<Sentence> curLeft = curDisj->left();
+		boost::shared_ptr<Sentence> curRight = curDisj->right();
+
+		boost::shared_ptr<Disjunction> leftDisj = boost::dynamic_pointer_cast<Disjunction>(curLeft);
+		boost::shared_ptr<Disjunction> rightDisj = boost::dynamic_pointer_cast<Disjunction>(curRight);
+
+		if (leftDisj.get() == NULL) {
+			c.push_back(curLeft);
+		} else {
+			disjQueue.push(leftDisj);
+		}
+
+		if (rightDisj.get() == NULL) {
+			c.push_back(curRight);
+		} else {
+			disjQueue.push(rightDisj);
+		}
+	}
+
+	return c;
 }
 

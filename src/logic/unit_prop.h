@@ -27,6 +27,8 @@ QCNFClauseList performUnitPropagation(const QCNFClauseList sentences);
 QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c);
 QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
 
+CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
+
 namespace {
 	bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
 
@@ -46,5 +48,6 @@ namespace {
 			return true;
 		}
 	};
+
 }
 #endif /* UNIT_PROP_H_ */

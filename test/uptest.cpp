@@ -10,6 +10,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/shared_ptr.hpp>
 #include <list>
+#include <algorithm>
 #include "logic/unit_prop.h"
 #include "testutilities.h"
 #include "siset.h"
@@ -54,3 +55,22 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
 	*/
 }
 
+BOOST_AUTO_TEST_CASE( cnfConvertBasic ) {
+
+	boost::shared_ptr<Sentence> a = getAsSentence("P(a) v Q(a) v !R(a) v S(a)");
+	CNFClause c = convertToCNFClause(a);
+
+	BOOST_REQUIRE_EQUAL(c.size(), 4);
+	boost::shared_ptr<Sentence> pa = getAsSentence("P(a)");
+	boost::shared_ptr<Sentence> qa = getAsSentence("Q(a)");
+	boost::shared_ptr<Sentence> nra = getAsSentence("!R(a)");
+	boost::shared_ptr<Sentence> sa = getAsSentence("S(a)");
+	BOOST_CHECK(std::find(c.begin(), c.end(), pa) != c.end());
+	BOOST_CHECK(std::find(c.begin(), c.end(), qa) != c.end());
+	BOOST_CHECK(std::find(c.begin(), c.end(), nra) != c.end());
+	BOOST_CHECK(std::find(c.begin(), c.end(), sa) != c.end());
+
+
+
+
+}

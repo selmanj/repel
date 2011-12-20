@@ -49,7 +49,11 @@ private:
 
 };
 
+
+
 typedef std::vector<ELSentence> FormulaList;
+
+// IMPLEMENTATION
 
 inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s)
 	: s_(s), w_(1), hasInfWeight_(true), isQuantified_(false), quantification_() {}
