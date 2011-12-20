@@ -14,12 +14,6 @@ bool Atom::isGrounded() const {
 		if (dynamic_cast<const Constant*>(&(*it)) == NULL) return false;
 	}
 	return true;
-};
-
-Atom& Atom::operator=(const Atom& b) {
-	pred = b.pred;
-	terms = b.terms;
-	return *this;
 }
 
 bool Atom::doEquals(const Sentence& t) const {
@@ -33,16 +27,16 @@ bool Atom::doEquals(const Sentence& t) const {
 }
 
 void Atom::doToString(std::stringstream& str) const {
-		str << pred << "(";
-		for (boost::ptr_vector<Term>::const_iterator it = terms.begin();
-				it != terms.end();
-				it++) {
-			const Term *t = &(*it);
+	str << pred << "(";
+	for (boost::ptr_vector<Term>::const_iterator it = terms.begin();
+			it != terms.end();
+			it++) {
+		const Term *t = &(*it);
 
-			str << t->toString();
-			if (it + 1 != terms.end()) {
-				str << ", ";
-			}
+		str << t->toString();
+		if (it + 1 != terms.end()) {
+			str << ", ";
 		}
-		str << ")";
-	};
+	}
+	str << ")";
+};

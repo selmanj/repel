@@ -69,6 +69,13 @@ inline int Atom::arity() const {return terms.size();};
 inline std::string Atom::name() const {return pred;};
 inline std::string& Atom::name() {return pred;};
 
+inline Atom& Atom::operator=(const Atom& b) {
+	if (this != &b) {
+		pred = b.pred;
+		terms = b.terms;
+	}
+	return *this;
+}
 // TODO make the at() function throw an exception
 inline Term& Atom::at(size_type n) {return terms[n];};
 inline const Term& Atom::at(size_type n) const {return terms[n];};

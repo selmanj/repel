@@ -16,6 +16,7 @@ public:
 	BoolLit(const BoolLit& other);
 	virtual ~BoolLit();
 
+	BoolLit& operator=(const BoolLit& other);
 	bool value() const;
 
 	virtual void visit(SentenceVisitor& s) const;
@@ -32,6 +33,8 @@ private:
 inline BoolLit::BoolLit(bool value) : val_(value) {}
 inline BoolLit::BoolLit(const BoolLit& other) : val_(other.val_) {}
 inline BoolLit::~BoolLit() {}
+
+inline BoolLit& BoolLit::operator=(const BoolLit& other) {if (this != &other) val_ = other.val_; return *this;}
 
 inline bool BoolLit::value() const {return val_;};
 inline void BoolLit::visit(SentenceVisitor& s) const {s.accept(*this);}

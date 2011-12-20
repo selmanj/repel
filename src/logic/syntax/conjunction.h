@@ -25,7 +25,7 @@ public:
 	Conjunction(const Conjunction& a);
 	virtual ~Conjunction();
 
-	//Conjunction& operator=(const Conjunction& b);
+	Conjunction& operator=(const Conjunction& b);
 
 	boost::shared_ptr<Sentence>& left();
 	boost::shared_ptr<const Sentence> left() const;
@@ -65,15 +65,15 @@ inline Conjunction::Conjunction(const Conjunction& a)
 		: left_(a.left_), right_(a.right_), rels_(a.rels_) {}
 inline Conjunction::~Conjunction() {}
 
-/*
 inline Conjunction& Conjunction::operator=(const Conjunction& b) {
-	left_ = b.left_;
-	right_ = b.right_;
-	rels_ = b.rels_;
+	if (this != &b) {
+		left_ = b.left_;
+		right_ = b.right_;
+		rels_ = b.rels_;
+	}
 
 	return *this;
 }
-*/
 
 inline boost::shared_ptr<Sentence>& Conjunction::left() {return left_;}
 inline boost::shared_ptr<const Sentence> Conjunction::left() const {return left_;}
