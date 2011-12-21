@@ -6,18 +6,68 @@
 #include <boost/utility.hpp>
 #include "sentencevisitor.h"
 
+/**
+ * Abstract base class representing a logical sentence.
+ * The Sentence class is the abstract base class representing any sentence in
+ * event logic.  All syntactic elements should inherit from it.
+ */
+
 class Sentence : boost::noncopyable {
 public:
-	virtual ~Sentence() {};
-	Sentence* clone() const { return doClone(); };
-	bool operator==(const Sentence& b) const {return doEquals(b);};
-	bool operator!=(const Sentence& b) const {return !(*this == b);};
-	std::string toString() const {
-		std::stringstream str;
-		doToString(str);
-		return str.str();
-	};
-	int precedence() const { return doPrecedence(); };
+	/**
+	 * Destructor, declared virtual.
+	 */
+	virtual ~Sentence();
+
+	/**
+	 * Get a clone (deep copy) of this Sentence.
+	 * Note that the caller of this function should take ownership of the
+	 * returned pointer, in order to avoid memory leaks.
+	 *
+	 * @return A ptr to a new Sentence object allocated on the heap.
+	 */
+	Sentence* clone() const;
+
+	/**
+	 * Test for equality via == operator.
+	 *
+	 * @param b sentence object to compare to
+	 * @return true if equal, false otherwise.
+	 */
+	bool operator==(const Sentence& b) const;
+
+	/**
+	 * Test for inequality via != operator
+	 *
+	 * @param b sentence object to compare to
+	 * @return true if inequal, false otherwise.
+	 */
+	bool operator!=(const Sentence& b) const;
+
+	/**
+	 * Return this sentence as a string.
+	 *
+	 * @return a string representation of the sentence
+	 */
+	std::string toString() const;
+
+	/**
+	 * Get the sentence's precedence.
+	 * Precedence is used to determine order of operations.  A higher
+	 * precedence is always evaluated first.
+	 *
+	 * @return an int representing the sentence precedence
+	 */
+	int precedence() const;
+
+	/**
+	 * Visit this sentence and all descending sentences with the given visitor.
+	 * Implements the visitor pattern.  Given a SentenceVisitor, this sentence
+	 * and all sentences contained within will call the SentenceVisitor::accept()
+	 * method with the current sentence.
+	 *
+	 * @param s SentenceVisitor to call back when parsing this sentence
+	 */
 	virtual void visit(SentenceVisitor& s) const = 0;
 private:
 	virtual void doToString(std::stringstream& str) const = 0;
@@ -26,9 +76,22 @@ private:
 	virtual int doPrecedence() const = 0;
 };
 
+// IMPLEMENTATION
+inline Sentence::~Sentence() {};
+
+inline Sentence* Sentence::clone() const { return doClone(); };
+inline bool Sentence::operator==(const Sentence& b) const {return doEquals(b);};
+inline bool Sentence::operator!=(const Sentence& b) const {return !(*this == b);};
+inline std::string Sentence::toString() const {
+	std::stringstream str;
+	doToString(str);
+	return str.str();
+};
+inline int Sentence::precedence() const { return doPrecedence(); };
+
 inline Sentence* new_clone(const Sentence& t) {
 	return t.clone();
 };
 
 
-#endif
+#endif	// SENTENCE_H
