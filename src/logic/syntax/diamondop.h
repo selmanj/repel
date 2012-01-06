@@ -39,9 +39,6 @@ private:
 };
 
 // implementation below
-
-
-
 // constructors
 inline DiamondOp::DiamondOp(boost::shared_ptr<Sentence> sentence)
 	: rels_(), s_(sentence) {

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <boost/utility.hpp>
 #include "sentencevisitor.h"
+#include "../../siset.h"
 
 /**
  * Abstract base class representing a logical sentence.
@@ -76,6 +77,22 @@ private:
 	virtual int doPrecedence() const = 0;
 };
 
+/**
+ * A set of constraints applied to a temporal quantifier.  Specifically,
+ * constraints are used to restrict the set of intervals a quantifier may
+ * be bound to when using either the diamond operator or the conjunction
+ * operator.  The constraints are either "must be in set x" or "must not be in
+ * set x".
+ */
+struct TQConstraints {
+public:
+	SISet mustBeIn;
+	SISet mustNotBeIn;
+
+	std::string toString() const;
+	bool empty() const;
+};
+
 // IMPLEMENTATION
 inline Sentence::~Sentence() {};
 
@@ -93,5 +110,7 @@ inline Sentence* new_clone(const Sentence& t) {
 	return t.clone();
 };
 
-
+inline bool TQConstraints::empty() const {
+	return (mustBeIn.size() == 0) && (mustNotBeIn.size() == 0);
+}
 #endif	// SENTENCE_H
