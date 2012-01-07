@@ -17,7 +17,7 @@ const std::set<Interval::INTERVAL_RELATION>& DiamondOp::defaultRelations() {
 
 void DiamondOp::doToString(std::stringstream& str) const {
 	str << "<>";
-	if (rels_ != DiamondOp::defaultRelations()) {
+	if (rels_ != DiamondOp::defaultRelations() || !tqconstraints_.empty()) {
 		str << "{";
 		if (!rels_.empty())	{	// better be safe, not sure if this could happen but still...
 			std::set<Interval::INTERVAL_RELATION>::const_iterator it = rels_.begin();
@@ -27,6 +27,10 @@ void DiamondOp::doToString(std::stringstream& str) const {
 				str << ", ";
 				str << Interval::relationToString(*it);
 			}
+		}
+
+		if (!tqconstraints_.empty()) {
+			str << ":" << tqconstraints_.toString();
 		}
 
 		str << "}";

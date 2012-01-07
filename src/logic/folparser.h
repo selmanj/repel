@@ -303,14 +303,15 @@ ELSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
 	if (peekTokenType(FOLParse::NUMBER, its)) {
 		hasWeight = true;
 		weight = consumeNumber(its);
+		consumeTokenType(FOLParse::COLON, its);
 	} else {
 		if (peekTokenType(FOLParse::INF, its)) {
 			consumeTokenType(FOLParse::INF, its);
+			consumeTokenType(FOLParse::COLON, its);
 		}
 		hasWeight = false;
 		weight = 0;
 	}
-	consumeTokenType(FOLParse::COLON, its);
 	boost::shared_ptr<Sentence> p = doParseFormula(its);
 	ELSentence sentence(p);
 	if (hasWeight) {

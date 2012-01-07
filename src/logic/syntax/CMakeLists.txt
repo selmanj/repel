@@ -5,5 +5,6 @@ add_library(pel-syntax
   conjunction.cpp
   diamondop.cpp
   elsentence.cpp
+  sentence.cpp
   variable.cpp
   )

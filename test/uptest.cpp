@@ -16,10 +16,23 @@
 #include "siset.h"
 #include "spaninterval.h"
 #include "interval.h"
+#include "logic/el_syntax.h"
+
+BOOST_AUTO_TEST_CASE( qconstraints ) {
+	boost::shared_ptr<Sentence> s = getAsSentence("<>{m} P(a)");
+	boost::shared_ptr<DiamondOp> dia = boost::dynamic_pointer_cast<DiamondOp>(s);
+
+	TQConstraints constraints;
+	constraints.mustBeIn.add(SpanInterval(1,2,1,2));
+	constraints.mustNotBeIn.add(SpanInterval(1,1,1,1));
+
+	boost::shared_ptr<DiamondOp> diaCopy(new DiamondOp(dia->sentence(),dia->relations().begin(), dia->relations().end(), &constraints));
+	BOOST_CHECK_EQUAL(diaCopy->toString(), "<>{m:&{[1:2]},\{[1:1]}} P(a)");
+}
 
 BOOST_AUTO_TEST_CASE( simple_lit ) {
 
-	std::string facts = "";
+	std::string facts = "video(a) @ [1:20]";
 	std::string formulas = "P(a) @ [1:10]\n"
 			"Q(a) @ [1:10]\n"
 			"P(a) v Q(a) @ [1:20]";
