@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE( qconstraints ) {
 	constraints.mustNotBeIn.add(SpanInterval(1,1,1,1));
 
 	boost::shared_ptr<DiamondOp> diaCopy(new DiamondOp(dia->sentence(),dia->relations().begin(), dia->relations().end(), &constraints));
-	BOOST_CHECK_EQUAL(diaCopy->toString(), "<>{m:&{[1:2]},\{[1:1]}} P(a)");
+	BOOST_CHECK_EQUAL(diaCopy->toString(), "<>{m:&{[1:2]},\\{[1:1]}} P(a)");
 }
 
 BOOST_AUTO_TEST_CASE( simple_lit ) {
