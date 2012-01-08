@@ -23,9 +23,9 @@ typedef std::pair<boost::shared_ptr<Sentence>, SISet> QCNFLiteral;
 typedef std::list<QCNFLiteral> QCNFLiteralList;
 
 
-QCNFClauseList performUnitPropagation(const QCNFClauseList sentences);
+//QCNFClauseList performUnitPropagation(const QCNFClauseList sentences);
 QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c);
-QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
+//QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
 
 CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
 QCNFClause convertToQCNFClause(const ELSentence& el);

@@ -48,6 +48,14 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
 	QCNFClause qs2 = convertToQCNFClause(s2);
 	QCNFClause qs3 = convertToQCNFClause(s3);
 
+	QCNFLiteral l1;
+	l1.first = qs1.first.front();
+	l1.second = qs1.second;
+
+	QCNFClauseList list = propagate_literal(l1, qs3);
+	BOOST_REQUIRE_EQUAL(list.size(), 1);
+	BOOST_CHECK_EQUAL(list.front().second.toString(), "{[(1, 10), (11, 20)], [11:20]}");
+
 
 /*
 	boost::shared_ptr<Sentence> singleLit = pa;

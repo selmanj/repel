@@ -13,7 +13,7 @@
 #include "unit_prop.h"
 #include "logic/predcollector.h"
 #include "log.h"
-
+/*
 QCNFClauseList performUnitPropagation(const QCNFClauseList& sentences) {
 	QCNFClauseList newSentences = sentences;
 
@@ -49,41 +49,54 @@ QCNFClauseList performUnitPropagation(const QCNFClauseList& sentences) {
 	throw std::runtime_error("performUnitPropagation unimplemented");
 	//return NULL;
 }
-
+*/
+/*
 QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 	CNFClause clause = c.first;
 	return propagate_literal(lit, c, clause.begin(), clause.end());
 }
+*/
 
-QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end) {
+QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 	boost::shared_ptr<Sentence> cnfLit = lit.first;
 	// first figure out what kind of literal we have here.
-	if (isSimpleLiteral(cnfLit)) {
-		CNFClause cClause = c.first;
-		// search for an occurrence of this atom in c
-		for (CNFClause::const_iterator it = begin; it != end; it++) {
-			boost::shared_ptr<Sentence> currentLit = *it;
-			if (isSimpleLiteral(currentLit) && *cnfLit == *currentLit) {
-				// if they intersect, rewrite the clause over the time where they don't intersect and continue
-				SISet litSet = lit.second;
-				SISet currentSet = c.second;
-				SISet intersect = intersection(litSet, currentSet);
+	std::queue<QCNFClause> toProcess;
+	QCNFClauseList processed;
 
-				if (intersect.size() == 0) continue;
-				// if there is still a timepoint that the clause applies to, rewrite and continue
-				SISet leftover = currentSet;
-				leftover.subtract(intersect);
-				if (leftover.size() != 0) {
-					QCNFClause cRestricted = c;
-					cRestricted.second = leftover;
-					return propagate_literal(lit, cRestricted, ++it, end);
+	toProcess.push(c);
+	while (!toProcess.empty()) {
+		QCNFClause qClause = toProcess.front();
+		CNFClause cClause = qClause.first;
+		toProcess.pop();
+		bool addCurrentClause = true;
+		if (isSimpleLiteral(cnfLit)) {
+			// search for an occurrence of this atom in c
+			for (CNFClause::const_iterator it = cClause.begin(); it != cClause.end(); it++) {
+				boost::shared_ptr<Sentence> currentLit = *it;
+				if (isSimpleLiteral(currentLit) && *cnfLit == *currentLit) {	// Propagating P into P
+					// if they intersect, rewrite the clause over the time where they don't intersect and continue
+					SISet litSet = lit.second;
+					SISet currentSet = qClause.second;
+					SISet intersect = intersection(litSet, currentSet);
+
+					if (intersect.size() == 0) continue;
+					// if there is still a timepoint that the clause applies to, rewrite and continue
+					SISet leftover = currentSet;
+					leftover.subtract(intersect);
+					if (leftover.size() != 0) {
+						QCNFClause qRestricted = qClause;
+						qRestricted.second = leftover;
+						toProcess.push(qRestricted);
+						addCurrentClause = false;
+						break;
+					}
 				}
 			}
 		}
+		if (addCurrentClause) processed.push_back(qClause);
+
 	}
-	QCNFClauseList results;
-	results.push_back(c);
-	return results;
+	return processed;
 }
 
 namespace {
