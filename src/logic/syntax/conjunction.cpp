@@ -30,9 +30,9 @@ void Conjunction::doToString(std::stringstream& str) const {
 	} else {
 		str << left_->toString();
 	}
-	if (rels_ == defaultRelations()) {
+	if (rels_ == defaultRelations() && tqconstraints_.first.empty() && tqconstraints_.second.empty()) {
 		str << " ^ ";
-	} else if (rels_.size() == 1 && rels_.find(Interval::MEETS) != rels_.end()) {
+	} else if (rels_.size() == 1 && rels_.find(Interval::MEETS) != rels_.end() && tqconstraints_.first.empty() && tqconstraints_.second.empty()) {
 		str << " ; ";
 	} else {
 		str << " ^{";
@@ -44,6 +44,21 @@ void Conjunction::doToString(std::stringstream& str) const {
 				str << ", ";
 				str << Interval::relationToString(*it);
 			}
+		}
+		if (!tqconstraints_.first.empty() || !tqconstraints_.second.empty()) {
+			str << ":<";
+			if (tqconstraints_.first.empty()) {
+				str << "*";
+			} else {
+				str << tqconstraints_.first.toString();
+			}
+			str << ", ";
+			if (tqconstraints_.second.empty()) {
+				str << "*";
+			} else {
+				str << tqconstraints_.second.toString();
+			}
+			str << ">";
 		}
 
 		str << "} ";

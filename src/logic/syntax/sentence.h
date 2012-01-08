@@ -89,6 +89,8 @@ public:
 	SISet mustBeIn;
 	SISet mustNotBeIn;
 
+	bool operator==(const TQConstraints& b) const;
+	bool operator!=(const TQConstraints& b) const;
 	std::string toString() const;
 	bool empty() const;
 };
@@ -109,6 +111,13 @@ inline int Sentence::precedence() const { return doPrecedence(); };
 inline Sentence* new_clone(const Sentence& t) {
 	return t.clone();
 };
+
+inline bool TQConstraints::operator==(const TQConstraints& b) const {
+	return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);
+}
+inline bool TQConstraints::operator!=(const TQConstraints& b) const {
+	return !this->operator ==(b);
+}
 
 inline bool TQConstraints::empty() const {
 	return (mustBeIn.size() == 0) && (mustNotBeIn.size() == 0);
