@@ -31,6 +31,34 @@ BOOST_AUTO_TEST_CASE( qconstraints ) {
 }
 
 BOOST_AUTO_TEST_CASE( simple_lit ) {
+	std::string facts = "video(a) @ [1:20]";
+	std::string formulas = "P(a) @ [1:3]\n"
+			"!P(a) @ [8:11]\n"
+			"Q(a) @ [1:10]\n"
+			"P(a) v Q(a) v R(a) @ [1:20]";
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+
+	FormulaList flist = d.formulas();
+	QCNFClauseList clauseList = convertToQCNFClauseList(flist);
+
+	QUnitsFormulasPair result = performUnitPropagation(clauseList);
+
+	for(QCNFLiteralList::const_iterator it = result.first.begin(); it != result.first.end(); it++) {
+		QCNFLiteral lit = *it;
+		ELSentence s = convertFromQCNFClause(lit);
+		std::cout << "unit clause: " << s.toString() << std::endl;
+	}
+
+	for(QCNFClauseList::const_iterator it = result.second.begin(); it != result.second.end(); it++) {
+		QCNFClause c = *it;
+		ELSentence s = convertFromQCNFClause(c);
+		std::cout << "formula: " << s.toString() << std::endl;
+	}
+	BOOST_REQUIRE_EQUAL(result.first.size(), 3);
+}
+
+BOOST_AUTO_TEST_CASE( simple_lit_directly ) {
 
 	std::string facts = "video(a) @ [1:20]";
 	std::string formulas = "P(a) @ [1:10]\n"
@@ -71,44 +99,6 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
 
 	BOOST_CHECK_EQUAL(second.sentence()->toString(), "P(a) v Q(a)");
 	BOOST_CHECK_EQUAL(second.quantification().toString(), "{[(1, 10), (11, 20)], [11:20]}");
-
-
-
-
-
-
-
-
-/*
-	boost::shared_ptr<Sentence> singleLit = pa;
-
-	CNFClause sentence;
-	sentence.push_back(pa);
-	sentence.push_back(pb);
-
-	Interval maxInterval(1,10);
-	SISet halfway(false, maxInterval);
-	halfway.add(SpanInterval(1,5,1,5,maxInterval));
-
-	SISet all(false, maxInterval);
-	all.add(SpanInterval(1,10,1,10,maxInterval));
-
-	QCNFLiteral qsingleLit;
-	qsingleLit.first = singleLit;
-	qsingleLit.second = halfway;
-
-	QCNFClause qClause;
-	qClause.first = sentence;
-	qClause.second = all;
-
-	// phew!
-	std::list<QCNFClause> newClauses = propagate_literal(qsingleLit, qClause);
-	BOOST_CHECK_EQUAL(newClauses.size(), 1);
-	QCNFClause newClause = newClauses.front();
-	BOOST_CHECK_EQUAL_COLLECTIONS(newClause.first.begin(), newClause.first.end(), sentence.begin(), sentence.end());
-	//BOOST_CHECK_EQUAL(newClause.first, sentence);
-	BOOST_CHECK_EQUAL(newClause.second.toString(), "{[(1, 5), (6, 10)], [6:10]}");
-	*/
 }
 
 BOOST_AUTO_TEST_CASE( cnfConvertBasic ) {

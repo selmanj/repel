@@ -10,46 +10,52 @@
 #include <map>
 #include <list>
 #include <queue>
+#include <algorithm>
 #include "unit_prop.h"
 #include "logic/predcollector.h"
 #include "log.h"
-/*
-QCNFClauseList performUnitPropagation(const QCNFClauseList& sentences) {
-	QCNFClauseList newSentences = sentences;
+
+QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {
+	QCNFClauseList formulas = sentences;
 
 	// first, do a scan over the sentences, collecting unit clauses and collecting which atoms occur in each sentence
 	QCNFLiteralList unitClauses;
-	std::map<QCNFClauseList::iterator, std::list<Atom>, iterator_cmp > formToAtomsMap;
-	for (QCNFClauseList::iterator it = newSentences.begin(); it != newSentences.end(); it++) {
-		if (it->first.size() == 1) {
-			CNFLiteral lit = it->first.front();
-			QCNFLiteral qlit;
-			qlit.first = lit;
-			qlit.second = it->second;
-
-			unitClauses.push_back(qlit);
-			newSentences.erase(it);
-		} else {
-			PredCollector collector;
-			CNFClause clause = it->first;
-			//CNFClause clause = qclause.first;
-			for (CNFClause::const_iterator cit = clause.begin(); cit != clause.end(); cit++) {
-				(*cit)->visit(collector);
-			}
-			std::pair<QCNFClauseList::iterator, std::list<Atom> > newPair;
-			newPair.first = it;
-			newPair.second = std::list<Atom>(collector.preds.begin(), collector.preds.end());
-
-			formToAtomsMap.insert(newPair);
-		}
-	}
+	splitUnitClauses(formulas, unitClauses);
 
 	LOG(LOG_DEBUG) << "found " << unitClauses.size() << " unit clauses.";
 
-	throw std::runtime_error("performUnitPropagation unimplemented");
+	QCNFLiteralList propagatedUnitClauses;
+
+	while (!unitClauses.empty() && !formulas.empty()) {
+		// pop one out, propagate it in all our sentences
+		QCNFLiteral unitClause = unitClauses.front();
+		unitClauses.pop_front();
+
+		QCNFClauseList processedFormulas;
+		for (QCNFClauseList::iterator it = formulas.begin(); it != formulas.end(); it++) {
+			QCNFClauseList newFormulas = propagate_literal(unitClause, *it);
+			processedFormulas.insert(processedFormulas.end(), newFormulas.begin(), newFormulas.end());
+		}
+		splitUnitClauses(processedFormulas, unitClauses);
+		formulas = processedFormulas;
+
+		propagatedUnitClauses.push_back(unitClause);	// finished propagating
+
+	}
+	QUnitsFormulasPair result;
+	result.first = propagatedUnitClauses;
+	// add any remaining unit clauses
+	result.first.insert(result.first.end(), unitClauses.begin(), unitClauses.end());
+	result.second = formulas;
+
+	return result;
+
+
+
+	//throw std::runtime_error("performUnitPropagation unimplemented");
 	//return NULL;
 }
-*/
+
 /*
 QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 	CNFClause clause = c.first;
@@ -58,6 +64,8 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 */
 
 QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
+	LOG_PRINT(LOG_DEBUG) << "propagate_literal called with lit=" << lit.first->toString()
+			<< " and clause c=" << convertFromQCNFClause(c).toString() << std::endl;
 	boost::shared_ptr<Sentence> cnfLit = lit.first;
 	// first figure out what kind of literal we have here.
 	std::queue<QCNFClause> toProcess;
@@ -66,6 +74,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 	toProcess.push(c);
 	while (!toProcess.empty()) {
 		QCNFClause qClause = toProcess.front();
+		LOG_PRINT(LOG_DEBUG) << "working on " << convertFromQCNFClause(qClause).toString() << std::endl;
 		CNFClause cClause = qClause.first;
 		toProcess.pop();
 		bool addCurrentClause = true;
@@ -81,6 +90,8 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 					SISet intersect = intersection(litSet, currentSet);
 
 					if (intersect.size() != 0) {
+						LOG_PRINT(LOG_DEBUG) << "propagating " << cnfLit->toString() << " into " << currentLit->toString() << std::endl;
+
 						// if there is still a timepoint that the clause applies to, rewrite and continue
 						SISet leftover = currentSet;
 						leftover.subtract(intersect);
@@ -100,6 +111,8 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 					SISet intersect = intersection(litSet, currentSet);
 
 					if (intersect.size() != 0) {
+						LOG_PRINT(LOG_DEBUG) << "propagating " << cnfLit->toString() << " into " << currentLit->toString() << std::endl;
+
 						SISet leftover = currentSet;
 						leftover.subtract(intersect);
 						if (leftover.size() != 0) {
@@ -121,10 +134,27 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 		if (addCurrentClause) processed.push_back(qClause);
 
 	}
+	LOG_PRINT(LOG_DEBUG) << "returning..." << std::endl;
 	return processed;
 }
 
 namespace {
+	void splitUnitClauses(QCNFClauseList& sentences, QCNFLiteralList& unitClauses) {
+		for (QCNFClauseList::iterator it = sentences.begin(); it != sentences.end(); ) {
+			if (it->first.size() == 1) {
+				CNFLiteral lit = it->first.front();
+				QCNFLiteral qlit;
+				qlit.first = lit;
+				qlit.second = it->second;
+
+				unitClauses.push_back(qlit);
+				it = sentences.erase(it);
+			} else {
+				it++;
+			}
+		}
+	}
+
 	bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit) {
 		if (boost::dynamic_pointer_cast<Atom>(lit) != 0) return true;
 		if (boost::dynamic_pointer_cast<Negation>(lit) != 0) {
@@ -150,6 +180,14 @@ namespace {
 		}
 		return false;
 	}
+}
+
+QCNFClauseList convertToQCNFClauseList(const FormulaList& list) {
+	QCNFClauseList result;
+	for (FormulaList::const_iterator it = list.begin(); it != list.end(); it++) {
+		result.push_back(convertToQCNFClause(*it));
+	}
+	return result;
 }
 
 CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s) {
@@ -188,6 +226,12 @@ CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s) {
 	return c;
 }
 
+ELSentence convertFromQCNFClause(const QCNFLiteral& c) {
+	ELSentence s(c.first);
+	s.setQuantification(c.second);
+	return s;
+}
+
 ELSentence convertFromQCNFClause(const QCNFClause& c) {
 	if (c.first.empty()) {
 		throw std::invalid_argument("in convertFromQCNFClause(): cannot make a clause from an empty QCNFClause");
@@ -198,22 +242,20 @@ ELSentence convertFromQCNFClause(const QCNFClause& c) {
 		return s;
 	}
 	typedef boost::shared_ptr<Sentence> SharedSentence;
-	SharedSentence* curDis;
 	CNFClause copy = c.first;
 	SharedSentence firstS = copy.front();
 	copy.pop_front();
 	SharedSentence secondS = copy.front();
 	copy.pop_front();
-
 	SharedSentence firstDis(new Disjunction(firstS, secondS));
-	curDis = &firstDis;
+	SharedSentence curDis = firstDis;
 	while(!copy.empty()) {
 		SharedSentence nextS = copy.front();
 		copy.pop_front();
-		SharedSentence nextDis(new Disjunction(*curDis, nextS));
-		curDis = &nextDis;
+		SharedSentence nextDis(new Disjunction(curDis, nextS));
+		curDis = nextDis;
 	}
-	ELSentence els(*curDis);
+	ELSentence els(curDis);
 	els.setQuantification(c.second);
 	return els;
 }

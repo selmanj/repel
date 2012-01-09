@@ -22,16 +22,25 @@ typedef boost::shared_ptr<Sentence> CNFLiteral;
 typedef std::pair<boost::shared_ptr<Sentence>, SISet> QCNFLiteral;
 typedef std::list<QCNFLiteral> QCNFLiteralList;
 
+typedef std::pair<QCNFLiteralList, QCNFClauseList> QUnitsFormulasPair;
 
-//QCNFClauseList performUnitPropagation(const QCNFClauseList sentences);
+QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences);
 QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c);
 //QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
 
 CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
+QCNFClauseList convertToQCNFClauseList(const FormulaList& list);
 QCNFClause convertToQCNFClause(const ELSentence& el);
+ELSentence convertFromQCNFClause(const QCNFLiteral& c);
 ELSentence convertFromQCNFClause(const QCNFClause& c);
 
 namespace {
+	/**
+	* After this function is called, unit clauses will be removed from
+	* sentences and placed in unitClauses.
+	*/
+	void splitUnitClauses(QCNFClauseList& sentences, QCNFLiteralList& unitClauses);
+
 	bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
 	bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
 
