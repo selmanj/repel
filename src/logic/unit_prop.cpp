@@ -71,7 +71,8 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 		bool addCurrentClause = true;
 		if (isSimpleLiteral(cnfLit)) {
 			// search for an occurrence of this atom in c
-			for (CNFClause::const_iterator it = cClause.begin(); it != cClause.end(); it++) {
+			CNFClause::iterator it = cClause.begin();
+			while (it != cClause.end()) {
 				boost::shared_ptr<Sentence> currentLit = *it;
 				if (isSimpleLiteral(currentLit) && *cnfLit == *currentLit) {	// Propagating P into P
 					// if they intersect, rewrite the clause over the time where they don't intersect and continue
@@ -79,18 +80,42 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 					SISet currentSet = qClause.second;
 					SISet intersect = intersection(litSet, currentSet);
 
-					if (intersect.size() == 0) continue;
-					// if there is still a timepoint that the clause applies to, rewrite and continue
-					SISet leftover = currentSet;
-					leftover.subtract(intersect);
-					if (leftover.size() != 0) {
-						QCNFClause qRestricted = qClause;
-						qRestricted.second = leftover;
-						toProcess.push(qRestricted);
-						addCurrentClause = false;
-						break;
+					if (intersect.size() != 0) {
+						// if there is still a timepoint that the clause applies to, rewrite and continue
+						SISet leftover = currentSet;
+						leftover.subtract(intersect);
+						if (leftover.size() != 0) {
+							QCNFClause qRestricted = qClause;
+							qRestricted.second = leftover;
+							toProcess.push(qRestricted);
+							addCurrentClause = false;
+							break;
+						}
+					}
+				} else if (isSimpleLiteral(currentLit) && isNegatedLiteral(currentLit, cnfLit)) {
+					// propagating !P into P (or vice versa)
+					// if they intersect, generate two clauses
+					SISet litSet = lit.second;
+					SISet currentSet = qClause.second;
+					SISet intersect = intersection(litSet, currentSet);
+
+					if (intersect.size() != 0) {
+						SISet leftover = currentSet;
+						leftover.subtract(intersect);
+						if (leftover.size() != 0) {
+							// add a copy of this sentence only over leftover
+							QCNFClause qRestricted = qClause;
+							qRestricted.second = leftover;
+							toProcess.push(qRestricted);
+						}
+						// delete the current literal and rewrite the time where it applies
+						it = cClause.erase(it);
+						qClause.first = cClause;
+						qClause.second = intersect;
+						continue;
 					}
 				}
+				it++;
 			}
 		}
 		if (addCurrentClause) processed.push_back(qClause);
@@ -101,10 +126,25 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 
 namespace {
 	bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit) {
-		if (boost::dynamic_pointer_cast<Atom>(lit)) return true;
-		if (boost::dynamic_pointer_cast<Negation>(lit)) {
+		if (boost::dynamic_pointer_cast<Atom>(lit) != 0) return true;
+		if (boost::dynamic_pointer_cast<Negation>(lit) != 0) {
 			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(lit);
-			if (boost::dynamic_pointer_cast<Atom>(neg->sentence())) {
+			if (boost::dynamic_pointer_cast<Atom>(neg->sentence()) != 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right) {
+		// one of them must be a negation
+		if (boost::dynamic_pointer_cast<Negation>(left)) {
+			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(left);
+			if (neg->sentence() == right) return true;
+		}
+		if (boost::dynamic_pointer_cast<Negation>(right)) {
+			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(right);
+			if (neg->sentence()->toString() == left->toString()) {	// TODO Why do I have to compare by string here???
 				return true;
 			}
 		}
@@ -146,6 +186,36 @@ CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s) {
 	}
 
 	return c;
+}
+
+ELSentence convertFromQCNFClause(const QCNFClause& c) {
+	if (c.first.empty()) {
+		throw std::invalid_argument("in convertFromQCNFClause(): cannot make a clause from an empty QCNFClause");
+	}
+	if (c.first.size() == 1) {
+		ELSentence s(c.first.front());
+		s.setQuantification(c.second);
+		return s;
+	}
+	typedef boost::shared_ptr<Sentence> SharedSentence;
+	SharedSentence* curDis;
+	CNFClause copy = c.first;
+	SharedSentence firstS = copy.front();
+	copy.pop_front();
+	SharedSentence secondS = copy.front();
+	copy.pop_front();
+
+	SharedSentence firstDis(new Disjunction(firstS, secondS));
+	curDis = &firstDis;
+	while(!copy.empty()) {
+		SharedSentence nextS = copy.front();
+		copy.pop_front();
+		SharedSentence nextDis(new Disjunction(*curDis, nextS));
+		curDis = &nextDis;
+	}
+	ELSentence els(*curDis);
+	els.setQuantification(c.second);
+	return els;
 }
 
 QCNFClause convertToQCNFClause(const ELSentence& el) {

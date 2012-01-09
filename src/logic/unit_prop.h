@@ -29,9 +29,12 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c);
 
 CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
 QCNFClause convertToQCNFClause(const ELSentence& el);
+ELSentence convertFromQCNFClause(const QCNFClause& c);
 
 namespace {
 	bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
+	bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
+
 
 	// anonymous struct for providing a sorting order for QCNFClauseList iterators
 	struct iterator_cmp {

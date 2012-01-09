@@ -56,6 +56,28 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
 	BOOST_REQUIRE_EQUAL(list.size(), 1);
 	BOOST_CHECK_EQUAL(list.front().second.toString(), "{[(1, 10), (11, 20)], [11:20]}");
 
+	// try wrapping l1 in a negation and propagating
+	boost::shared_ptr<Sentence> negl1(new Negation(l1.first));
+	l1.first = negl1;
+
+	list = propagate_literal(l1, qs3);
+	BOOST_REQUIRE_EQUAL(list.size(), 2);
+	QCNFClauseList::const_iterator it = list.begin();
+	ELSentence first = convertFromQCNFClause(*it);
+	it++;
+	ELSentence second = convertFromQCNFClause(*it);
+	BOOST_CHECK_EQUAL(first.sentence()->toString(), "Q(a)");
+	BOOST_CHECK_EQUAL(first.quantification().toString(), "{[1:10]}");
+
+	BOOST_CHECK_EQUAL(second.sentence()->toString(), "P(a) v Q(a)");
+	BOOST_CHECK_EQUAL(second.quantification().toString(), "{[(1, 10), (11, 20)], [11:20]}");
+
+
+
+
+
+
+
 
 /*
 	boost::shared_ptr<Sentence> singleLit = pa;
