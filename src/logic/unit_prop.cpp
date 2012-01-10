@@ -127,6 +127,39 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 						qClause.second = intersect;
 						continue;
 					}
+				} else if (boost::dynamic_pointer_cast<LiquidOp>(currentLit) != 0) {	// propagating P into [...]
+					boost::shared_ptr<LiquidOp> liqLit = boost::dynamic_pointer_cast<LiquidOp>(currentLit);
+					// first convert the time into a liquid interval
+					SISet liqLitSet = lit.second;
+					liqLitSet.setForceLiquid(true);
+					SISet currentSet = qClause.second;
+					SISet intersect = intersection(liqLitSet, currentSet);
+					if (intersect.size() != 0) {
+						// this is kinda cheap but it should work
+						// call this function again on the inside and fix the resulting sentence if necessary
+						QCNFLiteral newLit;
+						newLit.first = lit.first;
+						newLit.second = liqLitSet;
+
+						QCNFClause newClause;
+						SISet liqClauseSet = currentSet;
+						liqClauseSet.setForceLiquid(true);
+						newClause.first = convertToCNFClause(liqLit);
+						newClause.second = liqClauseSet;
+						QCNFClauseList newClauseList = propagate_literal(newLit, newClause);
+
+						// TODO: complete this!
+						throw std::runtime_error("unimplemented!");
+					}
+				} else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0) {
+					boost::shared_ptr<DiamondOp> diaCurrentLit = boost::dynamic_pointer_cast<DiamondOp>(currentLit);
+					// check to make sure we can propagate here
+					if (!(diaCurrentLit->sentence() == currentLit)
+							&& !isNegatedLiteral(diaCurrentLit->sentence(), currentLit)) {
+						it++;
+						continue;
+					}
+
 				}
 				it++;
 			}
