@@ -332,6 +332,19 @@ void SISet::subtract(const SISet& sis) {
 	//LOG_PRINT(LOG_DEBUG) << "final value: " << this->toString();
 }
 
+const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const {
+	SISet newSet = *this;
+	newSet.clear();
+
+	for (std::list<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
+		boost::optional<SpanInterval> siOpt = it->satisfiesRelation(rel);
+		if (siOpt) newSet.add(siOpt.get());
+	}
+
+	return newSet;
+}
+
+
 SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
 	SISet start(forceLiquid, maxInterval);
 	if (!forceLiquid) {

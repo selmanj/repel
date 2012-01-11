@@ -154,10 +154,23 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 				} else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0) {
 					boost::shared_ptr<DiamondOp> diaCurrentLit = boost::dynamic_pointer_cast<DiamondOp>(currentLit);
 					// check to make sure we can propagate here
-					if (!(diaCurrentLit->sentence() == currentLit)
-							&& !isNegatedLiteral(diaCurrentLit->sentence(), currentLit)) {
+
+					if (!(*diaCurrentLit->sentence() == *cnfLit)) {
 						it++;
 						continue;
+					}
+
+					// double check that there is only one relation for now
+					if (diaCurrentLit->relations().size() != 1) {
+						throw std::runtime_error("handling more than one relation on a single diamond literal is currently unimplemented in unit_prop()");
+					}
+
+					Interval::INTERVAL_RELATION rel = *(diaCurrentLit->relations().begin());
+					SISet satisfiesRel = qClause.second.satisfiesRelation(inverseRelation(rel));
+					std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", lit.second = " << lit.second.toString() << std::endl;
+
+					if (intersection(satisfiesRel, lit.second).size() != 0) {
+						std::cout << "it intersects" << std::endl;
 					}
 
 				}
@@ -207,7 +220,7 @@ namespace {
 		}
 		if (boost::dynamic_pointer_cast<Negation>(right)) {
 			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(right);
-			if (neg->sentence()->toString() == left->toString()) {	// TODO Why do I have to compare by string here???
+			if (*neg->sentence() == *left) {
 				return true;
 			}
 		}

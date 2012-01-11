@@ -44,6 +44,7 @@ public:
 	void setForceLiquid(bool forceLiquid);
 	void subtract(const SpanInterval& si);
 	void subtract(const SISet& sis);
+	const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const;
 
 	static SISet randomSISet(bool forceLiquid, const Interval& maxInterval);
 	SpanInterval randomSI() const;

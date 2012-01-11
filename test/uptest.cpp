@@ -56,6 +56,32 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
 		std::cout << "formula: " << s.toString() << std::endl;
 	}
 	BOOST_REQUIRE_EQUAL(result.first.size(), 3);
+	// TODO: write test
+}
+
+BOOST_AUTO_TEST_CASE( dia_lit ) {
+	std::string facts = "video(a) @ [1:20]";
+	std::string formulas = "P(a) @ [1:3]\n"
+			"<>{d} P(a) v Q(a) @ [2:4]\n";
+
+	Domain d = loadDomainWithStreams(facts, formulas);
+
+	FormulaList flist = d.formulas();
+	QCNFClauseList clauseList = convertToQCNFClauseList(flist);
+
+	QUnitsFormulasPair result = performUnitPropagation(clauseList);
+
+	for(QCNFLiteralList::const_iterator it = result.first.begin(); it != result.first.end(); it++) {
+		QCNFLiteral lit = *it;
+		ELSentence s = convertFromQCNFClause(lit);
+		std::cout << "unit clause: " << s.toString() << std::endl;
+	}
+
+	for(QCNFClauseList::const_iterator it = result.second.begin(); it != result.second.end(); it++) {
+		QCNFClause c = *it;
+		ELSentence s = convertFromQCNFClause(c);
+		std::cout << "formula: " << s.toString() << std::endl;
+	}
 }
 
 BOOST_AUTO_TEST_CASE( simple_lit_directly ) {
