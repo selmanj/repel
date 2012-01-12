@@ -155,7 +155,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 					boost::shared_ptr<DiamondOp> diaCurrentLit = boost::dynamic_pointer_cast<DiamondOp>(currentLit);
 					// check to make sure we can propagate here
 
-					if (!(*diaCurrentLit->sentence() == *cnfLit)) {
+					if (!(*diaCurrentLit->sentence() == *cnfLit) && isNegatedLiteral(diaCurrentLit->sentence(), cnfLit)) {
 						it++;
 						continue;
 					}
@@ -166,12 +166,20 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 					}
 
 					Interval::INTERVAL_RELATION rel = *(diaCurrentLit->relations().begin());
-					SISet satisfiesRel = qClause.second.satisfiesRelation(inverseRelation(rel));
-					std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", lit.second = " << lit.second.toString() << std::endl;
+					SISet satisfiesRel = lit.second.satisfiesRelation(rel);
+					std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", qclause.second = " << qClause.second.toString() << std::endl;
 
-					if (intersection(satisfiesRel, lit.second).size() != 0) {
-						std::cout << "it intersects" << std::endl;
+					/*
+					// if they don't intersect, nothing to propagate
+					if (intersection(satisfiesRel, lit.second).size() == 0) {
+						it++;
+						continue;
 					}
+
+					if (*cnfLit == *diaCurrentLit->sentence()) {
+						// clause is satisfied, we can drop it
+					}
+					*/
 
 				}
 				it++;
@@ -216,7 +224,7 @@ namespace {
 		// one of them must be a negation
 		if (boost::dynamic_pointer_cast<Negation>(left)) {
 			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(left);
-			if (neg->sentence() == right) return true;
+			if (*neg->sentence() == *right) return true;
 		}
 		if (boost::dynamic_pointer_cast<Negation>(right)) {
 			boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(right);

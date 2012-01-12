@@ -194,7 +194,7 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
 		case Interval::FINISHESI:
 			if (i == pos_inf) return boost::optional<SpanInterval>();
 			return SpanInterval(i+1, pos_inf, k, l, maxInterval_).normalize();
-		case Interval::DURING:
+		case Interval::DURING:												// TODO: BUG!  try during on [1:3]
 			if (j == neg_inf || k == pos_inf)
 				return boost::optional<SpanInterval>();
 			return SpanInterval(neg_inf, j-1, k+1, pos_inf, maxInterval_).normalize();
