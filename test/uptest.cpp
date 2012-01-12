@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
 BOOST_AUTO_TEST_CASE( dia_lit ) {
 	std::string facts = "video(a) @ [1:20]";
 	std::string formulas = "P(a) @ [1:3]\n"
-			"<>{d} P(a) v Q(a) @ [2:4]\n";
+			"<>{d} P(a) v Q(a) @ [1:4]\n";
 
 	Domain d = loadDomainWithStreams(facts, formulas);
 

@@ -168,18 +168,29 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 					Interval::INTERVAL_RELATION rel = *(diaCurrentLit->relations().begin());
 					SISet satisfiesRel = lit.second.satisfiesRelation(rel);
 					std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", qclause.second = " << qClause.second.toString() << std::endl;
-
-					/*
+					SISet intersect = intersection(satisfiesRel, qClause.second);
+					std::cout << "intersect = " << intersect.toString() << std::endl;
 					// if they don't intersect, nothing to propagate
-					if (intersection(satisfiesRel, lit.second).size() == 0) {
+					if (intersect.size() == 0) {
 						it++;
 						continue;
 					}
 
 					if (*cnfLit == *diaCurrentLit->sentence()) {
-						// clause is satisfied, we can drop it
+						// clause is satisfied, we can drop it (over the intersection that is)
+						SISet leftover = qClause.second;
+						leftover.subtract(intersect);
+						if (leftover.size() != 0) {
+							QCNFClause qRestricted = qClause;
+							qRestricted.second = leftover;
+							toProcess.push(qRestricted);
+							addCurrentClause = false;
+							break;
+						}
+					} else if (isNegatedLiteral(cnfLit, diaCurrentLit->sentence())) {
+
 					}
-					*/
+
 
 				}
 				it++;
