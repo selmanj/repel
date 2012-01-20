@@ -33,7 +33,7 @@ QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {
 
 		QCNFClauseList processedFormulas;
 		for (QCNFClauseList::iterator it = formulas.begin(); it != formulas.end(); it++) {
-			QCNFClauseList newFormulas = propagate_literal(unitClause, *it);
+			QCNFClauseList newFormulas = propagateLiteral(unitClause, *it);
 			processedFormulas.insert(processedFormulas.end(), newFormulas.begin(), newFormulas.end());
 		}
 		splitUnitClauses(processedFormulas, unitClauses);
@@ -63,7 +63,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 }
 */
 
-QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
+QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
 	LOG_PRINT(LOG_DEBUG) << "propagate_literal called with lit=" << lit.first->toString()
 			<< " and clause c=" << convertFromQCNFClause(c).toString() << std::endl;
 	boost::shared_ptr<Sentence> cnfLit = lit.first;
@@ -84,25 +84,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 			while (it != cClause.end()) {
 				boost::shared_ptr<Sentence> currentLit = *it;
 				if (isSimpleLiteral(currentLit) && *cnfLit == *currentLit) {	// Propagating P into P
-					// if they intersect, rewrite the clause over the time where they don't intersect and continue
-					SISet litSet = lit.second;
-					SISet currentSet = qClause.second;
-					SISet intersect = intersection(litSet, currentSet);
-
-					if (intersect.size() != 0) {
-						LOG_PRINT(LOG_DEBUG) << "propagating " << cnfLit->toString() << " into " << currentLit->toString() << std::endl;
-
-						// if there is still a timepoint that the clause applies to, rewrite and continue
-						SISet leftover = currentSet;
-						leftover.subtract(intersect);
-						if (leftover.size() != 0) {
-							QCNFClause qRestricted = qClause;
-							qRestricted.second = leftover;
-							toProcess.push(qRestricted);
-							addCurrentClause = false;
-							break;
-						}
-					}
+					addCurrentClause = propagateSimpleLitToSimpleLit(lit, qClause, it, toProcess);
 				} else if (isSimpleLiteral(currentLit) && isNegatedLiteral(currentLit, cnfLit)) {
 					// propagating !P into P (or vice versa)
 					// if they intersect, generate two clauses
@@ -146,7 +128,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 						liqClauseSet.setForceLiquid(true);
 						newClause.first = convertToCNFClause(liqLit);
 						newClause.second = liqClauseSet;
-						QCNFClauseList newClauseList = propagate_literal(newLit, newClause);
+						QCNFClauseList newClauseList = propagateLiteral(newLit, newClause);
 
 						// TODO: complete this!
 						throw std::runtime_error("unimplemented!");
@@ -244,6 +226,28 @@ namespace {
 			}
 		}
 		return false;
+	}
+
+	bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
+		// if they intersect, rewrite the clause over the time where they don't intersect and continue
+		SISet litSet = unit.second;
+		SISet currentSet = clause.second;
+		SISet intersect = intersection(litSet, currentSet);
+
+		if (intersect.size() != 0) {
+			LOG_PRINT(LOG_DEBUG) << "propagating " << unit.first->toString() << " into " << (*lit)->toString() << std::endl;
+
+			// if there is still a timepoint that the clause applies to, rewrite and continue
+			SISet leftover = currentSet;
+			leftover.subtract(intersect);
+			if (leftover.size() != 0) {
+				QCNFClause qRestricted = clause;
+				qRestricted.second = leftover;
+				newSentences.push(qRestricted);
+				return false;
+			}
+		}
+		return true;
 	}
 }
 
