@@ -75,41 +75,20 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
 	while (!toProcess.empty()) {
 		QCNFClause qClause = toProcess.front();
 		LOG_PRINT(LOG_DEBUG) << "working on " << convertFromQCNFClause(qClause).toString() << std::endl;
-		CNFClause cClause = qClause.first;
+		CNFClause *cClause = &qClause.first;
 		toProcess.pop();
 		bool addCurrentClause = true;
 		if (isSimpleLiteral(cnfLit)) {
 			// search for an occurrence of this atom in c
-			CNFClause::iterator it = cClause.begin();
-			while (it != cClause.end()) {
+			CNFClause::iterator it = cClause->begin();
+			while (it != cClause->end()) {
 				boost::shared_ptr<Sentence> currentLit = *it;
 				if (isSimpleLiteral(currentLit) && *cnfLit == *currentLit) {	// Propagating P into P
 					addCurrentClause = propagateSimpleLitToSimpleLit(lit, qClause, it, toProcess);
 				} else if (isSimpleLiteral(currentLit) && isNegatedLiteral(currentLit, cnfLit)) {
-					// propagating !P into P (or vice versa)
-					// if they intersect, generate two clauses
-					SISet litSet = lit.second;
-					SISet currentSet = qClause.second;
-					SISet intersect = intersection(litSet, currentSet);
-
-					if (intersect.size() != 0) {
-						LOG_PRINT(LOG_DEBUG) << "propagating " << cnfLit->toString() << " into " << currentLit->toString() << std::endl;
-
-						SISet leftover = currentSet;
-						leftover.subtract(intersect);
-						if (leftover.size() != 0) {
-							// add a copy of this sentence only over leftover
-							QCNFClause qRestricted = qClause;
-							qRestricted.second = leftover;
-							toProcess.push(qRestricted);
-						}
-						// delete the current literal and rewrite the time where it applies
-						it = cClause.erase(it);
-						qClause.first = cClause;
-						qClause.second = intersect;
-						continue;
-					}
+					addCurrentClause = propagateNegSimpleLitToSimpleLit(lit, qClause, it, toProcess);
 				} else if (boost::dynamic_pointer_cast<LiquidOp>(currentLit) != 0) {	// propagating P into [...]
+					/*
 					boost::shared_ptr<LiquidOp> liqLit = boost::dynamic_pointer_cast<LiquidOp>(currentLit);
 					// first convert the time into a liquid interval
 					SISet liqLitSet = lit.second;
@@ -131,8 +110,10 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
 						QCNFClauseList newClauseList = propagateLiteral(newLit, newClause);
 
 						// TODO: complete this!
-						throw std::runtime_error("unimplemented!");
 					}
+					*/
+					throw std::runtime_error("unimplemented!");
+
 				} else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0) {
 					boost::shared_ptr<DiamondOp> diaCurrentLit = boost::dynamic_pointer_cast<DiamondOp>(currentLit);
 					// check to make sure we can propagate here
@@ -246,6 +227,31 @@ namespace {
 				newSentences.push(qRestricted);
 				return false;
 			}
+		}
+		return true;
+	}
+
+	bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
+		// propagating !P into P (or vice versa)
+		// if they intersect, generate two clauses
+		SISet litSet = unit.second;
+		SISet currentSet = clause.second;
+		SISet intersect = intersection(litSet, currentSet);
+
+		if (intersect.size() != 0) {
+			LOG_PRINT(LOG_DEBUG) << "propagating " << unit.first->toString() << " into " << (*lit)->toString() << std::endl;
+
+			SISet leftover = currentSet;
+			leftover.subtract(intersect);
+			if (leftover.size() != 0) {
+				// add a copy of this sentence only over leftover
+				QCNFClause qRestricted = clause;
+				qRestricted.second = leftover;
+				newSentences.push(qRestricted);
+			}
+			// delete the current literal and rewrite the time where it applies
+			lit = clause.first.erase(lit);
+			clause.second = intersect;
 		}
 		return true;
 	}
