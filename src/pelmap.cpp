@@ -18,6 +18,7 @@ namespace po = boost::program_options;
 #include <utility>
 #include <ctime>
 #include <map>
+#include <cstdlib>
 #include "logic/el_syntax.h"
 #include "logic/folparser.h"
 #include "logic/domain.h"
@@ -60,13 +61,13 @@ int main(int argc, char* argv[]) {
 
 	if (vm.count("version")) {
 		std::cout << "pelmap version " << PEL_VERSION_MAJOR << "." << PEL_VERSION_MINOR << std::endl;
-		return 0;
+		return EXIT_SUCCESS;
 	}
 
 	if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
 	    std::cout << "Usage: pelmap [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
 		std::cout << desc << std::endl;
-	    return 1;
+	    return EXIT_FAILURE;
 	}
 
 	// setup our logging facilities
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]) {
 		outputFile = fopen(vm["output"].as<std::string>().c_str(), "w");
 		if (!outputFile) {
 			std::cerr << "unable to open output file \"" << vm["output"].as<std::string>() << "\" for writing." << std::endl;
-			return 1;
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -152,5 +153,5 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Should be good and close files?
-	return 0;
+	return EXIT_SUCCESS;
 }
