@@ -11,6 +11,7 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include <utility>
+#include <queue>
 #include "el_syntax.h"
 #include "../siset.h"
 
@@ -25,7 +26,7 @@ typedef std::list<QCNFLiteral> QCNFLiteralList;
 typedef std::pair<QCNFLiteralList, QCNFClauseList> QUnitsFormulasPair;
 
 QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences);
-QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c);
+QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c);
 //QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
 
 CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
@@ -44,6 +45,9 @@ namespace {
 	bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
 	bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
 
+	bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
+	bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
+	bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
 
 	// anonymous struct for providing a sorting order for QCNFClauseList iterators
 	struct iterator_cmp {
