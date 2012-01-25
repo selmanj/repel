@@ -115,6 +115,8 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
 					throw std::runtime_error("unimplemented!");
 
 				} else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0) {
+					addCurrentClause = propagateSimpleLitToDiamond(lit, qClause, it, toProcess);
+					/*
 					boost::shared_ptr<DiamondOp> diaCurrentLit = boost::dynamic_pointer_cast<DiamondOp>(currentLit);
 					// check to make sure we can propagate here
 
@@ -153,8 +155,7 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
 					} else if (isNegatedLiteral(cnfLit, diaCurrentLit->sentence())) {
 
 					}
-
-
+					*/
 				}
 				it++;
 			}
@@ -254,6 +255,11 @@ namespace {
 			clause.second = intersect;
 		}
 		return true;
+	}
+
+	bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
+		// implement me!
+		throw std::runtime_error("unimplemented: propagateSimpleLitToDiamond()");
 	}
 }
 
