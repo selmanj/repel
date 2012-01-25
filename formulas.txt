@@ -17,17 +17,17 @@
 #     relations are specified as before
 #        
 
-1: D-Eating(Gary) -> Eating(Gary)
-1: D-Walking(Gary) -> Walking(Gary)
-1: D-Driving(Gary) -> Driving(Gary)
-1: D-Working(Gary) -> Working(Gary)
-1: Eating(Gary) -> D-Eating(Gary)
-1: Walking(Gary) -> D-Walking(Gary)
-1: Driving(Gary) -> D-Driving(Gary)
-1: Working(Gary) -> D-Working(Gary)
+inf: D-Eating(Gary) -> Eating(Gary)
+inf: D-Walking(Gary) -> Walking(Gary)
+inf: D-Driving(Gary) -> Driving(Gary)
+inf: D-Working(Gary) -> Working(Gary)
+inf: Eating(Gary) -> D-Eating(Gary)
+inf: Walking(Gary) -> D-Walking(Gary)
+inf: Driving(Gary) -> D-Driving(Gary)
+inf: Working(Gary) -> D-Working(Gary)
 
-1: (Eating(Gary) ^ !Walking(Gary) ^ !Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ Walking(Gary) ^ !Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ !Walking(Gary) ^ Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ !Walking(Gary) ^ !Driving(Gary) ^ Working(Gary))
+inf: (Eating(Gary) ^ !Walking(Gary) ^ !Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ Walking(Gary) ^ !Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ !Walking(Gary) ^ Driving(Gary) ^ !Working(Gary)) v (!Eating(Gary) ^ !Walking(Gary) ^ !Driving(Gary) ^ Working(Gary))
 
-1: Eating(Gary) -> <>{mi} [(Eating(Gary) v Walking(Gary))]
-1: !(Walking(Gary);Driving(Gary);Walking(Gary)) v <>{m,mi} Walking(Gary) v DroveToWork(Gary)
-1: Working(Gary) -> <>{m} Working(Gary) v <>{m} DroveToWork(Gary)
+inf: Eating(Gary) -> <>{mi} [(Eating(Gary) v Walking(Gary))]
+inf: !(Walking(Gary);Driving(Gary);Walking(Gary)) v <>{m,mi} Walking(Gary) v DroveToWork(Gary)
+inf: Working(Gary) -> <>{m} Working(Gary) v <>{m} DroveToWork(Gary)

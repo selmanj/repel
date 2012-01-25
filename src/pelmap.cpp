@@ -25,6 +25,8 @@ namespace po = boost::program_options;
 #include "logic/moves.h"
 #include "logic/maxwalksat.h"
 
+// TODO: pelmap is the exe name?  probably should rename this.
+
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
@@ -37,6 +39,7 @@ int main(int argc, char* argv[]) {
 	    ("prob,p", po::value<double>()->default_value(0.25), "probability of taking a random move")
 	    ("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
 	    ("output,o", po::value<std::string>(), "output model file")
+	    ("unitProp,u", "perform unit propagation only and exit")
 	;
 
 	po::options_description hidden("Hidden options");
@@ -116,6 +119,8 @@ int main(int argc, char* argv[]) {
 			LOG_PRINT(LOG_INFO) << "\tscore contributed: " << weight;
 		}
 		LOG_PRINT(LOG_INFO) << "total score of model: " << sum;
+	} else if (vm.count("unitProp")) {
+	    LOG(LOG_INFO) << "performing unit propagation...";
 	} else {
 		double p = vm["prob"].as<double>();
 		unsigned int iterations = vm["iterations"].as<unsigned int>();
