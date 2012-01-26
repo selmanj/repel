@@ -31,31 +31,32 @@ std::string modelToString(const Model& m);
 
 class Domain {
 public:
-	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
+	Domain();
 	template <class FactsForwardIterator>
 	Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			FormulaList formSet,
 			bool assumeClosedWorld=true);
-	virtual ~Domain() {};
+	virtual ~Domain();
 
-	const FormulaList& formulas() const {return formulas_;};
+	const FormulaList& formulas() const;
 	void addObservedPredicate(const Atom& a);
-	const std::map<std::string, SISet>& observedPredicates() const {return obsPreds_;};	// TODO RENAME
+	const std::map<std::string, SISet>& observedPredicates() const;	// TODO RENAME
 	SISet getModifiableSISet(const std::string& name) const;
 	SISet getModifiableSISet(const std::string& name, const SISet& where) const;
 	void unsetAtomAt(const std::string& name, const SISet& where);
-	NameGenerator& nameGenerator() {return generator_;};
-	Model defaultModel() const {return observations_;};
+	NameGenerator& nameGenerator();
+	Model defaultModel() const;
 	Model randomModel() const;
-	Interval maxInterval() const {return maxInterval_;};
+	Interval maxInterval() const;
+	SpanInterval maxSpanInterval() const;
 	void setMaxInterval(const Interval& maxInterval);
 	void clearCache() const {cache_.clear();}
 
 	bool isLiquid(const std::string& predicate) const;
-	bool dontModifyObsPreds() const {return dontModifyObsPreds_;};
-	bool assumeClosedWorld() const {return assumeClosedWorld_;};
-	void setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
-	void setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
+	bool dontModifyObsPreds() const;
+	bool assumeClosedWorld() const;
+	void setDontModifyObsPreds(bool b);
+	void setAssumeClosedWorld(bool b);
 
 	unsigned long score(const ELSentence& s, const Model& m) const;
 	unsigned long score(const Model& m) const;
@@ -102,6 +103,9 @@ private:
 
 	mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
 };
+
+// implementation
+inline Domain::Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
 
 template <class FactsForwardIterator>
 Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
@@ -194,6 +198,24 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 			observations_.setAtom(*atom, set);
 		}
 	}
-
 };
+
+inline Domain::~Domain() {};
+
+inline const FormulaList& Domain::formulas() const {return formulas_;};
+inline const std::map<std::string, SISet>& Domain::observedPredicates() const {return obsPreds_;};
+inline NameGenerator& Domain::nameGenerator() {return generator_;};
+inline Model Domain::defaultModel() const {return observations_;};
+
+inline Interval Domain::maxInterval() const {return maxInterval_;};
+inline SpanInterval Domain::maxSpanInterval() const {
+    return SpanInterval(maxInterval_.start(), maxInterval_.finish(),
+            maxInterval_.start(), maxInterval_.finish(), maxInterval_);
+};
+
+inline bool Domain::dontModifyObsPreds() const {return dontModifyObsPreds_;};
+inline bool Domain::assumeClosedWorld() const {return assumeClosedWorld_;};
+inline void Domain::setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
+inline void Domain::setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
+
 #endif /* DOMAIN_H_ */
