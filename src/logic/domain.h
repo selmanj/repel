@@ -27,6 +27,8 @@
 
 std::string modelToString(const Model& m);
 
+// TODO: this is quite a bad way to handle closed worlds.  Redo this entire mechanic so model's account for this, not the domain.
+
 class Domain {
 public:
 	Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};

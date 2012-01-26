@@ -266,7 +266,9 @@ namespace {
 QCNFClauseList convertToQCNFClauseList(const FormulaList& list) {
     QCNFClauseList result;
     for (FormulaList::const_iterator it = list.begin(); it != list.end(); it++) {
-        result.push_back(convertToQCNFClause(*it));
+        if (it->hasInfWeight()) {
+            result.push_back(convertToQCNFClause(*it));
+        }
     }
     return result;
 }

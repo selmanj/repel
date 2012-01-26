@@ -26,6 +26,8 @@ namespace po = boost::program_options;
 #include "log.h"
 #include "logic/moves.h"
 #include "logic/maxwalksat.h"
+#include "logic/unit_prop.h"
+
 
 // TODO: pelmap is the exe name?  probably should rename this.
 
@@ -122,7 +124,7 @@ int main(int argc, char* argv[]) {
 		}
 		LOG_PRINT(LOG_INFO) << "total score of model: " << sum;
 	} else if (vm.count("unitProp")) {
-	    LOG(LOG_INFO) << "performing unit propagation...";
+	    doUnitProp(d);
 	} else {
 		double p = vm["prob"].as<double>();
 		unsigned int iterations = vm["iterations"].as<unsigned int>();
@@ -155,4 +157,15 @@ int main(int argc, char* argv[]) {
 
 	// Should be good and close files?
 	return EXIT_SUCCESS;
+}
+
+namespace {
+void doUnitProp(boost::shared_ptr<Domain>& d) {
+    LOG(LOG_INFO) << "performing unit propagation...";
+    QCNFClauseList clauses = convertToQCNFClauseList(d->formulas());
+    if (!d->assumeClosedWorld()) {
+        LOG(LOG_ERROR) << "doUnitProp(): cannot be called on a domain that is not a closed world - this code needs to be rewritten!";
+        return;
+    }
+}
 }

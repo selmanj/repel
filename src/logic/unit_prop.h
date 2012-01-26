@@ -30,6 +30,10 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c);
 //QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
 
 CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
+
+/**
+ * Converts all infinitely-weighted clauses into QCNF form.
+ */
 QCNFClauseList convertToQCNFClauseList(const FormulaList& list);
 QCNFClause convertToQCNFClause(const ELSentence& el);
 ELSentence convertFromQCNFClause(const QCNFLiteral& c);
