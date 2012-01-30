@@ -13,9 +13,4 @@
 
 int main(int argc, char* argv[]);
 
-namespace {
-void doUnitProp(boost::shared_ptr<Domain>& d);
-}
-
-
 #endif /* PELMAP_H_ */

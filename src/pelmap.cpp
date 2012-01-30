@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 		}
 		LOG_PRINT(LOG_INFO) << "total score of model: " << sum;
 	} else if (vm.count("unitProp")) {
-	    doUnitProp(d);
+	    performUnitPropagation(*d);
 	} else {
 		double p = vm["prob"].as<double>();
 		unsigned int iterations = vm["iterations"].as<unsigned int>();
@@ -157,61 +157,4 @@ int main(int argc, char* argv[]) {
 
 	// Should be good and close files?
 	return EXIT_SUCCESS;
-}
-
-namespace {
-void doUnitProp(boost::shared_ptr<Domain>& d) {
-    LOG(LOG_INFO) << "performing unit propagation...";
-    FormulaList formulas = d->formulas();
-
-    // add quantification to any formulas that may be missing them
-    for (FormulaList::iterator it = formulas.begin(); it != formulas.end(); it++) {
-        if (!it->isQuantified()) {
-            SISet everywhere(false, d->maxInterval());
-            everywhere.add(d->maxSpanInterval());
-            it->setQuantification(everywhere);
-        }
-    }
-    QCNFClauseList clauses = convertToQCNFClauseList(formulas);
-
-    if (!d->assumeClosedWorld()) {
-        LOG(LOG_ERROR) << "doUnitProp(): cannot be called on a domain that is not a closed world - this code needs to be rewritten!";
-        return;
-    }
-    // convert all the facts into unit clauses
-    Model obs = d->defaultModel();
-    std::set<Atom, atomcmp> atoms = obs.atoms();
-
-    for (std::set<Atom>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
-        SISet trueAt = obs.getAtom(*it);
-        SISet falseAt = trueAt.compliment();
-
-        // TODO: why make a copy?  we should have the original shared_ptr
-        boost::shared_ptr<Sentence> atomTrue(new Atom(*it));
-        boost::shared_ptr<Sentence> atomFalse(new Negation(atomTrue));
-        CNFClause a, b;
-        a.push_back(atomTrue);
-        b.push_back(atomFalse);
-        QCNFClause c, d;
-        c.first = a;
-        d.first = b;
-        c.second = trueAt;
-        d.second = falseAt;
-
-        if (c.second.size() != 0) clauses.push_back(c);
-        if (d.second.size() != 0) clauses.push_back(d);
-    }
-
-    for (QCNFClauseList::iterator it = clauses.begin(); it != clauses.end(); it++) {
-        std::cout << "clause: ";
-        for (CNFClause::iterator it2 = it->first.begin(); it2 != it->first.end(); it2++) {
-            if (it2 != it->first.begin()) std::cout << ", ";
-            std::cout << (*it2)->toString();
-        }
-        std::cout << " @ " << it->second.toString() << std::endl;
-    }
-
-    QUnitsFormulasPair reducedList = performUnitPropagation(clauses);
-    std::cout << "unit prop performed, now we have:" << std::endl;
-}
 }

@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <queue>
+#include <logic/domain.h>
 #include "el_syntax.h"
 #include "../siset.h"
 
@@ -25,6 +26,16 @@ typedef std::list<QCNFLiteral> QCNFLiteralList;
 
 typedef std::pair<QCNFLiteralList, QCNFClauseList> QUnitsFormulasPair;
 
+/**
+ * Perform unit propagation on a domain.  All infinitely-weighted formulas (as
+ * well as facts) are propagated or treated as candidates for propagation.
+ *
+ * Note that only closed-world domains are supported at this time.
+ *
+ * @param d The domain containing formulas to propagate
+ * @return A pairing of unit clauses and formulas
+ */
+QUnitsFormulasPair performUnitPropagation(const Domain& d);
 QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences);
 QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c);
 //QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
