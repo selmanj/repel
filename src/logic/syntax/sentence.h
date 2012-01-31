@@ -70,11 +70,22 @@ public:
 	 * @param s SentenceVisitor to call back when parsing this sentence
 	 */
 	virtual void visit(SentenceVisitor& s) const = 0;
+
+	/**
+	 * Check to see if this sentence contains another sentence s.  The sentence
+	 * is checked via equality, and can match either the current sentence or a
+	 * descendant. (i.e. "P" is contained in "!(P v Q)".
+	 *
+	 * @param s sentence to find (the needle)
+	 * @return true if the sentence is found, false otherwise
+	 */
+	bool contains(const Sentence& s) const;
 private:
 	virtual void doToString(std::stringstream& str) const = 0;
 	virtual Sentence* doClone() const = 0;
 	virtual bool doEquals(const Sentence& t) const = 0;
 	virtual int doPrecedence() const = 0;
+	virtual bool doContains(const Sentence& s) const = 0;
 };
 
 /**
@@ -107,6 +118,7 @@ inline std::string Sentence::toString() const {
 	return str.str();
 };
 inline int Sentence::precedence() const { return doPrecedence(); };
+inline bool Sentence::contains(const Sentence& s) const { return doContains(s);};
 
 inline Sentence* new_clone(const Sentence& t) {
 	return t.clone();

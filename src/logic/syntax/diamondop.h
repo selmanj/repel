@@ -40,6 +40,7 @@ private:
 
 	virtual int doPrecedence() const;
 	virtual void visit(SentenceVisitor& v) const;
+	virtual bool doContains(const Sentence& s) const;
 };
 
 // implementation below
@@ -86,6 +87,11 @@ inline bool DiamondOp::doEquals(const Sentence& s) const {
 	return *s_ == *(dia->s_);
 }
 inline int DiamondOp::doPrecedence() const { return 2; };
+inline bool DiamondOp::doContains(const Sentence& s) const {
+    if (*this == s) return true;
+    return (s_->contains(s));
+}
+
 inline void DiamondOp::visit(SentenceVisitor& v) const {
 	s_->visit(v);
 

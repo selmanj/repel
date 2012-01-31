@@ -1,0 +1,24 @@
+/*
+ * negation.cpp
+ *
+ *  Created on: Jan 30, 2012
+ *      Author: joe
+ */
+
+#include "negation.h"
+
+void Negation::doToString(std::stringstream& str) const {
+    str << "!";
+    if (s_ != NULL) {
+        if (s_->precedence() > precedence()) {
+            str << "(";
+            str << s_->toString();
+            str << ")";
+        } else {
+            str << s_->toString();
+        }
+    }
+}
+
+
+

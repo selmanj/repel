@@ -45,6 +45,7 @@ private:
 	virtual bool doEquals(const Sentence& t) const;
 	virtual void doToString(std::stringstream& str) const;
 	virtual int doPrecedence() const;
+    virtual bool doContains(const Sentence& s) const;
 };
 
 struct atomcmp {
@@ -89,5 +90,7 @@ inline void Atom::visit(SentenceVisitor& v) const {
 
 inline Sentence* Atom::doClone() const {return new Atom(*this);};
 inline int Atom::doPrecedence() const {return 0;};
+inline bool Atom::doContains(const Sentence& s) const {return *this == s;};
+
 
 #endif

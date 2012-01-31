@@ -27,6 +27,7 @@ private:
 	virtual Sentence* doClone() const;
 	virtual bool doEquals(const Sentence& t) const;
 	virtual int doPrecedence() const;
+    virtual bool doContains(const Sentence& s) const;
 };
 
 // IMPLEMENTATION
@@ -46,5 +47,6 @@ inline void BoolLit::doToString(std::stringstream& str) const {
 }
 inline Sentence* BoolLit::doClone() const { return new BoolLit(*this);};
 inline int BoolLit::doPrecedence() const { return 0;}
+inline bool BoolLit::doContains(const Sentence& s) const {return *this == s;}
 
 #endif /* BOOLLIT_H_ */

@@ -52,6 +52,7 @@ private:
 	virtual bool doEquals(const Sentence& s) const;
 	virtual void doToString(std::stringstream& str) const;
 	virtual int doPrecedence() const;
+    virtual bool doContains(const Sentence& s) const;
 };
 
 // IMPLEMENTATION
@@ -119,5 +120,10 @@ inline bool Conjunction::doEquals(const Sentence& s) const {
 }
 
 inline int Conjunction::doPrecedence() const { return 3; };
+inline bool Conjunction::doContains(const Sentence& s) const {
+    if (*this == s) return true;
+    return (left_->contains(s) || right_->contains(s));
+}
+
 
 #endif
