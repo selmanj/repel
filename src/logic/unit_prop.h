@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <queue>
+#include <iostream>
 #include <logic/domain.h>
 #include "el_syntax.h"
 #include "../siset.h"
@@ -50,6 +51,12 @@ QCNFClause convertToQCNFClause(const ELSentence& el);
 ELSentence convertFromQCNFClause(const QCNFLiteral& c);
 ELSentence convertFromQCNFClause(const QCNFClause& c);
 
+template <class traits>
+std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFClause& c );
+
+template <class traits>
+std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFLiteral& c );
+
 namespace {
 	/**
 	* After this function is called, unit clauses will be removed from
@@ -81,5 +88,22 @@ namespace {
 		}
 	};
 
+}
+
+// IMPLEMENTATION
+template <class traits>
+std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFClause& c ) {
+    for (CNFClause::const_iterator it = c.first.begin(); it != c.first.end(); it++) {
+        if (it != c.first.begin()) os << ", ";
+        os << (*it)->toString();
+    }
+    os << " @ " << c.second.toString();
+    return os;
+}
+
+template <class traits>
+inline std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFLiteral& c ) {
+    os << c.first->toString() << " @ " << c.second.toString();
+    return os;
 }
 #endif /* UNIT_PROP_H_ */

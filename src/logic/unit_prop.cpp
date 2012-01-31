@@ -59,17 +59,18 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     }
 
     for (QCNFClauseList::iterator it = clauses.begin(); it != clauses.end(); it++) {
-        std::cout << "clause: ";
-        for (CNFClause::iterator it2 = it->first.begin(); it2 != it->first.end(); it2++) {
-            if (it2 != it->first.begin()) std::cout << ", ";
-            std::cout << (*it2)->toString();
-        }
-        std::cout << " @ " << it->second.toString() << std::endl;
+        std::cout << "clause: " << *it << std::endl;
     }
 
     QUnitsFormulasPair reducedList = performUnitPropagation(clauses);
-    std::cout << "unit prop performed, now we have:" << std::endl;
+    std::cout << "unit prop performed, now we have " << reducedList.first.size() << " unit clauses and " << reducedList.second.size() << " formulas:" << std::endl;
 
+    for (QCNFLiteralList::const_iterator it = reducedList.first.begin(); it != reducedList.first.end(); it++) {
+        std::cout << *it << std::endl;
+    }
+
+    std::cout << std::endl << "formulas:" << std::endl;
+    std::copy(reducedList.second.begin(), reducedList.second.end(), std::ostream_iterator<QCNFClause>(std::cout, "\n"));
     return reducedList;
 }
 
@@ -123,7 +124,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 
 QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
     LOG_PRINT(LOG_DEBUG) << "propagate_literal called with lit=" << lit.first->toString()
-            << " and clause c=" << convertFromQCNFClause(c).toString() << std::endl;
+            << " and clause c=" << convertFromQCNFClause(c).toString();
     boost::shared_ptr<Sentence> cnfLit = lit.first;
     // first figure out what kind of literal we have here.
     std::queue<QCNFClause> toProcess;
@@ -132,7 +133,7 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
     toProcess.push(c);
     while (!toProcess.empty()) {
         QCNFClause qClause = toProcess.front();
-        LOG_PRINT(LOG_DEBUG) << "working on " << convertFromQCNFClause(qClause).toString() << std::endl;
+        LOG_PRINT(LOG_DEBUG) << "working on " << convertFromQCNFClause(qClause).toString();
         CNFClause *cClause = &qClause.first;
         toProcess.pop();
         bool addCurrentClause = true;
@@ -145,7 +146,8 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                     addCurrentClause = propagateSimpleLitToSimpleLit(lit, qClause, it, toProcess);
                 } else if (isSimpleLiteral(currentLit) && isNegatedLiteral(currentLit, cnfLit)) {
                     addCurrentClause = propagateNegSimpleLitToSimpleLit(lit, qClause, it, toProcess);
-                } else if (boost::dynamic_pointer_cast<LiquidOp>(currentLit) != 0) {    // propagating P into [...]
+                } else if (boost::dynamic_pointer_cast<LiquidOp>(currentLit) != 0
+                        && currentLit->contains(*cnfLit)) {    // propagating P into [...]
                     /*
                     boost::shared_ptr<LiquidOp> liqLit = boost::dynamic_pointer_cast<LiquidOp>(currentLit);
                     // first convert the time into a liquid interval
@@ -170,8 +172,7 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                         // TODO: complete this!
                     }
                     */
-                    throw std::runtime_error("unimplemented!");
-
+                    LOG(LOG_ERROR) << "propagating simple lit into liquid op currently not implemented! ignoring";
                 } else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0) {
                     addCurrentClause = propagateSimpleLitToDiamond(lit, qClause, it, toProcess);
                     /*
@@ -221,7 +222,6 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
         if (addCurrentClause) processed.push_back(qClause);
 
     }
-    LOG_PRINT(LOG_DEBUG) << "returning..." << std::endl;
     return processed;
 }
 
@@ -316,8 +316,10 @@ namespace {
     }
 
     bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
+        LOG(LOG_ERROR) << "propagating simple lit into liquid op currently not implemented! ignoring";
+        return true;
         // implement me!
-        throw std::runtime_error("unimplemented: propagateSimpleLitToDiamond()");
+//        throw std::runtime_error("unimplemented: propagateSimpleLitToDiamond()");
     }
 }
 
