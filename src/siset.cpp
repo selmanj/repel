@@ -333,7 +333,7 @@ void SISet::subtract(const SISet& sis) {
 }
 
 const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const {
-	SISet newSet = *this;
+	SISet newSet(false, maxInterval_);
 	newSet.clear();
 
 	for (std::list<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
