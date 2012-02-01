@@ -123,8 +123,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 */
 
 QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
-    LOG_PRINT(LOG_DEBUG) << "propagate_literal called with lit=" << lit.first->toString()
-            << " and clause c=" << convertFromQCNFClause(c).toString();
+    LOG_PRINT(LOG_DEBUG) << "propagate_literal called with lit=" << lit;
     boost::shared_ptr<Sentence> cnfLit = lit.first;
     // first figure out what kind of literal we have here.
     std::queue<QCNFClause> toProcess;
@@ -173,7 +172,8 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                     }
                     */
                     LOG(LOG_ERROR) << "propagating simple lit into liquid op currently not implemented! ignoring";
-                } else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0) {
+                } else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0
+                        && currentLit->contains(*cnfLit)) {
                     addCurrentClause = propagateSimpleLitToDiamond(lit, qClause, it, toProcess);
                     /*
                     boost::shared_ptr<DiamondOp> diaCurrentLit = boost::dynamic_pointer_cast<DiamondOp>(currentLit);
@@ -316,8 +316,44 @@ namespace {
     }
 
     bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
-        LOG(LOG_ERROR) << "propagating simple lit into liquid op currently not implemented! ignoring";
+        boost::shared_ptr<DiamondOp> diamondLit = boost::dynamic_pointer_cast<DiamondOp>(*lit);
+
+        // double check that there is only one relation for now
+        if (diamondLit->relations().size() != 1) {
+            LOG(LOG_WARN) << "handling more than one relation on a single diamond literal is currently unimplemented in unit_prop()";
+            return true;
+        }
+
+        Interval::INTERVAL_RELATION rel = *(diamondLit->relations().begin());
+        SISet satisfiesRel = unit.second.satisfiesRelation(rel);
+        std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", clause.second = " << clause.second.toString() << std::endl;
+        SISet intersect = intersection(satisfiesRel, clause.second);
+        std::cout << "intersect = " << intersect.toString() << std::endl;
+        // if they don't intersect, nothing to propagate
+        if (intersect.size() == 0) {
+           return true;
+        }
+
+        if (*unit.first == *diamondLit->sentence()) {
+            // clause is satisfied, we can drop it (over the intersection that is)
+            SISet leftover = clause.second;
+            leftover.subtract(intersect);
+            if (leftover.size() != 0) {
+                QCNFClause qRestricted = clause;
+                qRestricted.second = leftover;
+                newSentences.push(qRestricted);
+                return false;
+            }
+            return false;   // just drop it
+        } else if (isNegatedLiteral(unit.first, diamondLit->sentence())) {
+            // fancy stuff happens here
+            LOG(LOG_ERROR) << "propagating simple lit into liquid op currently not implemented! ignoring";
+            return true;
+        }
+        LOG_PRINT(LOG_ERROR) << "warning, propagateSimpleLitTODiamond() called but lit propgated is neither negative or positive";
         return true;
+
+
         // implement me!
 //        throw std::runtime_error("unimplemented: propagateSimpleLitToDiamond()");
     }
