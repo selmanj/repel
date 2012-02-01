@@ -8,13 +8,12 @@
 #ifndef UNIT_PROP_H_
 #define UNIT_PROP_H_
 
-#include <set>
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <queue>
 #include <iostream>
-#include <logic/domain.h>
-#include "el_syntax.h"
+#include "logic/syntax/sentence.h"
+#include "logic/domain.h"
 #include "../siset.h"
 
 typedef std::list<boost::shared_ptr<Sentence> > CNFClause;
@@ -33,27 +32,87 @@ typedef std::pair<QCNFLiteralList, QCNFClauseList> QUnitsFormulasPair;
  *
  * Note that only closed-world domains are supported at this time.
  *
- * @param d The domain containing formulas to propagate
- * @return A pairing of unit clauses and formulas
+ * @param d the domain containing formulas to propagate
+ * @return a pairing of unit clauses and formulas after propagation
  */
 QUnitsFormulasPair performUnitPropagation(const Domain& d);
-QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences);
-QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c);
-//QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c, const CNFClause::const_iterator& begin, const CNFClause::const_iterator& end);
 
+/**
+ * Perform unit propagation with the given QCNFClauseList.
+ *
+ * @param sentences a list of quantified clauses in CNF form
+ * @return a pairing of unit clauses and formulas after propagation
+ */
+QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences);
+
+/**
+ * Propagate a single literal into a clause.
+ *
+ * @param lit the literal to propagate
+ * @param c the clause to propagate lit into
+ * @return a list of resulting sentences after lit is propagated into c
+ */
+QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c);
+
+/**
+ * Convert a sentence that is already in CNF form into a CNFClause.
+ *
+ * Note that the sentence MUST already be in CNF form, or an exception will
+ * result.  CNF is either a single literal or a disjunction of literals.
+ *
+ * @param s the sentence to convert
+ * @return CNFClause representing s
+ */
 CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
 
 /**
- * Converts all infinitely-weighted clauses into QCNF form.
+ * Converts all infinitely-weighted clauses into QCNF form.  Non-infinitely
+ * weighted clauses are ignored.
+ *
+ * Note that sentences MUST already be in CNF form, or an exception will
+ * result.  CNF is either a single literal or a disjunction of literals.
+ *
+ * @param list FormulaList to convert
+ * @return a QCNFClauseList representing the converted formulas
  */
 QCNFClauseList convertToQCNFClauseList(const FormulaList& list);
+
+/**
+ * Convert an ELSentence into QCNF form.
+ *
+ * Note that the ELSentence MUST already be in CNF form, or an exception will
+ * result.  CNF is either a single literal or a disjunction of literals.
+ *
+ * @param el the ELSentence to convert
+ * @return a QCNFClause representing the sentence.
+ */
 QCNFClause convertToQCNFClause(const ELSentence& el);
+
+/**
+ * Convert a QCNFClause into an ELSentence.
+ *
+ * @param c the QCNFLiteral to convert
+ * @return an ELSentence representing c
+ */
 ELSentence convertFromQCNFClause(const QCNFLiteral& c);
+
+/**
+ * Convert a QCNFClause into an ELSentence.
+ *
+ * @param c the QCNFClause to convert
+ * @return an ELSentence representing c
+ */
 ELSentence convertFromQCNFClause(const QCNFClause& c);
 
+/**
+ * Overload of operator<< for QCNFClause.
+ */
 template <class traits>
 std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFClause& c );
 
+/**
+ * Overload of operator<< for QCNFLiteral.
+ */
 template <class traits>
 std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFLiteral& c );
 
@@ -73,19 +132,7 @@ namespace {
 
 	// anonymous struct for providing a sorting order for QCNFClauseList iterators
 	struct iterator_cmp {
-		bool operator()(const QCNFClauseList::iterator& a, const QCNFClauseList::iterator& b) const {
-			CNFClause aClause = a->first;
-			CNFClause bClause = b->first;
-
-			for (CNFClause::const_iterator aIt = aClause.begin(); aIt != aClause.end(); aIt++) {
-				for (CNFClause::const_iterator bIt = bClause.begin(); bIt != bClause.end(); bIt++) {
-					if ((*aIt)->toString() < (*bIt)->toString()) return true;
-					if ((*aIt)->toString() > (*bIt)->toString()) return false;
-				}
-				return false;
-			}
-			return true;
-		}
+		bool operator()(const QCNFClauseList::iterator& a, const QCNFClauseList::iterator& b) const;
 	};
 
 }
@@ -106,4 +153,19 @@ inline std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,trai
     os << c.first->toString() << " @ " << c.second.toString();
     return os;
 }
+
+inline bool iterator_cmp::operator()(const QCNFClauseList::iterator& a, const QCNFClauseList::iterator& b) const {
+    CNFClause aClause = a->first;
+    CNFClause bClause = b->first;
+
+    for (CNFClause::const_iterator aIt = aClause.begin(); aIt != aClause.end(); aIt++) {
+        for (CNFClause::const_iterator bIt = bClause.begin(); bIt != bClause.end(); bIt++) {
+            if ((*aIt)->toString() < (*bIt)->toString()) return true;
+            if ((*aIt)->toString() > (*bIt)->toString()) return false;
+        }
+        return false;
+    }
+    return true;
+}
+
 #endif /* UNIT_PROP_H_ */
