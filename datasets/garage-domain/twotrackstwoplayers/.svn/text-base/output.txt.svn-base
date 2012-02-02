@@ -1,0 +1,49 @@
+Read 29 events from file.
+Read 174 formulas from file.
+model size: 739
+....................Best model found: 
+
+D-DoorOpen(p1t2) @ {[28:30]}
+D-DoorOpen(p2t1) @ {[21:25]}
+D-Driving(p1t2) @ {[35:50]}
+D-Driving(p2t1) @ {[2:15]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-ElevatorExit(p2t2) @ {[55:60]}
+D-GateEnter(p2t1) @ {[2:10]}
+D-GateExit(p1t2) @ {[47:50]}
+D-InCar(p1t2) @ {[29:50]}
+D-InCar(p2t1) @ {[2:20]}
+D-Similar(p1t1, p1t2) @ {[1:60]}
+D-Similar(p1t1, p2t2) @ {[1:60]}
+D-Similar(p1t2, p1t1) @ {[1:60]}
+D-Similar(p1t2, p2t1) @ {[1:60]}
+D-Similar(p2t1, p1t2) @ {[1:60]}
+D-Similar(p2t1, p2t2) @ {[1:60]}
+D-Similar(p2t2, p1t1) @ {[1:60]}
+D-Similar(p2t2, p2t1) @ {[1:60]}
+D-Track(p1t1) @ {[1:25]}
+D-Track(p1t2) @ {[28:50]}
+D-Track(p2t1) @ {[2:45]}
+D-Track(p2t2) @ {[50:60]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-TrunkOpen(p2t1) @ {[31:45]}
+D-TrunkOpen(p2t2) @ {[50:50]}
+D-Walking(p1t1) @ {[2:18], [23:25]}
+D-Walking(p2t1) @ {[26:30]}
+D-Walking(p2t2) @ {[52:60]}
+DoorOpen(p1) @ {[28:30]}
+DoorOpen(p2) @ {[21:25]}
+Driving(p1) @ {[35:50]}
+Driving(p2) @ {[2:15]}
+ElevatorEnter(p1) @ {[1:5]}
+GateExit(p1) @ {[47:50]}
+HasTrack(p1, p1t1) @ {[1:60]}
+HasTrack(p1, p1t2) @ {[1:60]}
+HasTrack(p2, p2t1) @ {[1:60]}
+InCar(p1) @ {[29:50]}
+InCar(p2) @ {[2:20]}
+TrunkOpen(p1) @ {[20:22]}
+TrunkOpen(p2) @ {[31:45]}
+Walking(p1) @ {[2:18], [23:25]}
+Walking(p2) @ {[26:30]}
+

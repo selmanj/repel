@@ -1,0 +1,9 @@
+D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorUse(p1t1) @ {[1:5]}
+D-GateUse(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+HasTrack(p1, p1t1) @ {[1:50]}

@@ -1,0 +1,16 @@
+# we have one person who exits the elevator, fiddles with the car, and then leaves.
+
+D-Track(p1t1) @ [1:25]
+D-Track(p1t2) @ [28:50]
+
+D-ElevatorUse(p1t1) @ [1:5]
+D-Walking(p1t1) @ [2:18]
+D-TrunkOpen(p1t1) @ [20:22]
+D-Walking(p1t1) @ [23:25]
+D-DoorOpen(p1t2) @ [28:30]
+D-InCar(p1t2) @ [29:50]
+D-Driving(p1t2) @ [35:50]
+D-GateUse(p1t2) @ [47:50]
+
+D-Similar(p1t1, p1t2) @ [1:50]
+D-Similar(p1t2, p1t1) @ [1:50]

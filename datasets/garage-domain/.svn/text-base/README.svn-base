@@ -1,0 +1,89 @@
+Car Domain:
+
+Detections:
+D-ElevatorEnter(track) (someone entered the garage via the elevator)
+D-ElevatorExit(track) (someone exitted the garage via the elevator)
+D-Walking(track) 
+D-InCar(track)
+D-Driving(track)
+D-DoorOpen(track)
+D-TrunkOpen(track)
+D-GateEnter(track) (someone entered the garage via the garage gate)
+D-GateExit(track) (someone exited the garage via the garage gate)
+D-Track(track)
+D-Similar(track)
+
+HighLevel predicates:
+HasTrack(person, track)
+
+Assumptions:
+* Everyone who enters in one gate leaves through the other
+* Nobody leaves the trunk open or door open (since these are really about
+  cars, we only allow the door or trunk to be open when the person is near it)
+
+
+Formulas:
+# hasTrack, if true, is true everywhere
+<>{*} HasTrack(p, t) -> HasTrack(p, t)
+
+# a player cannot belong to two tracks at the same time
+# 
+# this rule can cause some intensive slowness when learning.  When it's
+# violated, HasTrack() is only removed at the intersection of D-Track(t1) and
+# D-Track(t2).  Normally the previous rule would fix this, but it won't
+# necessarily get run right away.  Also, often the best move is to add the
+# conflicting track back in, especially if the intersection is large and
+# there's a great deal of inferred events there
+#
+[ !HasTrack(p, t1) v !HasTrack(p, t2) v !D-Track(t1) v !D-Track(t2) ]
+
+# similar tracks should be assigned to the same person
+D-Similar(t1, t2) ^ hasTrack(person, t1) -> hasTrack(person, t2)
+
+# if an event occurs on a track, someone should be assigned to it
+[ D-Pred(t) -> hasTrack(t,p1) v hasTrack(t, p2) ...]
+
+# domain knowledge
+# A person can only be walking, in the car, or nothing
+[Walking(p) ^ !InCar(P)] v [!Walking(p) ^ InCar(P)] v [!Walking(p) ^ !InCar(p)]
+
+# if a person is driving, they must be in the car
+[Driving(p) -> InCar(p)]
+
+# a person who is in the car cannot use the elevator
+[InCar(p) -> (!ElevatorExit(p) ^ !ElevatorEnter(p))]
+
+# A person who is not driving cannot use the gate
+[!Driving(p) -> (!GateEnter(p) ^ !GateExit(p))]
+
+# if the trunk is open or the door is open, tehy are not driving
+[TrunkOpen(p) v DoorOpen(p) -> !Driving(p)]
+
+# if there is elevator entrance then there must be an exit event out the gate
+ElevatorEnter(p) -> <>{>} GateExit(p)
+
+# similarly, if there is gate entrance, there must be an exit out the elevator
+GateEnter(p) -> <>{<} ElevatorExit(p)
+
+# the moves for the two above formulas are pretty bad.  The pel-CNF moves code
+# will find where it's violated, and either add the event to the set of all
+# spanning intervals that meet that relation (which is usually huge and has a
+# terrible score) or remove GateEnter(p).  This means there can be a great
+# deal of moves where GateEnter/ElevatorExit both need to be on, but can't
+# because this rule unsets one of them before the other can be set.
+
+# Elevator use is at the beginning of a track or the end (these might be
+# unnecessary, haven't seen them get violated yet)
+# 
+ElevatorEnter(p) -> <>{m} (ElevatorEnter(p)) v !<>{m,o,fi,<} (Pred1(p) v Pred2(p) v ... )
+ElevatorExit(p) -> <>{mi} (ElevatorExit(p)) v !<>{mi,oi,f,>} (Pred1(p) v Pred2(p) v ... )
+# same with the gate
+GateEnter(p) -> <>{m} (GateEnter(p)) v !<>{m,o,fi,<} (Pred1(p) v Pred2(p) v ... ) 
+GateExit(p) -> <>{mi} (GateExit(p)) v !<>{mi,oi,f,>} (Pred1(p) v Pred2(p) v ... )
+
+# every person has an elevator use and a gate use
+<>{*} ElevatorUse(p)
+<>{*} GateUse(p)
+
+# a person must walk between an elevator and any car event
+ElevatorUse(p) ^{<,>} (TrunkOpen(p) v DoorOpen(p) v InCar(p)) -> <>{s,d} Walking(p)

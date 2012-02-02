@@ -1,0 +1,74 @@
+# generated from forms.py
+# read 11 predicates from fact file
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-DoorOpen(p1t1) v DoorOpen(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-Driving(p1t1) v Driving(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-ElevatorEnter(p1t1) v ElevatorEnter(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-ElevatorExit(p1t1) v ElevatorExit(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-GateEnter(p1t1) v GateEnter(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-GateExit(p1t1) v GateExit(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-InCar(p1t1) v InCar(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-TrunkOpen(p1t1) v TrunkOpen(p1)]
+1: [!D-Track(p1t1) v !HasTrack(p1,p1t1) v !D-Walking(p1t1) v Walking(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-DoorOpen(p1t2) v DoorOpen(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-Driving(p1t2) v Driving(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-ElevatorEnter(p1t2) v ElevatorEnter(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-ElevatorExit(p1t2) v ElevatorExit(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-GateEnter(p1t2) v GateEnter(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-GateExit(p1t2) v GateExit(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-InCar(p1t2) v InCar(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-TrunkOpen(p1t2) v TrunkOpen(p1)]
+1: [!D-Track(p1t2) v !HasTrack(p1,p1t2) v !D-Walking(p1t2) v Walking(p1)]
+1: [!DoorOpen(p1) v (HasTrack(p1, p1t2) ^ D-DoorOpen(p1t2))]
+1: [!Driving(p1) v (HasTrack(p1, p1t2) ^ D-Driving(p1t2))]
+1: [!ElevatorEnter(p1)]
+1: [!ElevatorExit(p1)]
+1: [!GateEnter(p1)]
+1: [!GateExit(p1)]
+1: [!InCar(p1) v (HasTrack(p1, p1t2) ^ D-InCar(p1t2))]
+1: [!TrunkOpen(p1) v (HasTrack(p1, p1t1) ^ D-TrunkOpen(p1t1))]
+1: [!Walking(p1) v (HasTrack(p1, p1t1) ^ D-Walking(p1t1))]
+# HasTrack, if true, is true everywhere
+20: !<>{*} HasTrack(p1, p1t1) v HasTrack(p1, p1t1)
+20: !<>{*} HasTrack(p1, p1t2) v HasTrack(p1, p1t2)
+
+# a player cannot belong to two tracks at the same time
+20: [ !HasTrack(p1, p1t1) v !HasTrack(p1, p1t2) v !D-Track(p1t1) v !D-Track(p1t2) ]
+20: [ !HasTrack(p1, p1t2) v !HasTrack(p1, p1t1) v !D-Track(p1t2) v !D-Track(p1t1) ]
+
+# if two tracks are similar, then they belong to the same player
+1: [ !D-Similar(p1t1, p1t2) v !HasTrack(p1, p1t1) v HasTrack(p1, p1t2) ]
+1: [ !D-Similar(p1t2, p1t1) v !HasTrack(p1, p1t2) v HasTrack(p1, p1t1) ]
+
+# initialize tracks
+5: [HasTrack(p1, p1t1)]
+
+# a person can only be walking, in the car, or nothing
+20: [ (Walking(p1) ^ !InCar(p1)) v (!Walking(p1) ^ InCar(p1)) v (!Walking(p1) ^ !InCar(p1)) ]
+
+# if a person is driving, they must be in the car
+20: [!Driving(p1) v InCar(p1)]
+
+# a person who is in the car cannot use the elevator
+20: [!InCar(p1) v (!ElevatorEnter(p1) ^ !ElevatorExit(p1))]
+# a person who is driving cannot use the gate
+20: [Driving(p1) v (!GateEnter(p1) ^ !GateExit(p1))]
+# if the trunk is open or the door is open, they are not driving
+20: [(!TrunkOpen(p1) ^ !DoorOpen(p1)) v !Driving(p1)]
+# entrances and exits go together
+20: !ElevatorEnter(p1) v <>{>} (GateExit(p1))
+20: !ElevatorExit(p1) v <>{<} (GateEnter(p1))
+20: !GateEnter(p1) v <>{>} (ElevatorExit(p1))
+20: !GateExit(p1) v <>{<} (ElevatorEnter(p1))
+
+# an entrance/exit specifies the beginning/end of all events
+20: !ElevatorEnter(p1) v <>{m} ElevatorEnter(p1) v !<>{m,o,fi,<} (DoorOpen(p1) v Driving(p1) v ElevatorExit(p1) v GateEnter(p1) v GateExit(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))
+20: !ElevatorExit(p1) v <>{m} ElevatorExit(p1) v !<>{m,o,fi,<} (DoorOpen(p1) v Driving(p1) v ElevatorEnter(p1) v GateEnter(p1) v GateExit(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))
+20: !GateEnter(p1) v <>{m} GateEnter(p1) v !<>{m,o,fi,<} (DoorOpen(p1) v Driving(p1) v ElevatorEnter(p1) v ElevatorExit(p1) v GateExit(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))
+20: !GateExit(p1) v <>{m} GateExit(p1) v !<>{m,o,fi,<} (DoorOpen(p1) v Driving(p1) v ElevatorEnter(p1) v ElevatorExit(p1) v GateEnter(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))
+
+# every person has an elevator use and a gate use
+#20: <>{*} ElevatorEnter(p1) v ElevatorExit(p1)
+#20: <>{*} GateEnter(p1) v GateExit(p1)
+
+# a person must walk between an elevator and car event
+#20: !(ElevatorEnter(p1) v ElevatorExit(p1) ^{<,>} TrunkOpen(p1) v DoorOpen(p1) v InCar(p1)) v <>{s,d} Walking(p1)

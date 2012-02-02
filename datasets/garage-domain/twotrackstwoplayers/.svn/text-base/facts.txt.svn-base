@@ -1,0 +1,38 @@
+
+D-Track(p1t1) @ [1:25]
+D-Track(p1t2) @ [28:50]
+
+D-ElevatorEnter(p1t1) @ [1:5]
+D-Walking(p1t1) @ [2:18]
+D-TrunkOpen(p1t1) @ [20:22]
+D-Walking(p1t1) @ [23:25]
+
+D-DoorOpen(p1t2) @ [28:30]
+D-InCar(p1t2) @ [29:50]
+D-Driving(p1t2) @ [35:50]
+D-GateExit(p1t2) @ [47:50]
+
+D-Similar(p1t1, p1t2) @ [1:60]
+D-Similar(p1t2, p1t1) @ [1:60]
+
+D-Track(p2t1) @ [2:45]
+D-GateEnter(p2t1) @ [2:10]
+D-Driving(p2t1) @ [2:15]
+D-InCar(p2t1) @ [2:20]
+D-DoorOpen(p2t1) @ [21:25]
+D-Walking(p2t1)  @ [26:30]
+D-TrunkOpen(p2t1) @ [31:45]
+
+D-Track(p2t2) @ [50:60]
+D-TrunkOpen(p2t2) @ [50:50]
+D-Walking(p2t2) @ [52:60]
+D-ElevatorExit(p2t2) @ [55:60]
+
+D-Similar(p2t1, p2t2) @ [1:60]
+D-Similar(p2t2, p2t1) @ [1:60]
+
+# and just for fun, add incorrect similar predicates
+D-Similar(p1t1, p2t2) @ [1:60]
+D-Similar(p2t2, p1t1) @ [1:60]
+D-Similar(p2t1, p1t2) @ [1:60]
+D-Similar(p1t2, p2t1) @ [1:60]

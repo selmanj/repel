@@ -1,0 +1,260 @@
+- 16:04:27 INFO: Opened log file for new session
+- 16:04:27 INFO: model size: 125
+- 16:04:27 DEBUG: observation predicates: 
+- 16:04:27 DEBUG: 	D-DoorOpen
+- 16:04:27 DEBUG: 	D-Driving
+- 16:04:27 DEBUG: 	D-ElevatorEnter
+- 16:04:27 DEBUG: 	D-GateExit
+- 16:04:27 DEBUG: 	D-InCar
+- 16:04:27 DEBUG: 	D-Track
+- 16:04:27 DEBUG: 	D-TrunkOpen
+- 16:04:27 DEBUG: 	D-Walking
+- 16:04:27 INFO: searching for a maximum-weight model, with p=0.25 and iterations=1000
+- 16:04:27 WARN: currently cannot generate moves for sentence: "!ElevatorEnter(p1) v <>{m} ElevatorEnter(p1) v !<>{m, o, fi, <} (DoorOpen(p1) v Driving(p1) v ElevatorExit(p1) v GateEnter(p1) v GateExit(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))".
+- 16:04:27 WARN: currently cannot generate moves for sentence: "!ElevatorExit(p1) v <>{m} ElevatorExit(p1) v !<>{m, o, fi, <} (DoorOpen(p1) v Driving(p1) v ElevatorEnter(p1) v GateEnter(p1) v GateExit(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))".
+- 16:04:27 WARN: currently cannot generate moves for sentence: "!GateEnter(p1) v <>{m} GateEnter(p1) v !<>{m, o, fi, <} (DoorOpen(p1) v Driving(p1) v ElevatorEnter(p1) v ElevatorExit(p1) v GateExit(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))".
+- 16:04:27 WARN: currently cannot generate moves for sentence: "!GateExit(p1) v <>{m} GateExit(p1) v !<>{m, o, fi, <} (DoorOpen(p1) v Driving(p1) v ElevatorEnter(p1) v ElevatorExit(p1) v GateEnter(p1) v InCar(p1) v TrunkOpen(p1) v Walking(p1))".
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+
+- 16:04:27 DEBUG: current score: 379950
+- 16:04:27 DEBUG: choosing sentence: [ HasTrack(p1, p1t1) ] to improve.
+- 16:04:27 DEBUG: sentence [ HasTrack(p1, p1t1) ] satisfied at {}
+- 16:04:27 DEBUG: choosing [1:50] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {HasTrack(p1, p1t1) @ [1:50]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {HasTrack(p1, p1t1) @ [1:50]}, toDel: {}
+- 16:04:27 DEBUG: remembering this model as best scoring so far
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+HasTrack(p1, p1t1) @ {[1:50]}
+
+- 16:04:27 DEBUG: current score: 381985
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-Driving(p1t1) v Driving(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-Driving(p1t1) v Driving(p1) ] satisfied at {[1:34]}
+- 16:04:27 DEBUG: choosing [35:50] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [35:50]}), (toAdd: {Driving(p1) @ [35:50]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {Driving(p1) @ [35:50]}, toDel: {}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+Driving(p1) @ {[35:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+
+- 16:04:27 DEBUG: current score: 369065
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-ElevatorEnter(p1t1) v ElevatorEnter(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-ElevatorEnter(p1t1) v ElevatorEnter(p1) ] satisfied at {[6:50]}
+- 16:04:27 DEBUG: choosing [1:5] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [1:5]}), (toAdd: {ElevatorEnter(p1) @ [1:5]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {ElevatorEnter(p1) @ [1:5]}, toDel: {}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+Driving(p1) @ {[35:50]}
+ElevatorEnter(p1) @ {[1:5]}
+HasTrack(p1, p1t1) @ {[1:50]}
+
+- 16:04:27 DEBUG: current score: 369005
+- 16:04:27 DEBUG: choosing sentence: !ElevatorEnter(p1) v <>{>} GateExit(p1) to improve.
+- 16:04:27 DEBUG: sentence true at :{[(1, 5), (6, 50)], [6:50]}
+- 16:04:27 DEBUG: sentence NOT true at :{[1:5]}
+- 16:04:27 DEBUG: moves to consider: (toAdd: {GateExit(p1) @ [3:50]}, toDel: {}), (toAdd: {}, toDel: {ElevatorEnter(p1) @ [1:5]})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {}, toDel: {ElevatorEnter(p1) @ [1:5]}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+Driving(p1) @ {[35:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+
+- 16:04:27 DEBUG: current score: 369065
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-DoorOpen(p1t1) v DoorOpen(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-DoorOpen(p1t1) v DoorOpen(p1) ] satisfied at {[1:26], [31:50]}
+- 16:04:27 DEBUG: choosing [27:30] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [27:30]}), (toAdd: {DoorOpen(p1) @ [27:30]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {DoorOpen(p1) @ [27:30]}, toDel: {}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+
+- 16:04:27 DEBUG: current score: 369779
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-Walking(p1t1) v Walking(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-Walking(p1t1) v Walking(p1) ] satisfied at {[1:1], [19:22], [27:50]}
+- 16:04:27 DEBUG: choosing [23:26] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [23:26]}), (toAdd: {Walking(p1) @ [23:26]}, toDel: {})
+- 16:04:27 DEBUG: taking random move: toAdd: {Walking(p1) @ [23:26]}, toDel: {}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+Walking(p1) @ {[23:26]}
+
+- 16:04:27 DEBUG: current score: 369997
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-TrunkOpen(p1t1) v TrunkOpen(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-TrunkOpen(p1t1) v TrunkOpen(p1) ] satisfied at {[1:19], [23:50]}
+- 16:04:27 DEBUG: choosing [20:22] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [20:22]}), (toAdd: {TrunkOpen(p1) @ [20:22]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {TrunkOpen(p1) @ [20:22]}, toDel: {}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+TrunkOpen(p1) @ {[20:22]}
+Walking(p1) @ {[23:26]}
+
+- 16:04:27 DEBUG: current score: 370676
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-Walking(p1t1) v Walking(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-Walking(p1t1) v Walking(p1) ] satisfied at {[1:1], [19:50]}
+- 16:04:27 DEBUG: choosing [2:18] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [2:18]}), (toAdd: {Walking(p1) @ [2:18]}, toDel: {})
+- 16:04:27 DEBUG: taking random move: toAdd: {Walking(p1) @ [2:18]}, toDel: {}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+TrunkOpen(p1) @ {[20:22]}
+Walking(p1) @ {[2:18], [23:26]}
+
+- 16:04:27 DEBUG: current score: 371422
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-InCar(p1t1) v InCar(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-InCar(p1t1) v InCar(p1) ] satisfied at {[1:28]}
+- 16:04:27 DEBUG: choosing [29:50] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [29:50]}), (toAdd: {InCar(p1) @ [29:50]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {InCar(p1) @ [29:50]}, toDel: {}
+- 16:04:27 DEBUG: remembering this model as best scoring so far
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+InCar(p1) @ {[29:50]}
+TrunkOpen(p1) @ {[20:22]}
+Walking(p1) @ {[2:18], [23:26]}
+
+- 16:04:27 DEBUG: current score: 385891
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-GateExit(p1t1) v GateExit(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-GateExit(p1t1) v GateExit(p1) ] satisfied at {[1:46]}
+- 16:04:27 DEBUG: choosing [47:50] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [47:50]}), (toAdd: {GateExit(p1) @ [47:50]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {GateExit(p1) @ [47:50]}, toDel: {}
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+GateExit(p1) @ {[47:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+InCar(p1) @ {[29:50]}
+TrunkOpen(p1) @ {[20:22]}
+Walking(p1) @ {[2:18], [23:26]}
+
+- 16:04:27 DEBUG: current score: 385805
+- 16:04:27 DEBUG: choosing sentence: [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-ElevatorEnter(p1t1) v ElevatorEnter(p1) ] to improve.
+- 16:04:27 DEBUG: sentence [ !D-Track(p1t1) v !HasTrack(p1, p1t1) v !D-ElevatorEnter(p1t1) v ElevatorEnter(p1) ] satisfied at {[6:50]}
+- 16:04:27 DEBUG: choosing [1:5] as the interval to satisfy
+- 16:04:27 DEBUG: moves to consider: (toAdd: {}, toDel: {HasTrack(p1, p1t1) @ [1:5]}), (toAdd: {ElevatorEnter(p1) @ [1:5]}, toDel: {})
+- 16:04:27 DEBUG: choosing best local move: toAdd: {ElevatorEnter(p1) @ [1:5]}, toDel: {}
+- 16:04:27 DEBUG: remembering this model as best scoring so far
+- 16:04:27 DEBUG: currentModel: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+ElevatorEnter(p1) @ {[1:5]}
+GateExit(p1) @ {[47:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+InCar(p1) @ {[29:50]}
+TrunkOpen(p1) @ {[20:22]}
+Walking(p1) @ {[2:18], [23:26]}
+
+- 16:04:27 DEBUG: current score: 386245
+- 16:04:27 INFO: no more sentences to satisfy!  exiting early after 11 iterations
+- 16:04:27 INFO: Best model found: 
+
+- 16:04:27 INFO: D-DoorOpen(p1t1) @ {[27:30]}
+D-Driving(p1t1) @ {[35:50]}
+D-ElevatorEnter(p1t1) @ {[1:5]}
+D-GateExit(p1t1) @ {[47:50]}
+D-InCar(p1t1) @ {[29:50]}
+D-Track(p1t1) @ {[1:50]}
+D-TrunkOpen(p1t1) @ {[20:22]}
+D-Walking(p1t1) @ {[2:18], [23:26]}
+DoorOpen(p1) @ {[27:30]}
+Driving(p1) @ {[35:50]}
+ElevatorEnter(p1) @ {[1:5]}
+GateExit(p1) @ {[47:50]}
+HasTrack(p1, p1t1) @ {[1:50]}
+InCar(p1) @ {[29:50]}
+TrunkOpen(p1) @ {[20:22]}
+Walking(p1) @ {[2:18], [23:26]}
+
