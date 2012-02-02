@@ -17,88 +17,88 @@ public:
      * that can hold between two intervals.  They are usually related in terms
      * of time.  See: http://en.wikipedia.org/wiki/Allen's_interval_algebra
      */
-	enum INTERVAL_RELATION {
-		MEETS,
-		MEETSI,
-		OVERLAPS,
-		OVERLAPSI,
-		STARTS,
-		STARTSI,
-		DURING,
-		DURINGI,
-		FINISHES,
-		FINISHESI,
-		EQUALS,
-		GREATERTHAN,
-		LESSTHAN
-	};
+    enum INTERVAL_RELATION {
+        MEETS,
+        MEETSI,
+        OVERLAPS,
+        OVERLAPSI,
+        STARTS,
+        STARTSI,
+        DURING,
+        DURINGI,
+        FINISHES,
+        FINISHESI,
+        EQUALS,
+        GREATERTHAN,
+        LESSTHAN
+    };
 
-	/**
-	 * Construct an empty interval (0,0).
-	 */
-	Interval();
+    /**
+     * Construct an empty interval (0,0).
+     */
+    Interval();
 
-	/**
-	 * Construct an interval.
-	 *
-	 * @param start the start point
-	 * @param finish the end point
-	 */
-	Interval(unsigned int start, unsigned int finish);
+    /**
+     * Construct an interval.
+     *
+     * @param start the start point
+     * @param finish the end point
+     */
+    Interval(unsigned int start, unsigned int finish);
 
-	/**
-	 * Get the starting point.
-	 *
-	 * @return the start point of the interval
-	 */
-	unsigned int start() const;
+    /**
+     * Get the starting point.
+     *
+     * @return the start point of the interval
+     */
+    unsigned int start() const;
 
-	/**
-	 * Get the finish point.
-	 *
-	 * @return the finish point of the interval
-	 */
-	unsigned int finish() const;
+    /**
+     * Get the finish point.
+     *
+     * @return the finish point of the interval
+     */
+    unsigned int finish() const;
 
-	/**
-	 * Get the size (length) of the interval.
-	 *
-	 * @return the size of the interval, or 0 if the starting point is greater
-	 *   than the finishing point.
-	 */
-	unsigned int size() const;
+    /**
+     * Get the size (length) of the interval.
+     *
+     * @return the size of the interval, or 0 if the starting point is greater
+     *   than the finishing point.
+     */
+    unsigned int size() const;
 
-	/**
-	 * Set the start point.
-	 *
-	 * @param start the start point of the interval
-	 */
-	void setStart(unsigned int start);
+    /**
+     * Set the start point.
+     *
+     * @param start the start point of the interval
+     */
+    void setStart(unsigned int start);
 
-	/**
-	 * Set the finish point.
-	 *
-	 * @param finish the finish point of the interval
-	 */
-	void setFinish(unsigned int finish);
+    /**
+     * Set the finish point.
+     *
+     * @param finish the finish point of the interval
+     */
+    void setFinish(unsigned int finish);
 
-	/* friend functions */
-	friend bool meets (const Interval& lhs, const Interval& rhs);
-	friend bool meetsI(const Interval& lhs, const Interval& rhs);
-	friend bool overlaps (const Interval& lhs, const Interval& rhs);
-	friend bool overlapsI(const Interval& lhs, const Interval& rhs);
-	friend bool starts (const Interval& lhs, const Interval& rhs);
-	friend bool startsI(const Interval& lhs, const Interval& rhs);
-	friend bool during (const Interval& lhs, const Interval& rhs);
-	friend bool duringI(const Interval& lhs, const Interval& rhs);
-	friend bool finishes (const Interval& lhs, const Interval& rhs);
-	friend bool finishesI(const Interval& lhs, const Interval& rhs);
-	friend bool equals(const Interval& lhs, const Interval& rhs);
-	friend bool after (const Interval& lhs, const Interval& rhs);
-	friend bool before(const Interval& lhs, const Interval& rhs);
+    /* friend functions */
+    friend bool meets (const Interval& lhs, const Interval& rhs);
+    friend bool meetsI(const Interval& lhs, const Interval& rhs);
+    friend bool overlaps (const Interval& lhs, const Interval& rhs);
+    friend bool overlapsI(const Interval& lhs, const Interval& rhs);
+    friend bool starts (const Interval& lhs, const Interval& rhs);
+    friend bool startsI(const Interval& lhs, const Interval& rhs);
+    friend bool during (const Interval& lhs, const Interval& rhs);
+    friend bool duringI(const Interval& lhs, const Interval& rhs);
+    friend bool finishes (const Interval& lhs, const Interval& rhs);
+    friend bool finishesI(const Interval& lhs, const Interval& rhs);
+    friend bool equals(const Interval& lhs, const Interval& rhs);
+    friend bool after (const Interval& lhs, const Interval& rhs);
+    friend bool before(const Interval& lhs, const Interval& rhs);
 
 private:
-	unsigned int s_, e_;
+    unsigned int s_, e_;
 };
 
 /**
