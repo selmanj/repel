@@ -12,21 +12,21 @@
 
 class BoolLit: public Sentence {
 public:
-	BoolLit(bool value);
-	BoolLit(const BoolLit& other);
-	virtual ~BoolLit();
+    BoolLit(bool value);
+    BoolLit(const BoolLit& other);
+    virtual ~BoolLit();
 
-	BoolLit& operator=(const BoolLit& other);
-	bool value() const;
+    BoolLit& operator=(const BoolLit& other);
+    bool value() const;
 
-	virtual void visit(SentenceVisitor& s) const;
+    virtual void visit(SentenceVisitor& s) const;
 private:
-	bool val_;
+    bool val_;
 
-	virtual void doToString(std::stringstream& str) const;
-	virtual Sentence* doClone() const;
-	virtual bool doEquals(const Sentence& t) const;
-	virtual int doPrecedence() const;
+    virtual void doToString(std::stringstream& str) const;
+    virtual Sentence* doClone() const;
+    virtual bool doEquals(const Sentence& t) const;
+    virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
 };
 
@@ -43,7 +43,7 @@ inline void BoolLit::visit(SentenceVisitor& s) const {s.accept(*this);}
 // private members
 
 inline void BoolLit::doToString(std::stringstream& str) const {
-	 (val_) ? str << "true" : str << "false";
+     (val_) ? str << "true" : str << "false";
 }
 inline Sentence* BoolLit::doClone() const { return new BoolLit(*this);};
 inline int BoolLit::doPrecedence() const { return 0;}

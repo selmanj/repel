@@ -15,43 +15,43 @@
 
 class Atom : public Sentence {
 public:
-	typedef boost::ptr_vector<Term>::size_type size_type;
+    typedef boost::ptr_vector<Term>::size_type size_type;
 
-	Atom(std::string name);
-	template <class AutoPtrIterator>
-	Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last);
-	Atom(std::string name, std::auto_ptr<Term> ptr);
-	Atom(const Atom& a);	// shallow copy
+    Atom(std::string name);
+    template <class AutoPtrIterator>
+    Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last);
+    Atom(std::string name, std::auto_ptr<Term> ptr);
+    Atom(const Atom& a);    // shallow copy
 
-	bool isGrounded() const;
+    bool isGrounded() const;
 
-	int arity() const;
-	std::string name() const;
-	std::string& name();
+    int arity() const;
+    std::string name() const;
+    std::string& name();
 
-	Atom& operator=(const Atom& b);
+    Atom& operator=(const Atom& b);
 
-	Term& at(size_type n);
-	const Term& at(size_type n) const;
+    Term& at(size_type n);
+    const Term& at(size_type n) const;
 
-	void push_back(std::auto_ptr<Term> t);
-	virtual void visit(SentenceVisitor& v) const;
+    void push_back(std::auto_ptr<Term> t);
+    virtual void visit(SentenceVisitor& v) const;
 private:
-	std::string pred;
-	boost::ptr_vector<Term> terms;
-	//std::vector<boost::shared_ptr<Term> > terms;
+    std::string pred;
+    boost::ptr_vector<Term> terms;
+    //std::vector<boost::shared_ptr<Term> > terms;
 
-	virtual Sentence* doClone() const;
-	virtual bool doEquals(const Sentence& t) const;
-	virtual void doToString(std::stringstream& str) const;
-	virtual int doPrecedence() const;
+    virtual Sentence* doClone() const;
+    virtual bool doEquals(const Sentence& t) const;
+    virtual void doToString(std::stringstream& str) const;
+    virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
 };
 
 struct atomcmp {
-	bool operator()(const Atom& a, const Atom& b) const {
-		return a.toString() < b.toString();
-	}
+    bool operator()(const Atom& a, const Atom& b) const {
+        return a.toString() < b.toString();
+    }
 };
 
 // IMPLEMENTATION
@@ -64,18 +64,18 @@ Atom::Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last)
 inline Atom::Atom(std::string name, std::auto_ptr<Term> ptr)
   : pred(name), terms() { terms.push_back(ptr); }
 inline Atom::Atom(const Atom& a)
-  : pred(a.pred), terms(a.terms) {};	// shallow copy
+  : pred(a.pred), terms(a.terms) {};    // shallow copy
 
 inline int Atom::arity() const {return terms.size();};
 inline std::string Atom::name() const {return pred;};
 inline std::string& Atom::name() {return pred;};
 
 inline Atom& Atom::operator=(const Atom& b) {
-	if (this != &b) {
-		pred = b.pred;
-		terms = b.terms;
-	}
-	return *this;
+    if (this != &b) {
+        pred = b.pred;
+        terms = b.terms;
+    }
+    return *this;
 }
 // TODO make the at() function throw an exception
 inline Term& Atom::at(size_type n) {return terms[n];};
@@ -84,7 +84,7 @@ inline const Term& Atom::at(size_type n) const {return terms[n];};
 inline void Atom::push_back(std::auto_ptr<Term> t)  {terms.push_back(t);};
 
 inline void Atom::visit(SentenceVisitor& v) const {
-	v.accept(*this);
+    v.accept(*this);
 }
 
 

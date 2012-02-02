@@ -6,19 +6,19 @@
 
 class Constant : public Term {
 public:
-	Constant(std::string name);
-	Constant(const Constant& c);
-	~Constant();
+    Constant(std::string name);
+    Constant(const Constant& c);
+    ~Constant();
 
-	Constant& operator=(const Constant& other);
+    Constant& operator=(const Constant& other);
 protected:
-	virtual void doToString(std::string& str) const;
+    virtual void doToString(std::string& str) const;
 private:
-	std::string name_;
+    std::string name_;
 
-	virtual Term* doClone() const;
-	virtual std::string doName() const;
-	virtual bool doEquals(const Term& t) const;
+    virtual Term* doClone() const;
+    virtual std::string doName() const;
+    virtual bool doEquals(const Term& t) const;
 };
 
 // implementation
@@ -37,12 +37,12 @@ inline Term* Constant::doClone() const {return new Constant(*this);}
 // TODO: what the hell is doname???
 inline std::string Constant::doName() const {return name_;}
 inline bool Constant::doEquals(const Term& t) const {
-	// first try to cast t to a constant
-	const Constant *con = dynamic_cast<const Constant*>(&t);
-	if (con == NULL) {
-		return false; // wrong type
-	}
-	return con->name_ == name_;
+    // first try to cast t to a constant
+    const Constant *con = dynamic_cast<const Constant*>(&t);
+    if (con == NULL) {
+        return false; // wrong type
+    }
+    return con->name_ == name_;
 }
 
 

@@ -7,23 +7,23 @@
 
 class Negation : public Sentence {
 public:
-	Negation(boost::shared_ptr<Sentence> sentence);
-	Negation(const Negation& neg); // shallow copy
-	virtual ~Negation();
+    Negation(boost::shared_ptr<Sentence> sentence);
+    Negation(const Negation& neg); // shallow copy
+    virtual ~Negation();
 
-	Negation& operator=(const Negation& n);
+    Negation& operator=(const Negation& n);
 
-	boost::shared_ptr<Sentence>& sentence();
-	boost::shared_ptr<const Sentence> sentence() const;
+    boost::shared_ptr<Sentence>& sentence();
+    boost::shared_ptr<const Sentence> sentence() const;
 private:
-	boost::shared_ptr<Sentence> s_;
+    boost::shared_ptr<Sentence> s_;
 
-	virtual Sentence* doClone() const;
-	virtual bool doEquals(const Sentence& s) const;
-	virtual void doToString(std::stringstream& str) const;
-	virtual int doPrecedence() const;
-	virtual void visit(SentenceVisitor& v) const;
-	virtual bool doContains(const Sentence& s) const;
+    virtual Sentence* doClone() const;
+    virtual bool doEquals(const Sentence& s) const;
+    virtual void doToString(std::stringstream& str) const;
+    virtual int doPrecedence() const;
+    virtual void visit(SentenceVisitor& v) const;
+    virtual bool doContains(const Sentence& s) const;
 };
 
 // IMPLEMENTATION

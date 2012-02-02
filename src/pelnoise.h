@@ -13,11 +13,11 @@
 #include "fol/domain.h"
 
 struct atompair_cmp {
-	bool operator()(const std::pair<Atom, Atom>& a, const std::pair<Atom, Atom>& b) const {
-		if (a.first.toString() == b.first.toString())
-			return (a.second.toString() < b.second.toString());
-		else return (a.first.toString() < b.first.toString());
-	}
+    bool operator()(const std::pair<Atom, Atom>& a, const std::pair<Atom, Atom>& b) const {
+        if (a.first.toString() == b.first.toString())
+            return (a.second.toString() < b.second.toString());
+        else return (a.first.toString() < b.first.toString());
+    }
 };
 
 typedef std::map<std::pair<Atom, Atom>, unsigned int*, atompair_cmp> ConfMatrix;

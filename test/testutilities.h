@@ -8,24 +8,24 @@
 #include <istream>
 
 boost::shared_ptr<Sentence> getAsSentence(const std::string& str) {
-	std::istringstream stream(str);
-	std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
-	return FOLParse::parseFormula(tokens.begin(),tokens.end());
+    std::istringstream stream(str);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
+    return FOLParse::parseFormula(tokens.begin(),tokens.end());
 }
 
 Domain loadDomainWithStreams(const std::string& facts, const std::string& formulas) {
-	std::istringstream factsStream(facts);
-	std::istringstream formulasStream(formulas);
+    std::istringstream factsStream(facts);
+    std::istringstream formulasStream(formulas);
 
-	std::vector<FOLToken> factsTokens = FOLParse::tokenize(&factsStream);
-	std::vector<FOLToken> formulaTokens = FOLParse::tokenize(&formulasStream);
+    std::vector<FOLToken> factsTokens = FOLParse::tokenize(&factsStream);
+    std::vector<FOLToken> formulaTokens = FOLParse::tokenize(&formulasStream);
 
-	std::vector<FOL::Event> factvec;
-	FormulaList formulaSet;
+    std::vector<FOL::Event> factvec;
+    FormulaList formulaSet;
 
-	FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec);
-	FOLParse::parseFormulas(formulaTokens.begin(), formulaTokens.end(), formulaSet);
-	return Domain(factvec.begin(), factvec.end(), formulaSet);
+    FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec);
+    FOLParse::parseFormulas(formulaTokens.begin(), formulaTokens.end(), formulaSet);
+    return Domain(factvec.begin(), factvec.end(), formulaSet);
 }
 
 #endif

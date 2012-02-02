@@ -117,23 +117,23 @@ template <class traits>
 std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFLiteral& c );
 
 namespace {
-	/**
-	* After this function is called, unit clauses will be removed from
-	* sentences and placed in unitClauses.
-	*/
-	void splitUnitClauses(QCNFClauseList& sentences, QCNFLiteralList& unitClauses);
+    /**
+    * After this function is called, unit clauses will be removed from
+    * sentences and placed in unitClauses.
+    */
+    void splitUnitClauses(QCNFClauseList& sentences, QCNFLiteralList& unitClauses);
 
-	bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
-	bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
+    bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
+    bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
 
-	bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
-	bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
-	bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
+    bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
+    bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
+    bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
 
-	// anonymous struct for providing a sorting order for QCNFClauseList iterators
-	struct iterator_cmp {
-		bool operator()(const QCNFClauseList::iterator& a, const QCNFClauseList::iterator& b) const;
-	};
+    // anonymous struct for providing a sorting order for QCNFClauseList iterators
+    struct iterator_cmp {
+        bool operator()(const QCNFClauseList::iterator& a, const QCNFClauseList::iterator& b) const;
+    };
 
 }
 

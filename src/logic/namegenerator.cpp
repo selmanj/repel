@@ -11,7 +11,7 @@
 NameGenerator::NameGenerator() : counter_(0) {}
 
 std::string NameGenerator::getUniqueName() {
-	std::ostringstream stream;
-	stream << NAME_PREFIX << counter_++;
-	return stream.str();
+    std::ostringstream stream;
+    stream << NAME_PREFIX << counter_++;
+    return stream.str();
 }

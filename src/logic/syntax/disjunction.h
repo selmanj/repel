@@ -7,28 +7,28 @@
 
 class Disjunction : public Sentence {
 public:
-	Disjunction(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
-	Disjunction(const Disjunction& a);
-	virtual ~Disjunction();
+    Disjunction(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
+    Disjunction(const Disjunction& a);
+    virtual ~Disjunction();
 
-	Disjunction& operator=(const Disjunction& b);
+    Disjunction& operator=(const Disjunction& b);
 
-	boost::shared_ptr<Sentence>& left();
-	boost::shared_ptr<const Sentence> left() const;
-	boost::shared_ptr<Sentence>& right();
-	boost::shared_ptr<const Sentence> right() const;
+    boost::shared_ptr<Sentence>& left();
+    boost::shared_ptr<const Sentence> left() const;
+    boost::shared_ptr<Sentence>& right();
+    boost::shared_ptr<const Sentence> right() const;
 
 private:
-	boost::shared_ptr<Sentence> left_;
-	boost::shared_ptr<Sentence> right_;
+    boost::shared_ptr<Sentence> left_;
+    boost::shared_ptr<Sentence> right_;
 
-	virtual Sentence* doClone() const;
+    virtual Sentence* doClone() const;
 
-	virtual bool doEquals(const Sentence& s) const;
-	virtual void doToString(std::stringstream& str) const;
+    virtual bool doEquals(const Sentence& s) const;
+    virtual void doToString(std::stringstream& str) const;
     virtual void visit(SentenceVisitor& v) const;
-	virtual int doPrecedence() const;
-	virtual bool doContains(const Sentence& s) const;
+    virtual int doPrecedence() const;
+    virtual bool doContains(const Sentence& s) const;
 
 };
 

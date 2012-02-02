@@ -13,10 +13,10 @@
 
 class NameGenerator {
 public:
-	NameGenerator();
-	std::string getUniqueName();
+    NameGenerator();
+    std::string getUniqueName();
 private:
-	unsigned int counter_;
+    unsigned int counter_;
 };
 
 

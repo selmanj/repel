@@ -15,77 +15,77 @@
 
 class Sentence : boost::noncopyable {
 public:
-	/**
-	 * Destructor, declared virtual.
-	 */
-	virtual ~Sentence();
+    /**
+     * Destructor, declared virtual.
+     */
+    virtual ~Sentence();
 
-	/**
-	 * Get a clone (deep copy) of this Sentence.
-	 * Note that the caller of this function should take ownership of the
-	 * returned pointer, in order to avoid memory leaks.
-	 *
-	 * @return A ptr to a new Sentence object allocated on the heap.
-	 */
-	Sentence* clone() const;
+    /**
+     * Get a clone (deep copy) of this Sentence.
+     * Note that the caller of this function should take ownership of the
+     * returned pointer, in order to avoid memory leaks.
+     *
+     * @return A ptr to a new Sentence object allocated on the heap.
+     */
+    Sentence* clone() const;
 
-	/**
-	 * Test for equality via == operator.
-	 *
-	 * @param b sentence object to compare to
-	 * @return true if equal, false otherwise.
-	 */
-	bool operator==(const Sentence& b) const;
+    /**
+     * Test for equality via == operator.
+     *
+     * @param b sentence object to compare to
+     * @return true if equal, false otherwise.
+     */
+    bool operator==(const Sentence& b) const;
 
-	/**
-	 * Test for inequality via != operator
-	 *
-	 * @param b sentence object to compare to
-	 * @return true if inequal, false otherwise.
-	 */
-	bool operator!=(const Sentence& b) const;
+    /**
+     * Test for inequality via != operator
+     *
+     * @param b sentence object to compare to
+     * @return true if inequal, false otherwise.
+     */
+    bool operator!=(const Sentence& b) const;
 
-	/**
-	 * Return this sentence as a string.
-	 *
-	 * @return a string representation of the sentence
-	 */
-	std::string toString() const;
+    /**
+     * Return this sentence as a string.
+     *
+     * @return a string representation of the sentence
+     */
+    std::string toString() const;
 
-	/**
-	 * Get the sentence's precedence.
-	 * Precedence is used to determine order of operations.  A higher
-	 * precedence is always evaluated first.
-	 *
-	 * @return an int representing the sentence precedence
-	 */
-	int precedence() const;
+    /**
+     * Get the sentence's precedence.
+     * Precedence is used to determine order of operations.  A higher
+     * precedence is always evaluated first.
+     *
+     * @return an int representing the sentence precedence
+     */
+    int precedence() const;
 
-	/**
-	 * Visit this sentence and all descending sentences with the given visitor.
-	 * Implements the visitor pattern.  Given a SentenceVisitor, this sentence
-	 * and all sentences contained within will call the SentenceVisitor::accept()
-	 * method with the current sentence.
-	 *
-	 * @param s SentenceVisitor to call back when parsing this sentence
-	 */
-	virtual void visit(SentenceVisitor& s) const = 0;
+    /**
+     * Visit this sentence and all descending sentences with the given visitor.
+     * Implements the visitor pattern.  Given a SentenceVisitor, this sentence
+     * and all sentences contained within will call the SentenceVisitor::accept()
+     * method with the current sentence.
+     *
+     * @param s SentenceVisitor to call back when parsing this sentence
+     */
+    virtual void visit(SentenceVisitor& s) const = 0;
 
-	/**
-	 * Check to see if this sentence contains another sentence s.  The sentence
-	 * is checked via equality, and can match either the current sentence or a
-	 * descendant. (i.e. "P" is contained in "!(P v Q)".
-	 *
-	 * @param s sentence to find (the needle)
-	 * @return true if the sentence is found, false otherwise
-	 */
-	bool contains(const Sentence& s) const;
+    /**
+     * Check to see if this sentence contains another sentence s.  The sentence
+     * is checked via equality, and can match either the current sentence or a
+     * descendant. (i.e. "P" is contained in "!(P v Q)".
+     *
+     * @param s sentence to find (the needle)
+     * @return true if the sentence is found, false otherwise
+     */
+    bool contains(const Sentence& s) const;
 private:
-	virtual void doToString(std::stringstream& str) const = 0;
-	virtual Sentence* doClone() const = 0;
-	virtual bool doEquals(const Sentence& t) const = 0;
-	virtual int doPrecedence() const = 0;
-	virtual bool doContains(const Sentence& s) const = 0;
+    virtual void doToString(std::stringstream& str) const = 0;
+    virtual Sentence* doClone() const = 0;
+    virtual bool doEquals(const Sentence& t) const = 0;
+    virtual int doPrecedence() const = 0;
+    virtual bool doContains(const Sentence& s) const = 0;
 };
 
 /**
@@ -97,13 +97,13 @@ private:
  */
 struct TQConstraints {
 public:
-	SISet mustBeIn;
-	SISet mustNotBeIn;
+    SISet mustBeIn;
+    SISet mustNotBeIn;
 
-	bool operator==(const TQConstraints& b) const;
-	bool operator!=(const TQConstraints& b) const;
-	std::string toString() const;
-	bool empty() const;
+    bool operator==(const TQConstraints& b) const;
+    bool operator!=(const TQConstraints& b) const;
+    std::string toString() const;
+    bool empty() const;
 };
 
 // IMPLEMENTATION
@@ -113,25 +113,25 @@ inline Sentence* Sentence::clone() const { return doClone(); };
 inline bool Sentence::operator==(const Sentence& b) const {return doEquals(b);};
 inline bool Sentence::operator!=(const Sentence& b) const {return !(*this == b);};
 inline std::string Sentence::toString() const {
-	std::stringstream str;
-	doToString(str);
-	return str.str();
+    std::stringstream str;
+    doToString(str);
+    return str.str();
 };
 inline int Sentence::precedence() const { return doPrecedence(); };
 inline bool Sentence::contains(const Sentence& s) const { return doContains(s);};
 
 inline Sentence* new_clone(const Sentence& t) {
-	return t.clone();
+    return t.clone();
 };
 
 inline bool TQConstraints::operator==(const TQConstraints& b) const {
-	return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);
+    return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);
 }
 inline bool TQConstraints::operator!=(const TQConstraints& b) const {
-	return !this->operator ==(b);
+    return !this->operator ==(b);
 }
 
 inline bool TQConstraints::empty() const {
-	return (mustBeIn.size() == 0) && (mustNotBeIn.size() == 0);
+    return (mustBeIn.size() == 0) && (mustNotBeIn.size() == 0);
 }
-#endif	// SENTENCE_H
+#endif  // SENTENCE_H
