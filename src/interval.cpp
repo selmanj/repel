@@ -4,99 +4,9 @@
  */
 #include <stdexcept>
 #include <boost/optional.hpp>
-
 #include "interval.h"
 
-Interval::Interval(unsigned int start, unsigned int end)
-: s_(start), e_(end)
-{
-}
-
-bool Interval::operator==(const Interval& b) const {
-	return (start() == b.start() && finish() == b.finish());
-}
-
-bool Interval::operator!=(const Interval& b) const {
-	return !(operator==(b));
-}
-
-bool Interval::operator>(const Interval& b) const {
-	if (operator==(b)) return false;
-	return !operator<(b);
-}
-
-bool Interval::operator<(const Interval& b) const {
-	if (operator==(b)) return false;
-	if (start() < b.start()) return true;
-	if (start() > b.start()) return false;
-	if (finish() < b.finish()) return true;
-	if (finish() > b.finish()) return false;
-	return false; // should never hit this point
-}
-
-bool Interval::operator>=(const Interval& b) const {
-	return !operator<(b);
-}
-
-bool Interval::operator<=(const Interval& b) const {
-	return !operator>(b);
-}
-
-bool Interval::meets(const Interval& b) const {
-	return e_+1 == b.s_;
-}
-
-bool Interval::meetsI(const Interval& b) const {
-	return b.e_+1 == s_;
-}
-
-bool Interval::overlaps(const Interval& b) const {
-	return s_ < b.s_ && e_ >= b.s_ && e_ < b.e_;
-}
-
-bool Interval::overlapsI(const Interval& b) const {
-	return s_ > b.s_ && s_ <= b.e_ && e_ > b.e_;
-}
-
-bool Interval::starts(const Interval& b) const {
-	return s_ == b.s_ && e_ < b.e_;
-}
-
-bool Interval::startsI(const Interval& b) const {
-	return s_ == b.s_ && b.e_ < e_;
-}
-
-bool Interval::during(const Interval& b) const {
-	return s_ > b.s_ && e_ < b.e_;
-}
-
-bool Interval::duringI(const Interval& b) const {
-	return b.s_ > s_ && b.e_ < e_;
-}
-
-bool Interval::finishes(const Interval& b) const {
-	return s_ > b.s_ && e_ == b.e_;
-}
-
-bool Interval::finishesI(const Interval& b) const {
-	return b.s_ > s_ && b.e_ == e_;
-}
-
-bool Interval::equals(const Interval& b) const {
-	// in case == is ever defined more exactly, for now just define the
-	// relation here as well
-	return s_ == b.s_ && e_ == b.e_;
-}
-
-bool Interval::after(const Interval& b) const {
-	return s_ > b.e_+1;
-}
-
-bool Interval::before(const Interval& b) const {
-	return e_+1 < b.s_;
-}
-
-std::string Interval::relationToString(INTERVAL_RELATION rel) {
+std::string relationToString(Interval::INTERVAL_RELATION rel) {
 	switch (rel) {
 	case Interval::STARTS:
 		return "s";
@@ -174,38 +84,34 @@ boost::optional<Interval> intersection(const Interval& a, const Interval& b) {
 bool relationHolds(const Interval& a, Interval::INTERVAL_RELATION rel, const Interval& b) {
 	switch(rel) {
 		case Interval::STARTS:
-			return a.starts(b);
+			return starts(a, b);
 		case Interval::STARTSI:
-			return a.startsI(b);
+			return startsI(a, b);
 		case Interval::DURING:
-			return a.during(b);
+			return during(a, b);
 		case Interval::DURINGI:
-			return a.duringI(b);
+			return duringI(a, b);
 		case Interval::FINISHES:
-			return a.finishes(b);
+			return finishes(a, b);
 		case Interval::FINISHESI:
-			return a.finishesI(b);
+			return finishesI(a, b);
 		case Interval::OVERLAPS:
-			return a.overlaps(b);
+			return overlaps(a, b);
 		case Interval::OVERLAPSI:
-			return a.overlapsI(b);
+			return overlapsI(a, b);
 		case Interval::MEETS:
-			return a.meets(b);
+			return meets(a, b);
 		case Interval::MEETSI:
-			return a.meetsI(b);
+			return meetsI(a, b);
 		case Interval::LESSTHAN:
-			return a.before(b);
+			return before(a, b);
 		case Interval::GREATERTHAN:
-			return a.after(b);
+			return after(a, b);
 		case Interval::EQUALS:
-			return a.equals(b);
+			return equals(a, b);
 		default:
 			throw std::runtime_error("given an interval relation that we don't handle");
 	}
 }
 
-Interval span(const Interval& a, const Interval& b) {
-	return Interval((a.start() < b.start() ? a.start() : b.start()),
-			(a.finish() > b.finish() ? a.finish() : b.finish()));
-}
 

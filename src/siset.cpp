@@ -155,11 +155,11 @@ void SISet::add(const SpanInterval &s) {
 			SpanInterval b = *it;
 			Interval sInt = sCopy.start();
 			Interval bInt = b.start();
-			if (sInt.meets(bInt) || sInt.meetsI(bInt)
-					|| sInt.overlaps(bInt) || sInt.overlapsI(bInt)
-					|| sInt.starts(bInt) || sInt.startsI(bInt)
-					|| sInt.finishes(bInt) || sInt.finishesI(bInt)
-					|| sInt.during(bInt) || sInt.duringI(bInt)) {
+			if (meets(sInt, bInt) || meetsI(sInt, bInt)
+					|| overlaps(sInt, bInt) || overlapsI(sInt, bInt)
+					|| starts(sInt, bInt) || startsI(sInt, bInt)
+					|| finishes(sInt, bInt) || finishesI(sInt, bInt)
+					|| during(sInt, bInt) || duringI(sInt, bInt)) {
 				// they intersect, pull it out
 				std::list<SpanInterval>::iterator toErase(it);
 				it++;

@@ -21,11 +21,11 @@ void DiamondOp::doToString(std::stringstream& str) const {
 		str << "{";
 		if (!rels_.empty())	{	// better be safe, not sure if this could happen but still...
 			std::set<Interval::INTERVAL_RELATION>::const_iterator it = rels_.begin();
-			str << Interval::relationToString(*it);
+			str << relationToString(*it);
 			it++;
 			for (; it!= rels_.end(); it++) {
 				str << ", ";
-				str << Interval::relationToString(*it);
+				str << relationToString(*it);
 			}
 		}
 
