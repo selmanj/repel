@@ -19,7 +19,7 @@ namespace po = boost::program_options;
 #include <ctime>
 #include <map>
 #include <cstdlib>
-#include "pelmap.h"
+#include "pel.h"
 #include "logic/el_syntax.h"
 #include "logic/folparser.h"
 #include "logic/domain.h"
@@ -28,8 +28,6 @@ namespace po = boost::program_options;
 #include "logic/maxwalksat.h"
 #include "logic/unit_prop.h"
 
-
-// TODO: pelmap is the exe name?  probably should rename this.
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.
@@ -63,12 +61,12 @@ int main(int argc, char* argv[]) {
 	po::notify(vm);
 
 	if (vm.count("version")) {
-		std::cout << "pelmap version " << PEL_VERSION_MAJOR << "." << PEL_VERSION_MINOR << std::endl;
+		std::cout << "pel version " << PEL_VERSION_MAJOR << "." << PEL_VERSION_MINOR << std::endl;
 		return EXIT_SUCCESS;
 	}
 
 	if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
-	    std::cout << "Usage: pelmap [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
+	    std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
 		std::cout << desc << std::endl;
 	    return EXIT_FAILURE;
 	}
