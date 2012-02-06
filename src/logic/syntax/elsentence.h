@@ -23,7 +23,8 @@ public:
     ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q);
     virtual ~ELSentence();
 
-    bool operator==(const ELSentence& b) const;
+    friend bool operator==(const ELSentence& a, const ELSentence& b);
+    friend bool operator!=(const ELSentence& a, const ELSentence& b);
 
     boost::shared_ptr<Sentence> sentence();
     const boost::shared_ptr<const Sentence> sentence() const;
@@ -66,6 +67,8 @@ inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int
 
 inline ELSentence::~ELSentence() {}
 
+inline bool operator !=(const ELSentence& a, const ELSentence& b) {return operator==(a,b);}
+
 inline boost::shared_ptr<Sentence> ELSentence::sentence() { return s_;}
 
 inline const boost::shared_ptr<const Sentence> ELSentence::sentence() const {return s_;}
@@ -91,4 +94,6 @@ inline void ELSentence::setWeight(unsigned int w) {w_ = w; hasInfWeight_ = false
 inline void ELSentence::setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
 inline void ELSentence::setHasInfWeight(bool b) { hasInfWeight_ = b;};
 inline void ELSentence::setIsQuantified(bool b) { isQuantified_ = b;};
+
+
 #endif /* ELSENTENCE_H_ */

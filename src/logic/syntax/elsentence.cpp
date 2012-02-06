@@ -7,12 +7,12 @@
 
 #include "elsentence.h"
 
-bool ELSentence::operator==(const ELSentence& b) const {
-    if (*s_ != *b.s_) return false;
-    if (hasInfWeight_ != b.hasInfWeight_) return false;
-    if (!hasInfWeight_ && w_ != b.w_) return false;
-    if (isQuantified_ != b.isQuantified_) return false;
-    if (isQuantified_ && quantification_ != b.quantification_) return false;
+bool operator==(const ELSentence& a, const ELSentence& b) {
+    if (*a.s_ != *b.s_) return false;
+    if (a.hasInfWeight_ != b.hasInfWeight_) return false;
+    if (!a.hasInfWeight_ && a.w_ != b.w_) return false;
+    if (a.isQuantified_ != b.isQuantified_) return false;
+    if (a.isQuantified_ && a.quantification_ != b.quantification_) return false;
     return true;
 };
 
