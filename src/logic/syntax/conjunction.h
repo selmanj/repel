@@ -32,14 +32,14 @@ public:
     friend void swap(Conjunction& left, Conjunction& right);
     Conjunction& operator=(Conjunction b);
 
-    const boost::shared_ptr<Sentence> left();
-    const boost::shared_ptr<const Sentence> left() const;
-    const boost::shared_ptr<Sentence> right();
-    const boost::shared_ptr<const Sentence> right() const;
-    const std::set<Interval::INTERVAL_RELATION> relations();
+    boost::shared_ptr<Sentence> left();
+    boost::shared_ptr<const Sentence> left() const;
+    boost::shared_ptr<Sentence> right();
+    boost::shared_ptr<const Sentence> right() const;
+    std::set<Interval::INTERVAL_RELATION> relations();
     const std::set<Interval::INTERVAL_RELATION>& relations() const;
-    const std::pair<TQConstraints, TQConstraints> tqconstraints();
-    const std::pair<const TQConstraints, const TQConstraints> tqconstraints() const;
+    std::pair<TQConstraints, TQConstraints> tqconstraints();
+    std::pair<const TQConstraints, const TQConstraints> tqconstraints() const;
 
     void setLeft(boost::shared_ptr<Sentence> s);
     void setRight(boost::shared_ptr<Sentence> s);
@@ -107,15 +107,15 @@ inline Conjunction& Conjunction::operator=(Conjunction b) {
     return *this;
 }
 
-inline const boost::shared_ptr<Sentence> Conjunction::left() {return left_;}
-inline const boost::shared_ptr<const Sentence> Conjunction::left() const {return left_;}
-inline const boost::shared_ptr<Sentence> Conjunction::right() {return right_;}
-inline const boost::shared_ptr<const Sentence> Conjunction::right() const {return right_;}
+inline boost::shared_ptr<Sentence> Conjunction::left() {return left_;}
+inline boost::shared_ptr<const Sentence> Conjunction::left() const {return left_;}
+inline boost::shared_ptr<Sentence> Conjunction::right() {return right_;}
+inline boost::shared_ptr<const Sentence> Conjunction::right() const {return right_;}
 
-inline const std::set<Interval::INTERVAL_RELATION> Conjunction::relations() {return rels_;}
+inline std::set<Interval::INTERVAL_RELATION> Conjunction::relations() {return rels_;}
 inline const std::set<Interval::INTERVAL_RELATION>& Conjunction::relations() const {return rels_;}
-inline const std::pair<TQConstraints, TQConstraints> Conjunction::tqconstraints() {return tqconstraints_;}
-inline const std::pair<const TQConstraints, const TQConstraints> Conjunction::tqconstraints() const {return tqconstraints_;}
+inline std::pair<TQConstraints, TQConstraints> Conjunction::tqconstraints() {return tqconstraints_;}
+inline std::pair<const TQConstraints, const TQConstraints> Conjunction::tqconstraints() const {return tqconstraints_;}
 
 inline void Conjunction::setLeft(boost::shared_ptr<Sentence> s) {left_ = s;}
 inline void Conjunction::setRight(boost::shared_ptr<Sentence> s) {right_ = s;}
