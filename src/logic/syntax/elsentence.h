@@ -27,9 +27,9 @@ public:
     friend bool operator!=(const ELSentence& a, const ELSentence& b);
 
     boost::shared_ptr<Sentence> sentence();
-    const boost::shared_ptr<const Sentence> sentence() const;
+    boost::shared_ptr<const Sentence> sentence() const;
     unsigned int weight() const;
-    const SISet quantification() const;
+    SISet quantification() const;
 
     bool hasInfWeight() const;
     bool isQuantified() const;
@@ -71,7 +71,7 @@ inline bool operator !=(const ELSentence& a, const ELSentence& b) {return !opera
 
 inline boost::shared_ptr<Sentence> ELSentence::sentence() { return s_;}
 
-inline const boost::shared_ptr<const Sentence> ELSentence::sentence() const {return s_;}
+inline boost::shared_ptr<const Sentence> ELSentence::sentence() const {return s_;}
 
 inline unsigned int ELSentence::weight() const {
     if (hasInfWeight_) {
@@ -80,7 +80,7 @@ inline unsigned int ELSentence::weight() const {
     return w_;
 }
 
-inline const SISet ELSentence::quantification() const {
+inline SISet ELSentence::quantification() const {
     if (!isQuantified_) {
         throw std::logic_error("logic error: no quantification applied; check with isQuantified() first");
     }
