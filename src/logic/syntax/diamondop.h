@@ -23,11 +23,18 @@ public:
     DiamondOp(const DiamondOp& dia); // shallow copy
     virtual ~DiamondOp();
 
-    boost::shared_ptr<Sentence>& sentence();
+    friend void swap(DiamondOp& left, DiamondOp& right);
+    DiamondOp& operator=(DiamondOp other);
+
+    boost::shared_ptr<Sentence> sentence();
     boost::shared_ptr<const Sentence> sentence() const;
     const std::set<Interval::INTERVAL_RELATION>& relations() const;
-    const TQConstraints& temporalConstraints() const;
+    const TQConstraints& tqconstraints() const;
 
+    void setSentence(boost::shared_ptr<Sentence> s);
+    template<typename T>
+    void setRelations(T begin, T end);
+    void setTQConstraints(const TQConstraints& tq);
 private:
     std::set<Interval::INTERVAL_RELATION> rels_;
     boost::shared_ptr<Sentence> s_;
@@ -71,11 +78,26 @@ inline DiamondOp::DiamondOp(const DiamondOp& dia)
 inline DiamondOp::~DiamondOp() {}
 
 // public methods
-inline boost::shared_ptr<Sentence>& DiamondOp::sentence() {return s_;}
+inline void swap(DiamondOp& left, DiamondOp& right) {
+    using std::swap;
+    swap(left.s_, right.s_);
+    swap(left.rels_, right.rels_);
+}
+
+inline DiamondOp& DiamondOp::operator=(DiamondOp other) {
+    swap(*this, other);
+    return *this;
+}
+
+inline boost::shared_ptr<Sentence> DiamondOp::sentence() {return s_;}
 inline boost::shared_ptr<const Sentence> DiamondOp::sentence() const {return s_;}
 inline const std::set<Interval::INTERVAL_RELATION>& DiamondOp::relations() const {return rels_;}
-inline const TQConstraints& DiamondOp::temporalConstraints() const {return tqconstraints_;}
+inline const TQConstraints& DiamondOp::tqconstraints() const {return tqconstraints_;}
 
+inline void DiamondOp::setSentence(boost::shared_ptr<Sentence> s) {s_ = s;}
+template<typename T>
+inline void DiamondOp::setRelations(T begin, T end) {rels_.clear(); std::copy(begin, end, std::inserter(rels_, rels_.end()));}
+inline void DiamondOp::setTQConstraints(const TQConstraints& tq) {tqconstraints_ = tq;}
 
 // private methods
 inline Sentence* DiamondOp::doClone() const { return new DiamondOp(*this); }

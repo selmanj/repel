@@ -110,12 +110,12 @@ namespace {
             return con;
         } else if (boost::dynamic_pointer_cast<DiamondOp>(curSentence)) {
             boost::shared_ptr<DiamondOp> dia = boost::dynamic_pointer_cast<DiamondOp>(curSentence);
-            dia->sentence() = convertToPELCNF_(dia->sentence(), additionalSentences, d);
+            dia->setSentence(convertToPELCNF_(dia->sentence(), additionalSentences, d));
 
             if (!boost::dynamic_pointer_cast<Atom>(dia->sentence())
                     || !boost::dynamic_pointer_cast<BoolLit>(dia->sentence())) {
                 boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(dia->sentence(), additionalSentences, d);
-                dia->sentence() = newLit;
+                dia->setSentence(newLit);
             }
             return dia;
         }
