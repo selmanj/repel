@@ -10,9 +10,13 @@ public:
     LiquidOp(const LiquidOp& liq);
     virtual ~LiquidOp();
 
-    LiquidOp& operator=(const LiquidOp& b);
-    boost::shared_ptr<Sentence>& sentence();
+    friend void swap(LiquidOp& a, LiquidOp& b);
+    LiquidOp& operator=(LiquidOp b);
+
+    boost::shared_ptr<Sentence> sentence();
     boost::shared_ptr<const Sentence> sentence() const;
+
+    void setSentence(boost::shared_ptr<Sentence> s);
 private:
     boost::shared_ptr<Sentence> s_;
 
@@ -31,12 +35,19 @@ inline LiquidOp::LiquidOp(boost::shared_ptr<Sentence> sentence) : s_(sentence) {
 inline LiquidOp::LiquidOp(const LiquidOp& liq) : s_(liq.s_) {}; // shallow copy
 inline LiquidOp::~LiquidOp() {};
 
-inline LiquidOp& LiquidOp::operator=(const LiquidOp& b) {
-    s_ = b.s_;
+inline void swap(LiquidOp& a, LiquidOp& b) {
+    using std::swap;
+    swap(a.s_, b.s_);
+}
+
+inline LiquidOp& LiquidOp::operator=(LiquidOp b) {
+    swap(*this, b);
     return *this;
 };
-inline boost::shared_ptr<Sentence>& LiquidOp::sentence() {return s_;};
+inline const boost::shared_ptr<Sentence> LiquidOp::sentence() {return s_;};
 inline boost::shared_ptr<const Sentence> LiquidOp::sentence() const {return s_;};
+
+inline void LiquidOp::setSentence(boost::shared_ptr<Sentence> s) {s_ = s;}
 
 // private members
 
