@@ -140,6 +140,14 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         smallest = (std::min)(interval.start().start(), smallest);
         largest = (std::max)(interval.finish().finish(), largest);
     }
+    for (FormulaList::iterator it = formSet.begin(); it != formSet.end(); it++) {
+        if (!it->isQuantified()) continue;
+        SISet set = it->quantification();
+        for (SISet::const_iterator it2 = set.begin(); it2 != set.end(); it2++) {
+            smallest = (std::min)(it2->start().start(), smallest);
+            largest = (std::max)(it2->finish().finish(), largest);
+        }
+    }
     maxInterval_ = Interval(smallest, largest);
 
     // collect all fact predicates
