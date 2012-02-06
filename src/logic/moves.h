@@ -93,19 +93,19 @@ namespace {
             return neg;
         } else if (boost::dynamic_pointer_cast<Conjunction>(curSentence)) {
             boost::shared_ptr<Conjunction> con = boost::dynamic_pointer_cast<Conjunction>(curSentence);
-            con->left() = convertToPELCNF_(con->left(), additionalSentences, d);
-            con->right() = convertToPELCNF_(con->right(), additionalSentences, d);
+            con->setLeft(convertToPELCNF_(con->left(), additionalSentences, d));
+            con->setRight(convertToPELCNF_(con->right(), additionalSentences, d));
 
             // if left/right is not an atom/boolit, replace with a new atom
             if (!boost::dynamic_pointer_cast<Atom>(con->left())
                     && !boost::dynamic_pointer_cast<BoolLit>(con->left())) {
                 boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(con->left(), additionalSentences, d);
-                con->left() = newLit;
+                con->setLeft(newLit);
             }
             if (!boost::dynamic_pointer_cast<Atom>(con->right())
                                 && !boost::dynamic_pointer_cast<BoolLit>(con->right())) {
                 boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(con->right(), additionalSentences, d);
-                con->right() = newLit;
+                con->setRight(newLit);
             }
             return con;
         } else if (boost::dynamic_pointer_cast<DiamondOp>(curSentence)) {
