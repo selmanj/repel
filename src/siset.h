@@ -32,6 +32,7 @@ public:
     Interval maxInterval() const;
     unsigned int size() const;
     unsigned int liqSize() const;
+    bool empty() const;
     const std::list<SpanInterval>& intervals() const {return set_;}
 
     // modifiers
@@ -70,6 +71,9 @@ SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVA
 bool equalByInterval(const SISet& a, const SISet& b);
 
 unsigned long hammingDistance(const SISet& a, const SISet& b);
+
+// IMPLEMENTATION
+inline bool SISet::empty() const { return size() == 0;}
 
 
 #endif /* SISET_H_ */
