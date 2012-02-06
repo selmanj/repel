@@ -127,6 +127,17 @@ BOOST_AUTO_TEST_CASE( simple_lit_directly ) {
     BOOST_CHECK_EQUAL(second.quantification().toString(), "{[(1, 10), (11, 20)], [11:20]}");
 }
 
+BOOST_AUTO_TEST_CASE( simpleLitToLiq) {
+    std::string facts = "P(a) @ [1:20]\n";
+    std::string formulas = "[ P(a) ] v Q(a) @ [1:30]\n";
+
+    Domain d = loadDomainWithStreams(facts, formulas);
+    QUnitsFormulasPair pair = performUnitPropagation(d);
+    std::ostringstream str;
+    std::copy(pair.second.begin(), pair.second.end(), std::ostream_iterator<QCNFClause>(str, ", "));
+    BOOST_CHECK_EQUAL(str.str(), "[ P(a) ], Q(a) @ {[(1, 20), (21, 30)], [21:30]}, ");
+}
+
 BOOST_AUTO_TEST_CASE( cnfConvertBasic ) {
 
     boost::shared_ptr<Sentence> a = getAsSentence("P(a) v Q(a) v !R(a) v S(a)");
