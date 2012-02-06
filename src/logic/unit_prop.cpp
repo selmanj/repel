@@ -305,23 +305,32 @@ namespace {
         boost::shared_ptr<LiquidOp> liqLiteral = boost::dynamic_pointer_cast<LiquidOp>(*lit);
         CNFClause innerDisj = convertToCNFClause(liqLiteral->sentence());
 
-        /*
         for(CNFClause::iterator it = innerDisj.begin(); it != innerDisj.end(); it++) {
-            if (*it == *unit.first) {
+            if (**it == *unit.first) {
                 // we can rewrite this sentence by removing the intersection
-                SISet leftover = clauseAtLiq;
+                SISet leftover = clause.second;
                 leftover.subtract(intersect);
-                if (!leftover.empty()) {
-                    QCNFClause copy;
-                    boost::shared_ptr<Sentence> newInner = convertFromCNFClause(innerDisj);
-                    boost::shared_ptr<Sentence> liqCopy(new LiquidOp(newInner));
-                    throw std::runtime_error("not finished!  resume here");
-                    //copy.first =
-                    copy.second = leftover;
-                    newSentences.push(copy);
+                //leftover.setForceLiquid(true);
+                if (leftover.empty()) {
+                    return false;
                 }
-                return false;
+                // can't we just do this?
+                clause.second = leftover;
+                // update the new intersection
+                clauseAtLiq = leftover;
+                clauseAtLiq.setForceLiquid(true);
+                intersect = intersection(unitAtLiq, clauseAtLiq);
+                /*
+                QCNFClause copy = clause;
+                boost::shared_ptr<Sentence> newInner = convertFromCNFClause(innerDisj);
+                boost::shared_ptr<Sentence> liqCopy(new LiquidOp(newInner));
+                throw std::runtime_error("not finished!  resume here");
+                //copy.first =
+                copy.second = leftover;
+                newSentences.push(copy);
+                */
             } else if (isNegatedLiteral(*it, unit.first)) {
+                /*
                 // two clauses, one for the intersection and one for the leftover
                 SISet leftover = clauseAtLiq;
                 leftover.subtract(intersect);
@@ -331,9 +340,10 @@ namespace {
                     newSentences.push(copy);
                 }
                 innerDisj.erase(it);
+                */
             }
         }
-        */
+
 
         return true;
     }
