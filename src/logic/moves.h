@@ -73,8 +73,8 @@ namespace {
             }
             boost::shared_ptr<Disjunction> dis = boost::dynamic_pointer_cast<Disjunction>(curSentence);
 
-            dis->left() = convertToPELCNF_(dis->left(), additionalSentences, d);
-            dis->right() = convertToPELCNF_(dis->right(), additionalSentences, d);
+            dis->setLeft(convertToPELCNF_(dis->left(), additionalSentences, d));
+            dis->setRight(convertToPELCNF_(dis->right(), additionalSentences, d));
 
             if (!isDisjunctionOfCNFLiterals(dis)) {
                 // if we made it here, something must have gone wrong!
