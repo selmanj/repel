@@ -44,7 +44,7 @@ inline LiquidOp& LiquidOp::operator=(LiquidOp b) {
     swap(*this, b);
     return *this;
 };
-inline const boost::shared_ptr<Sentence> LiquidOp::sentence() {return s_;};
+inline boost::shared_ptr<Sentence> LiquidOp::sentence() {return s_;};
 inline boost::shared_ptr<const Sentence> LiquidOp::sentence() const {return s_;};
 
 inline void LiquidOp::setSentence(boost::shared_ptr<Sentence> s) {s_ = s;}
