@@ -15,7 +15,7 @@ public:
     /**
      * The INTERVAL_RELATION enumeration represents all the possible relations
      * that can hold between two intervals.  They are usually related in terms
-     * of time.  See: http://en.wikipedia.org/wiki/Allen's_interval_algebra
+     * of time.  @see http://en.wikipedia.org/wiki/Allen's_interval_algebra
      */
     enum INTERVAL_RELATION {
         MEETS,
