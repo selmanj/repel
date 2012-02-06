@@ -147,74 +147,10 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                     addCurrentClause = propagateNegSimpleLitToSimpleLit(lit, qClause, it, toProcess);
                 } else if (boost::dynamic_pointer_cast<LiquidOp>(currentLit) != 0
                         && currentLit->contains(*cnfLit)) {    // propagating P into [...]
-                    /*
-                    boost::shared_ptr<LiquidOp> liqLit = boost::dynamic_pointer_cast<LiquidOp>(currentLit);
-                    // first convert the time into a liquid interval
-                    SISet liqLitSet = lit.second;
-                    liqLitSet.setForceLiquid(true);
-                    SISet currentSet = qClause.second;
-                    SISet intersect = intersection(liqLitSet, currentSet);
-                    if (intersect.size() != 0) {
-                        // this is kinda cheap but it should work
-                        // call this function again on the inside and fix the resulting sentence if necessary
-                        QCNFLiteral newLit;
-                        newLit.first = lit.first;
-                        newLit.second = liqLitSet;
-
-                        QCNFClause newClause;
-                        SISet liqClauseSet = currentSet;
-                        liqClauseSet.setForceLiquid(true);
-                        newClause.first = convertToCNFClause(liqLit);
-                        newClause.second = liqClauseSet;
-                        QCNFClauseList newClauseList = propagateLiteral(newLit, newClause);
-
-                        // TODO: complete this!
-                    }
-                    */
-                    LOG(LOG_ERROR) << "propagating simple lit into liquid op currently not implemented! ignoring";
+                    addCurrentClause = propagateSimpleLitToLiquidLit(lit, qClause, it, toProcess);
                 } else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0
                         && currentLit->contains(*cnfLit)) {
                     addCurrentClause = propagateSimpleLitToDiamond(lit, qClause, it, toProcess);
-                    /*
-                    boost::shared_ptr<DiamondOp> diaCurrentLit = boost::dynamic_pointer_cast<DiamondOp>(currentLit);
-                    // check to make sure we can propagate here
-
-                    if (!(*diaCurrentLit->sentence() == *cnfLit) && isNegatedLiteral(diaCurrentLit->sentence(), cnfLit)) {
-                        it++;
-                        continue;
-                    }
-
-                    // double check that there is only one relation for now
-                    if (diaCurrentLit->relations().size() != 1) {
-                        throw std::runtime_error("handling more than one relation on a single diamond literal is currently unimplemented in unit_prop()");
-                    }
-
-                    Interval::INTERVAL_RELATION rel = *(diaCurrentLit->relations().begin());
-                    SISet satisfiesRel = lit.second.satisfiesRelation(rel);
-                    std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", qclause.second = " << qClause.second.toString() << std::endl;
-                    SISet intersect = intersection(satisfiesRel, qClause.second);
-                    std::cout << "intersect = " << intersect.toString() << std::endl;
-                    // if they don't intersect, nothing to propagate
-                    if (intersect.size() == 0) {
-                        it++;
-                        continue;
-                    }
-
-                    if (*cnfLit == *diaCurrentLit->sentence()) {
-                        // clause is satisfied, we can drop it (over the intersection that is)
-                        SISet leftover = qClause.second;
-                        leftover.subtract(intersect);
-                        if (leftover.size() != 0) {
-                            QCNFClause qRestricted = qClause;
-                            qRestricted.second = leftover;
-                            toProcess.push(qRestricted);
-                            addCurrentClause = false;
-                            break;
-                        }
-                    } else if (isNegatedLiteral(cnfLit, diaCurrentLit->sentence())) {
-
-                    }
-                    */
                 }
                 it++;
             }
@@ -352,12 +288,56 @@ namespace {
         }
         LOG_PRINT(LOG_ERROR) << "warning, propagateSimpleLitTODiamond() called but lit propgated is neither negative or positive";
         return true;
-
-
-        // implement me!
-//        throw std::runtime_error("unimplemented: propagateSimpleLitToDiamond()");
     }
+
+    bool propagateSimpleLitToLiquidLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
+        // first, convert our SISets into liquid ones
+        SISet unitAtLiq = unit.second;
+        unitAtLiq.setForceLiquid(true);
+        SISet clauseAtLiq = clause.second;
+        clauseAtLiq.setForceLiquid(true);
+
+        // if they don't intersect, no reason to continue
+        SISet intersect = intersection(unitAtLiq, clauseAtLiq);
+        if (intersect.empty()) return true;
+
+        // this should be a lot simpler since we are now dealing with disjunctions
+        boost::shared_ptr<LiquidOp> liqLiteral = boost::dynamic_pointer_cast<LiquidOp>(*lit);
+        CNFClause innerDisj = convertToCNFClause(liqLiteral->sentence());
+
+        for(CNFClause::iterator it = innerDisj.begin(); it != innerDisj.end(); it++) {
+            if (*it == *unit.first) {
+                // we can rewrite this sentence by removing the intersection
+                SISet leftover = clauseAtLiq;
+                leftover.subtract(intersect);
+                if (!leftover.empty()) {
+                    QCNFClause copy;
+                    boost::shared_ptr<Sentence> newInner = convertFromCNFClause(innerDisj);
+                    boost::shared_ptr<Sentence> liqCopy(new LiquidOp(newInner));
+                    throw std::runtime_error("not finished!  resume here");
+                    //copy.first =
+                    copy.second = leftover;
+                    newSentences.push(copy);
+                }
+                return false;
+            } else if (isNegatedLiteral(*it, unit.first)) {
+                // two clauses, one for the intersection and one for the leftover
+                SISet leftover = clauseAtLiq;
+                leftover.subtract(intersect);
+                if (!leftover.empty()) {
+                    QCNFClause copy = clause;
+                    copy.second = leftover;
+                    newSentences.push(copy);
+                }
+                innerDisj.erase(it);
+            }
+        }
+
+        return true;
+    }
+
 }
+
 
 QCNFClauseList convertToQCNFClauseList(const FormulaList& list) {
     QCNFClauseList result;
@@ -412,16 +392,22 @@ ELSentence convertFromQCNFClause(const QCNFLiteral& c) {
 }
 
 ELSentence convertFromQCNFClause(const QCNFClause& c) {
-    if (c.first.empty()) {
+    boost::shared_ptr<Sentence> s = convertFromCNFClause(c.first);
+    ELSentence els(s);
+    els.setQuantification(c.second);
+    return els;
+}
+
+boost::shared_ptr<Sentence> convertFromCNFClause(const CNFClause& c) {
+    if (c.empty()) {
         throw std::invalid_argument("in convertFromQCNFClause(): cannot make a clause from an empty QCNFClause");
     }
-    if (c.first.size() == 1) {
-        ELSentence s(c.first.front());
-        s.setQuantification(c.second);
-        return s;
+    if (c.size() == 1) {
+        return c.front();
     }
+    CNFClause copy = c;
     typedef boost::shared_ptr<Sentence> SharedSentence;
-    CNFClause copy = c.first;
+
     SharedSentence firstS = copy.front();
     copy.pop_front();
     SharedSentence secondS = copy.front();
@@ -434,9 +420,7 @@ ELSentence convertFromQCNFClause(const QCNFClause& c) {
         SharedSentence nextDis(new Disjunction(curDis, nextS));
         curDis = nextDis;
     }
-    ELSentence els(curDis);
-    els.setQuantification(c.second);
-    return els;
+    return curDis;
 }
 
 QCNFClause convertToQCNFClause(const ELSentence& el) {

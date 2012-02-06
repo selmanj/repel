@@ -105,6 +105,14 @@ ELSentence convertFromQCNFClause(const QCNFLiteral& c);
 ELSentence convertFromQCNFClause(const QCNFClause& c);
 
 /**
+ * Convert a CNFClause into a shared_ptr Sentence.
+ *
+ * @param c the CNFClause to convert
+ * @return shared_ptr holding the sentence structure representing c.
+ */
+boost::shared_ptr<Sentence> convertFromCNFClause(const CNFClause& c);
+
+/**
  * Overload of operator<< for QCNFClause.
  */
 template <class traits>
@@ -129,6 +137,7 @@ namespace {
     bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
     bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
     bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
+    bool propagateSimpleLitToLiquidLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
 
     // anonymous struct for providing a sorting order for QCNFClauseList iterators
     struct iterator_cmp {
