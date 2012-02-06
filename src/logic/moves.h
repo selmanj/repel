@@ -89,7 +89,7 @@ namespace {
             assert(isPELCNFLiteral(neg->sentence()) || isDisjunctionOfCNFLiterals(neg->sentence()));
 
             boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(neg->sentence(), additionalSentences, d);
-            neg->sentence() = newLit;
+            neg->setSentence(newLit);
             return neg;
         } else if (boost::dynamic_pointer_cast<Conjunction>(curSentence)) {
             boost::shared_ptr<Conjunction> con = boost::dynamic_pointer_cast<Conjunction>(curSentence);

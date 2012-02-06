@@ -11,10 +11,13 @@ public:
     Negation(const Negation& neg); // shallow copy
     virtual ~Negation();
 
-    Negation& operator=(const Negation& n);
+    friend void swap(Negation& a, Negation& b);
+    Negation& operator=(Negation n);
 
-    boost::shared_ptr<Sentence>& sentence();
+    boost::shared_ptr<Sentence> sentence();
     boost::shared_ptr<const Sentence> sentence() const;
+
+    void setSentence(boost::shared_ptr<Sentence> s);
 private:
     boost::shared_ptr<Sentence> s_;
 
@@ -32,13 +35,19 @@ inline Negation::Negation(boost::shared_ptr<Sentence> sentence) : s_(sentence) {
 inline Negation::Negation(const Negation& neg) : s_(neg.s_) {}; // shallow copy
 inline Negation::~Negation() {};
 
-inline Negation& Negation::operator=(const Negation& n) {
-    s_ = n.s_;
+inline void swap(Negation& a, Negation& b) {
+    using std::swap;
+    swap(a.s_, b.s_);
+}
+
+inline Negation& Negation::operator=(Negation n) {
+    swap(*this, n);
     return *this;
 }
 
-inline boost::shared_ptr<Sentence>& Negation::sentence() {return s_;}
+inline boost::shared_ptr<Sentence> Negation::sentence() {return s_;}
 inline boost::shared_ptr<const Sentence> Negation::sentence() const {return s_;}
+inline void Negation::setSentence(boost::shared_ptr<Sentence> s) {s_ = s;}
 
 // private members
 inline Sentence* Negation::doClone() const { return new Negation(*this); }
