@@ -24,7 +24,12 @@ public:
             const Interval& maxInterval=Interval(0, UINT_MAX))
     : set_(begin, end), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
 
-    std::set<SpanInterval> asSet() const;
+    typedef std::list<SpanInterval>::const_iterator const_iterator;
+
+    const_iterator begin() const;
+    const_iterator end() const;
+
+    std::set<SpanInterval> asSet() const;   /** DEPRECATED */
     bool forceLiquid() const {return forceLiquid_;};
     // TODO make some of these friend functions
     bool isDisjoint() const;
@@ -73,6 +78,8 @@ bool equalByInterval(const SISet& a, const SISet& b);
 unsigned long hammingDistance(const SISet& a, const SISet& b);
 
 // IMPLEMENTATION
+inline SISet::const_iterator SISet::begin() const {return set_.begin();}
+inline SISet::const_iterator SISet::end() const {return set_.end();}
 inline bool SISet::empty() const { return size() == 0;}
 
 
