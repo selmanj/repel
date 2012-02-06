@@ -305,6 +305,7 @@ namespace {
         boost::shared_ptr<LiquidOp> liqLiteral = boost::dynamic_pointer_cast<LiquidOp>(*lit);
         CNFClause innerDisj = convertToCNFClause(liqLiteral->sentence());
 
+        /*
         for(CNFClause::iterator it = innerDisj.begin(); it != innerDisj.end(); it++) {
             if (*it == *unit.first) {
                 // we can rewrite this sentence by removing the intersection
@@ -332,6 +333,7 @@ namespace {
                 innerDisj.erase(it);
             }
         }
+        */
 
         return true;
     }
