@@ -119,6 +119,7 @@ inline std::pair<const TQConstraints, const TQConstraints> Conjunction::tqconstr
 
 inline void Conjunction::setLeft(boost::shared_ptr<Sentence> s) {left_ = s;}
 inline void Conjunction::setRight(boost::shared_ptr<Sentence> s) {right_ = s;}
+
 template<typename T>
 inline void Conjunction::setRelations(T begin, T end) {
     rels_.clear();
