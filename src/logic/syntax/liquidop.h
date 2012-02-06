@@ -7,7 +7,7 @@
 class LiquidOp : public Sentence {
 public:
     LiquidOp(boost::shared_ptr<Sentence> sentence);
-    LiquidOp(const LiquidOp& neg);
+    LiquidOp(const LiquidOp& liq);
     virtual ~LiquidOp();
 
     LiquidOp& operator=(const LiquidOp& b);
@@ -28,7 +28,7 @@ private:
 // IMPLEMENTATION
 
 inline LiquidOp::LiquidOp(boost::shared_ptr<Sentence> sentence) : s_(sentence) {};
-inline LiquidOp::LiquidOp(const LiquidOp& neg) : s_(neg.s_) {}; // shallow copy
+inline LiquidOp::LiquidOp(const LiquidOp& liq) : s_(liq.s_) {}; // shallow copy
 inline LiquidOp::~LiquidOp() {};
 
 inline LiquidOp& LiquidOp::operator=(const LiquidOp& b) {
