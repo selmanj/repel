@@ -67,7 +67,7 @@ inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int
 
 inline ELSentence::~ELSentence() {}
 
-inline bool operator !=(const ELSentence& a, const ELSentence& b) {return operator==(a,b);}
+inline bool operator !=(const ELSentence& a, const ELSentence& b) {return !operator==(a,b);}
 
 inline boost::shared_ptr<Sentence> ELSentence::sentence() { return s_;}
 
