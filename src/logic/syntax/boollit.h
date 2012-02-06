@@ -16,9 +16,11 @@ public:
     BoolLit(const BoolLit& other);
     virtual ~BoolLit();
 
-    BoolLit& operator=(const BoolLit& other);
-    bool value() const;
+    friend void swap(BoolLit& left, BoolLit& right);
+    BoolLit& operator=(BoolLit other);
 
+    bool value() const;
+    void setValue(bool val);
     virtual void visit(SentenceVisitor& s) const;
 private:
     bool val_;
@@ -35,9 +37,14 @@ inline BoolLit::BoolLit(bool value) : val_(value) {}
 inline BoolLit::BoolLit(const BoolLit& other) : val_(other.val_) {}
 inline BoolLit::~BoolLit() {}
 
-inline BoolLit& BoolLit::operator=(const BoolLit& other) {if (this != &other) val_ = other.val_; return *this;}
+inline void swap(BoolLit& left, BoolLit& right) {
+    using std::swap;
+    swap(left.val_, right.val_);
+}
+inline BoolLit& BoolLit::operator=(BoolLit other) {swap(*this, other); return *this;}
 
 inline bool BoolLit::value() const {return val_;};
+inline void BoolLit::setValue(bool val) {val_ = val;};
 inline void BoolLit::visit(SentenceVisitor& s) const {s.accept(*this);}
 
 // private members
