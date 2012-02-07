@@ -212,13 +212,18 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
 
 std::string SpanInterval::toString() const {
     std::stringstream str;
-    str << "[";
-    if (isLiquid()) {
-        str << start().start() << ":" << start().finish() << "]";
-    } else {
-        str << "(" << start().start() << ", " << start().finish() << "), (" << finish().start() << ", " << finish().finish() << ")]";
-    }
+    str << *this;
     return str.str();
+}
+
+std::ostream& operator<<(std::ostream& o, const SpanInterval& si) {
+    o << "[";
+    if (si.isLiquid()) {
+        o << si.start().start() << ":" << si.start().finish() << "]";
+    } else {
+        o << "(" << si.start().start() << ", " << si.start().finish() << "), (" << si.finish().start() << ", " << si.finish().finish() << ")]";
+    }
+    return o;
 }
 
 SpanInterval intersection(const SpanInterval& a, const SpanInterval& b) {

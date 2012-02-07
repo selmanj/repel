@@ -17,6 +17,7 @@
 #include <vector>
 #include <list>
 #include <iterator>
+#include <iostream>
 
 class SpanIntervalIterator;
 
@@ -68,6 +69,7 @@ public:
     std::string toString() const;
 
     friend SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
+    friend std::ostream& operator<<(std::ostream& o, const SpanInterval& si);
 
 private:
     Interval start_, finish_;
