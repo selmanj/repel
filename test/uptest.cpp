@@ -135,7 +135,11 @@ BOOST_AUTO_TEST_CASE( simpleLitToLiq) {
     QUnitsFormulasPair pair = performUnitPropagation(d);
     std::ostringstream str;
     std::copy(pair.second.begin(), pair.second.end(), std::ostream_iterator<QCNFClause>(str, ", "));
-    BOOST_CHECK_EQUAL(str.str(), "[ P(a) ], Q(a) @ {[(1, 20), (21, 30)], [21:30]}, ");
+    BOOST_CHECK_EQUAL(str.str(), "[ P(a) ], Q(a) @ {[(1, 20), (21, 30)]}, ");
+    str.str("");
+    std::copy(pair.first.begin(), pair.first.end(), std::ostream_iterator<QCNFLiteral>(str, ", "));
+    BOOST_CHECK_EQUAL(str.str(), "P(a) @ {[1:20]}, !P(a) @ {[21:30]}, Q(a) @ {[(1, 20), (21, 30)], [21:30]}, ");
+
 }
 
 BOOST_AUTO_TEST_CASE( cnfConvertBasic ) {

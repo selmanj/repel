@@ -132,7 +132,7 @@ namespace {
     void splitUnitClauses(QCNFClauseList& sentences, QCNFLiteralList& unitClauses);
 
     bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
-    bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right);
+    bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);
 
     bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
     bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);

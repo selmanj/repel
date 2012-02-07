@@ -137,6 +137,11 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
         toProcess.pop();
         bool addCurrentClause = true;
         if (isSimpleLiteral(cnfLit)) {
+            // if we have a negation, unwrap it so we can find the base proposition easier
+            boost::shared_ptr<Sentence> baseProp = cnfLit;
+            if (boost::dynamic_pointer_cast<Negation>(baseProp).get()!=0) {
+                baseProp = boost::dynamic_pointer_cast<Negation>(baseProp)->sentence(); // unwrap
+            }
             // search for an occurrence of this atom in c
             CNFClause::iterator it = cClause->begin();
             while (it != cClause->end()) {
@@ -146,10 +151,10 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                 } else if (isSimpleLiteral(currentLit) && isNegatedLiteral(currentLit, cnfLit)) {
                     addCurrentClause = propagateNegSimpleLitToSimpleLit(lit, qClause, it, toProcess);
                 } else if (boost::dynamic_pointer_cast<LiquidOp>(currentLit) != 0
-                        && currentLit->contains(*cnfLit)) {    // propagating P into [...]
+                        && currentLit->contains(*baseProp)) {    // propagating P into [...]
                     addCurrentClause = propagateSimpleLitToLiquidLit(lit, qClause, it, toProcess);
                 } else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0
-                        && currentLit->contains(*cnfLit)) {
+                        && currentLit->contains(*baseProp)) {
                     addCurrentClause = propagateSimpleLitToDiamond(lit, qClause, it, toProcess);
                 }
                 it++;
@@ -189,13 +194,14 @@ namespace {
         return false;
     }
 
-    bool isNegatedLiteral(const boost::shared_ptr<Sentence>& left, const boost::shared_ptr<Sentence>& right) {
+    bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right) {
+        std::cout << "HERP: comparing " << left->toString() << " and " << right->toString() << std::endl;
         // one of them must be a negation
-        if (boost::dynamic_pointer_cast<Negation>(left)) {
+        if (boost::dynamic_pointer_cast<Negation>(left).get() != 0) {
             boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(left);
             if (*neg->sentence() == *right) return true;
         }
-        if (boost::dynamic_pointer_cast<Negation>(right)) {
+        if (boost::dynamic_pointer_cast<Negation>(right).get() != 0) {
             boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(right);
             if (*neg->sentence() == *left) {
                 return true;
@@ -330,24 +336,45 @@ namespace {
                 newSentences.push(copy);
                 */
             } else if (isNegatedLiteral(*it, unit.first)) {
-                /*
+                std::cout << "herp" << std::endl;
                 // two clauses, one for the intersection and one for the leftover
-                SISet leftover = clauseAtLiq;
-                leftover.subtract(intersect);
-                if (!leftover.empty()) {
-                    QCNFClause copy = clause;
-                    copy.second = leftover;
-                    newSentences.push(copy);
+
+                // make a copy of the clause, replacing the liquid literal with a new one
+                CNFClause newInnerDisj = innerDisj;
+                newInnerDisj.remove(*it);
+                if (newInnerDisj.size() == 0) {
+                    // no more liquid literal here
+                    QCNFClause smallerClause = clause;
+                    smallerClause.first.remove(*lit);
+                    if (smallerClause.first.size() != 0) {
+                        newSentences.push(smallerClause);
+                    }
+                } else {
+                    boost::shared_ptr<Sentence> newDisj = convertFromCNFClause(newInnerDisj);
+                    boost::shared_ptr<Sentence> newLiq(new LiquidOp(newDisj));
+
+                    QCNFClause smallerClause = clause;
+                    std::replace(smallerClause.first.begin(), smallerClause.first.end(), *lit, newLiq);
+                    smallerClause.second = intersect;
+                    newSentences.push(smallerClause);
                 }
-                innerDisj.erase(it);
-                */
+                SISet leftover = clause.second;
+                leftover.subtract(intersect);
+                if (leftover.empty()) {
+                    return false;
+                } else {
+                    // update where the current clause applies
+                    clause.second = leftover;
+                    // update the new intersection
+                    clauseAtLiq = leftover;
+                    clauseAtLiq.setForceLiquid(true);
+                    intersect = intersection(unitAtLiq, clauseAtLiq);
+                }
             }
         }
 
-
         return true;
     }
-
 }
 
 
