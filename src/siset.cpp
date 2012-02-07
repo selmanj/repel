@@ -401,24 +401,21 @@ SpanInterval SISet::randomSI() const {
 
 std::string SISet::toString() const {
     std::stringstream sstream;
-    sstream << "{";
-    std::list<std::string> siStrings;
-    std::list<SpanInterval> copy(set_);
-    copy.sort();
-    for (std::list<SpanInterval>::const_iterator it = copy.begin(); it != copy.end(); it++) {
-        siStrings.push_back(it->toString());
-        /*
-        if (it != set_.begin()) {
-            sstream << ", ";
-        }
-        sstream << it->toString();
-        */
-    }
-    infix_ostream_iterator<std::string> oIt(sstream, ", ");
-    std::copy(siStrings.begin(), siStrings.end(), oIt);
-    sstream << "}";
+    sstream << *this;
     return sstream.str();
 }
+
+std::ostream& operator<<(std::ostream& o, const SISet& s) {
+    o << "{";
+    std::list<SpanInterval> copy(s.set_);
+    copy.sort();
+
+    infix_ostream_iterator<SpanInterval> oIt(o, ", ");
+    std::copy(copy.begin(), copy.end(), oIt);
+    o << "}";
+    return o;
+}
+
 
 SISet intersection(const SISet& a, const SISet& b) {
     SISet result;

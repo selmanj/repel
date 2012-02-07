@@ -9,6 +9,7 @@
 #define SISET_H_
 #include <set>
 #include <list>
+#include <iostream>
 #include "spaninterval.h"
 
 class SISet {
@@ -56,9 +57,9 @@ public:
     SpanInterval randomSI() const;
 
     std::string toString() const;
-
-    bool operator ==(const SISet& a) const {return set_ == a.set_;}
-    bool operator !=(const SISet& a) const {return !(*this == a);}
+    friend std::ostream& operator<<(std::ostream& o, const SISet& s);
+    friend bool operator ==(const SISet& l, const SISet& r);
+    friend bool operator !=(const SISet& l, const SISet& r);
 
     friend SISet intersection(const SISet& a, const SISet& b);
     friend SISet span(const SpanInterval& a, const SpanInterval& b);
@@ -81,6 +82,9 @@ unsigned long hammingDistance(const SISet& a, const SISet& b);
 inline SISet::const_iterator SISet::begin() const {return set_.begin();}
 inline SISet::const_iterator SISet::end() const {return set_.end();}
 inline bool SISet::empty() const { return size() == 0;}
+
+inline bool operator==(const SISet& l, const SISet& r) {return (l.set_ == r.set_);}    //TODO: is this the right thing to do???
+inline bool operator!=(const SISet& l, const SISet& r) {return !operator==(l,r);}
 
 
 #endif /* SISET_H_ */
