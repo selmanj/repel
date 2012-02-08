@@ -13,6 +13,7 @@ player_preds = ["DoorOpen", "Driving", "ElevatorEnter", "ElevatorExit", "GateEnt
 forward_obs_weight = 1
 backward_obs_weight = 1
 hard_weight = 20
+inf_weight = "inf"
 init_track_weight = 5
 
 events = {}
@@ -115,8 +116,8 @@ print_obs_preds()
 print "# HasTrack, if true, is true everywhere"
 for p in players:
   for t in tracks:
-    print "%(w)d: !<>{*} HasTrack(%(p)s, %(t)s) v HasTrack(%(p)s, %(t)s)" % \
-      {"w":hard_weight, "p":p, "t":t}
+    print "%(w)s: !<>{*} HasTrack(%(p)s, %(t)s) v HasTrack(%(p)s, %(t)s)" % \
+      {"w":inf_weight, "p":p, "t":t}
 
 #print
 #print "# at all times, a player has a track associated with them"
@@ -165,32 +166,32 @@ for p in players:
 print
 print "# a person can only be walking, in the car, or nothing"
 for p in players:
-  print "%d: %s" % (hard_weight, am1(["Walking", "InCar"], p))
+  print "%s: %s" % (inf_weight, am1(["Walking", "InCar"], p))
 
 print
 print "# if a person is driving, they must be in the car"
 for p in players:
-  print "%d: [!Driving(%s) v InCar(%s)]" % (hard_weight, p, p)
+  print "%s: [!Driving(%s) v InCar(%s)]" % (inf_weight, p, p)
 
 print
 print "# a person who is in the car cannot use the elevator"
 for p in players:
-  print "%d: [!InCar(%s) v (!ElevatorEnter(%s) ^ !ElevatorExit(%s))]" % (hard_weight, p, p, p)
+  print "%s: [!InCar(%s) v (!ElevatorEnter(%s) ^ !ElevatorExit(%s))]" % (inf_weight, p, p, p)
 
 print "# a person who is driving cannot use the gate"
 for p in players:
-  print "%d: [Driving(%s) v (!GateEnter(%s) ^ !GateExit(%s))]" % (hard_weight, p, p, p)
+  print "%s: [Driving(%s) v (!GateEnter(%s) ^ !GateExit(%s))]" % (inf_weight, p, p, p)
 
 print "# if the trunk is open or the door is open, they are not driving"
 for p in players:
-  print "%d: [(!TrunkOpen(%s) ^ !DoorOpen(%s)) v !Driving(%s)]" % (hard_weight, p, p, p)
+  print "%s: [(!TrunkOpen(%s) ^ !DoorOpen(%s)) v !Driving(%s)]" % (inf_weight, p, p, p)
 
 print "# entrances and exits go together"
 for p in players:
-  print "%d: !ElevatorEnter(%s) v <>{>} (GateExit(%s))" % (hard_weight, p, p)
-  print "%d: !ElevatorExit(%s) v <>{<} (GateEnter(%s))" % (hard_weight, p, p)
-  print "%d: !GateEnter(%s) v <>{>} (ElevatorExit(%s))" % (hard_weight, p, p)
-  print "%d: !GateExit(%s) v <>{<} (ElevatorEnter(%s))" % (hard_weight, p, p)
+  print "%s: !ElevatorEnter(%s) v <>{>} (GateExit(%s))" % (inf_weight, p, p)
+  print "%s: !ElevatorExit(%s) v <>{<} (GateEnter(%s))" % (inf_weight, p, p)
+  print "%s: !GateEnter(%s) v <>{>} (ElevatorExit(%s))" % (inf_weight, p, p)
+  print "%s: !GateExit(%s) v <>{<} (ElevatorEnter(%s))" % (inf_weight, p, p)
 
 print
 print "# an entrance/exit specifies the beginning/end of all events"
@@ -199,25 +200,25 @@ for p in players:
   without_elevator_exit = ["%s(%s)" % (pred, p) for pred in player_preds if (pred != "ElevatorExit")]
   without_gate_enter = ["%s(%s)" % (pred, p) for pred in player_preds if (pred != "GateEnter")]
   without_gate_exit = ["%s(%s)" % (pred, p) for pred in player_preds if (pred != "GateExit")]
-  print "%d: !ElevatorEnter(%s) v <>{m} ElevatorEnter(%s) v !<>{m,o,fi,<} (%s)" % \
-    (hard_weight, p, p, " v ".join(without_elevator_enter))
-  print "%d: !ElevatorExit(%s) v <>{m} ElevatorExit(%s) v !<>{m,o,fi,<} (%s)" % \
-    (hard_weight, p, p, " v ".join(without_elevator_exit))
-  print "%d: !GateEnter(%s) v <>{m} GateEnter(%s) v !<>{m,o,fi,<} (%s)" % \
-    (hard_weight, p, p, " v ".join(without_gate_enter))
-  print "%d: !GateExit(%s) v <>{m} GateExit(%s) v !<>{m,o,fi,<} (%s)" % \
-    (hard_weight, p, p, " v ".join(without_gate_exit))
+  print "%s: !ElevatorEnter(%s) v <>{m} ElevatorEnter(%s) v !<>{m,o,fi,<} (%s)" % \
+    (inf_weight, p, p, " v ".join(without_elevator_enter))
+  print "%s: !ElevatorExit(%s) v <>{m} ElevatorExit(%s) v !<>{m,o,fi,<} (%s)" % \
+    (inf_weight, p, p, " v ".join(without_elevator_exit))
+  print "%s: !GateEnter(%s) v <>{m} GateEnter(%s) v !<>{m,o,fi,<} (%s)" % \
+    (inf_weight, p, p, " v ".join(without_gate_enter))
+  print "%s: !GateExit(%s) v <>{m} GateExit(%s) v !<>{m,o,fi,<} (%s)" % \
+    (inf_weight, p, p, " v ".join(without_gate_exit))
 
 print
 print "# every person has an elevator use and a gate use"
 for p in players:
-  print "#%d: <>{*} ElevatorEnter(%s) v ElevatorExit(%s)" % (hard_weight, p, p)
-  print "#%d: <>{*} GateEnter(%s) v GateExit(%s)" % (hard_weight, p, p)
+  print "#%s: <>{*} ElevatorEnter(%s) v ElevatorExit(%s)" % (inf_weight, p, p)
+  print "#%s: <>{*} GateEnter(%s) v GateExit(%s)" % (inf_weight, p, p)
 
 print
 print "# a person must walk between an elevator and car event"
 for p in players:
-  print "#%d: !(ElevatorEnter(%s) v ElevatorExit(%s) ^{<,>} TrunkOpen(%s) v DoorOpen(%s) v InCar(%s)) v <>{s,d} Walking(%s)" % \
-    (hard_weight, p, p, p, p, p, p)
+  print "#%s: !(ElevatorEnter(%s) v ElevatorExit(%s) ^{<,>} TrunkOpen(%s) v DoorOpen(%s) v InCar(%s)) v <>{s,d} Walking(%s)" % \
+    (inf_weight, p, p, p, p, p, p)
 # 
 # vim:set ts=2 sw=2 expandtab:
