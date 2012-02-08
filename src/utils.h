@@ -11,6 +11,8 @@
 #include <set>
 #include <stdexcept>
 
+// TODO: just awful, refactor this crap out!
+
 template <class T>
 T set_at(const std::set<T> &set, typename std::set<T>::size_type index) {
     if (index >= set.size() || index < 0) {
