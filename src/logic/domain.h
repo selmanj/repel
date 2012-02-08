@@ -104,7 +104,7 @@ private:
     mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
 };
 
-// implementation
+// IMPLEMENTATION
 inline Domain::Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
 
 template <class FactsForwardIterator>
