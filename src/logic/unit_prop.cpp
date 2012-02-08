@@ -157,6 +157,7 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                         && currentLit->contains(*baseProp)) {
                     addCurrentClause = propagateSimpleLitToDiamond(lit, qClause, it, toProcess);
                 }
+                if (!addCurrentClause) break;
                 it++;
             }
         }
@@ -171,6 +172,15 @@ namespace {
         for (QCNFClauseList::iterator it = sentences.begin(); it != sentences.end(); ) {
             if (it->first.size() == 1) {
                 CNFLiteral lit = it->first.front();
+                // double check that if we have a liquid op, there's only one literal in it
+                boost::shared_ptr<LiquidOp> asLiq = boost::dynamic_pointer_cast<LiquidOp>(lit);
+                if (asLiq) {
+                   CNFClause innerDisj = convertToCNFClause(asLiq->sentence());
+                   if (innerDisj.size() != 0) {
+                       it++; // bail out
+                       continue;
+                   }
+                }
                 QCNFLiteral qlit;
                 qlit.first = lit;
                 qlit.second = it->second;
@@ -195,7 +205,6 @@ namespace {
     }
 
     bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right) {
-        std::cout << "HERP: comparing " << left->toString() << " and " << right->toString() << std::endl;
         // one of them must be a negation
         if (boost::dynamic_pointer_cast<Negation>(left).get() != 0) {
             boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(left);
@@ -226,8 +235,9 @@ namespace {
                 QCNFClause qRestricted = clause;
                 qRestricted.second = leftover;
                 newSentences.push(qRestricted);
-                return false;
             }
+            return false;
+
         }
         return true;
     }
@@ -289,7 +299,7 @@ namespace {
             return false;   // just drop it
         } else if (isNegatedLiteral(unit.first, diamondLit->sentence())) {
             // fancy stuff happens here
-            LOG(LOG_ERROR) << "propagating simple lit into liquid op currently not implemented! ignoring";
+            LOG(LOG_ERROR) << "propagating simple lit into diamond op containing negative currently not implemented! ignoring";
             return true;
         }
         LOG_PRINT(LOG_ERROR) << "warning, propagateSimpleLitTODiamond() called but lit propgated is neither negative or positive";
