@@ -2,7 +2,7 @@
  * maxwalksat.h
  *
  *  Created on: Nov 10, 2011
- *      Author: joe
+ *      Author: selman.joe@gmail.com
  */
 
 #ifndef MAXWALKSAT_H_
@@ -16,8 +16,8 @@
 #include <ostream>
 #include <iterator>
 #include "../log.h"
-#include "el_syntax.h"
-#include "moves.h"
+#include "logic/el_syntax.h"
+#include "logic/moves.h"
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model& initialModel);
 

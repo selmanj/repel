@@ -25,7 +25,7 @@ namespace po = boost::program_options;
 #include "logic/domain.h"
 #include "log.h"
 #include "logic/moves.h"
-#include "logic/maxwalksat.h"
+#include "inference/maxwalksat.h"
 #include "logic/unit_prop.h"
 
 

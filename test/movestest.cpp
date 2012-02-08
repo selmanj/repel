@@ -13,7 +13,7 @@
 #include <vector>
 #include "logic/el_syntax.h"
 #include "logic/moves.h"
-#include "logic/maxwalksat.h"
+#include "inference/maxwalksat.h"
 #include "testutilities.h"
 
 BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
