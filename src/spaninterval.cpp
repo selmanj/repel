@@ -24,44 +24,14 @@ SpanInterval::SpanInterval(unsigned int smallest, unsigned int largest)
 }
 */
 
-SpanInterval::SpanInterval(const Interval& start, const Interval& end, const Interval& maxInterval)
-: start_(start), finish_(end), maxInterval_(maxInterval)
-{
-}
+SpanInterval::SpanInterval(const Interval& start, const Interval& end)
+: start_(start), finish_(end) {}
 
-SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo,
-        const Interval& maxInterval)
-: start_(startFrom, startTo), finish_(endFrom, endTo), maxInterval_(maxInterval)
-{
-}
+SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo)
+: start_(startFrom, startTo), finish_(endFrom, endTo) {}
 
-SpanInterval::const_iterator SpanInterval::begin() const {
-    return SpanIntervalIterator(*this);
-}
-SpanInterval::const_iterator SpanInterval::end() const {
-    return SpanIntervalIterator();
-}
-
-boost::optional<SpanInterval> SpanInterval::setMaxInterval(const Interval& maxInterval) const {
-    if (isEmpty()) {
-        return boost::optional<SpanInterval>();
-    }
-    // ensure we are working with normalized version
-    SpanInterval copy(*this);
-    copy = copy.normalize().get();
-    // ensure that this interval can still exist
-    if (copy.start().finish() < maxInterval.start() || copy.finish().start() > maxInterval.finish()) {
-        return boost::optional<SpanInterval>();
-    }
-    // i, j, k, l all must be within max interval
-    unsigned int i = std::min(std::max(copy.start().start(), maxInterval_.start()), maxInterval_.finish());
-    unsigned int j = std::min(std::max(copy.start().finish(), maxInterval_.start()), maxInterval_.finish());
-    unsigned int k = std::min(std::max(copy.finish().start(), maxInterval_.start()), maxInterval_.finish());
-    unsigned int l = std::min(std::max(copy.finish().finish(), maxInterval_.start()), maxInterval_.finish());
-
-    copy = SpanInterval(i, j, k, l, maxInterval);
-    return copy.normalize();
-}
+SpanInterval::const_iterator SpanInterval::begin() const {return SpanIntervalIterator(*this);}
+SpanInterval::const_iterator SpanInterval::end() const {return SpanIntervalIterator();}
 
 bool SpanInterval::operator==(const SpanInterval& b) const {
     return (start() == b.start() && finish() == b.finish());
@@ -116,7 +86,7 @@ bool SpanInterval::isLiquid() const {
 SpanInterval SpanInterval::toLiquid() const {
     unsigned int i = std::max(start().start(), finish().start());
     unsigned int j = std::min(start().finish(), finish().finish());
-    return SpanInterval(i, j, i, j, maxInterval_);
+    return SpanInterval(i, j, i, j);
 }
 
 
@@ -127,13 +97,14 @@ boost::optional<SpanInterval> SpanInterval::normalize() const {
     int j = std::min(start_.finish(), finish_.finish());
     int k = std::max(finish_.start(), start_.start());
 
-    return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, finish_.finish(), maxInterval_));
+    return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, finish_.finish()));
 }
 
 
-boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation) const {
-    unsigned int neg_inf = maxInterval_.start();
-    unsigned int pos_inf = maxInterval_.finish();
+boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation, const SpanInterval& universe) const {
+    if (!universe.isLiquid()) throw std::invalid_argument("SpanInterval::satisfiesRelation() - universe variable is not liquid!  technically this can be supported, but currently is not.")
+    unsigned int neg_inf = universe.start().start();
+    unsigned int pos_inf = universe.start().finish();
 
     // to make it easy on ourselves, normalize
     if (!normalize()) { return boost::optional<SpanInterval>(); }
@@ -150,58 +121,58 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
             return n;
         case Interval::LESSTHAN:
             if (k == pos_inf || k == pos_inf-1) return boost::optional<SpanInterval>();
-            return SpanInterval(k+2, pos_inf, neg_inf, pos_inf, maxInterval_).normalize();
+            return SpanInterval(k+2, pos_inf, neg_inf, pos_inf).normalize();
         case Interval::GREATERTHAN:
             if (j == neg_inf || j == neg_inf+1) return boost::optional<SpanInterval>();
-            return SpanInterval(neg_inf, pos_inf, neg_inf, j-2, maxInterval_).normalize();
+            return SpanInterval(neg_inf, pos_inf, neg_inf, j-2).normalize();
         case Interval::MEETS:
             if (k == pos_inf)
                 return boost::optional<SpanInterval>();
             if (l == pos_inf)
-                return SpanInterval(k+1, pos_inf, neg_inf, pos_inf, maxInterval_).normalize();
-            return SpanInterval(k+1, l+1, neg_inf, pos_inf, maxInterval_).normalize();
+                return SpanInterval(k+1, pos_inf, neg_inf, pos_inf).normalize();
+            return SpanInterval(k+1, l+1, neg_inf, pos_inf).normalize();
         case Interval::MEETSI:
             if (j == neg_inf)
                 return boost::optional<SpanInterval>();
             if (i == neg_inf)
-                return SpanInterval(neg_inf, pos_inf, neg_inf, j-1, maxInterval_).normalize();
-            return SpanInterval(neg_inf, pos_inf, i-1, j-1, maxInterval_).normalize();
+                return SpanInterval(neg_inf, pos_inf, neg_inf, j-1).normalize();
+            return SpanInterval(neg_inf, pos_inf, i-1, j-1).normalize();
         case Interval::OVERLAPS:
             if (k == pos_inf || i == pos_inf) return boost::optional<SpanInterval>();
             if (i == k) {
                 // special case here
                 if (k >= pos_inf-1 ) return boost::optional<SpanInterval>();
-                return SpanInterval(i+1, l, k+2, pos_inf, maxInterval_).normalize();
+                return SpanInterval(i+1, l, k+2, pos_inf).normalize();
             }
-            return SpanInterval(i+1, l, k+1, pos_inf, maxInterval_).normalize();
+            return SpanInterval(i+1, l, k+1, pos_inf).normalize();
         case Interval::OVERLAPSI:
             if (j == neg_inf || l == neg_inf) return boost::optional<SpanInterval>();
             if (j == l) {
                 // special case here
                 if (j <= neg_inf+1) return boost::optional<SpanInterval>();
-                return SpanInterval(neg_inf, j-2, i, l-1, maxInterval_).normalize();
+                return SpanInterval(neg_inf, j-2, i, l-1).normalize();
             }
-            return SpanInterval(neg_inf, j-1, i, l-1, maxInterval_).normalize();
+            return SpanInterval(neg_inf, j-1, i, l-1).normalize();
         case Interval::STARTS:
             if (k == pos_inf) return boost::optional<SpanInterval>();
-            return SpanInterval(i, j, k+1, pos_inf, maxInterval_).normalize();
+            return SpanInterval(i, j, k+1, pos_inf).normalize();
         case Interval::STARTSI:
             if (l == neg_inf) return boost::optional<SpanInterval>();
-            return SpanInterval(i, j, neg_inf, l-1, maxInterval_).normalize();
+            return SpanInterval(i, j, neg_inf, l-1).normalize();
         case Interval::FINISHES:
             if (j == neg_inf) return boost::optional<SpanInterval>();
-            return SpanInterval(neg_inf, j-1, k, l, maxInterval_).normalize();
+            return SpanInterval(neg_inf, j-1, k, l).normalize();
         case Interval::FINISHESI:
             if (i == pos_inf) return boost::optional<SpanInterval>();
-            return SpanInterval(i+1, pos_inf, k, l, maxInterval_).normalize();
+            return SpanInterval(i+1, pos_inf, k, l).normalize();
         case Interval::DURING:                                              // TODO: BUG!  try during on [1:3]
             if (j == neg_inf || k == pos_inf)
                 return boost::optional<SpanInterval>();
-            return SpanInterval(neg_inf, j-1, k+1, pos_inf, maxInterval_).normalize();
+            return SpanInterval(neg_inf, j-1, k+1, pos_inf).normalize();
         case Interval::DURINGI:
             if (i == pos_inf || l == neg_inf)
                 return boost::optional<SpanInterval>();
-            return SpanInterval(i+1, pos_inf, neg_inf, l-1, maxInterval_).normalize();
+            return SpanInterval(i+1, pos_inf, neg_inf, l-1).normalize();
         default:
             std::runtime_error e("SpanInterval::siSatisfying() not implemented for relation!");
             throw e;
@@ -230,6 +201,6 @@ SpanInterval intersection(const SpanInterval& a, const SpanInterval& b) {
     return SpanInterval(std::max(a.start().start(), b.start().start()),
             std::min(a.start().finish(), b.start().finish()),
             std::max(a.finish().start(), b.finish().start()),
-            std::min(a.finish().finish(), b.finish().finish()), a.maxInterval_);    // TODO: more sensible way to pick max interval
+            std::min(a.finish().finish(), b.finish().finish()));    // TODO: more sensible way to pick max interval
 }
 

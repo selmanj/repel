@@ -193,10 +193,6 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         boost::shared_ptr<const Atom> atom = it->atom();
         SpanInterval interval = it->where();
 
-        // reinforce the max interval
-        boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval_);
-        if (!opt) continue;
-        interval = opt.get();
         // TODO: we are hardwired for liquidity, come back and fix this later
 
         if (it->truthVal()) {
@@ -218,7 +214,7 @@ inline Model Domain::defaultModel() const {return observations_;};
 inline Interval Domain::maxInterval() const {return maxInterval_;};
 inline SpanInterval Domain::maxSpanInterval() const {
     return SpanInterval(maxInterval_.start(), maxInterval_.finish(),
-            maxInterval_.start(), maxInterval_.finish(), maxInterval_);
+            maxInterval_.start(), maxInterval_.finish());
 };
 
 inline bool Domain::dontModifyObsPreds() const {return dontModifyObsPreds_;};

@@ -187,7 +187,7 @@ SISet Domain::satisfiedDiamond(const DiamondOp& d, const Model& m) const {
     SISet newsat(false, sat.maxInterval());
     BOOST_FOREACH(SpanInterval sp, sat.intervals()) {
         BOOST_FOREACH(Interval::INTERVAL_RELATION rel, d.relations()) {
-            boost::optional<SpanInterval> spR = sp.satisfiesRelation(rel);
+            boost::optional<SpanInterval> spR = sp.satisfiesRelation(rel, maxSpanInterval());
             if (spR) newsat.add(spR.get());
         }
     }
@@ -215,8 +215,7 @@ SISet Domain::satisfiedBoolLit(const BoolLit& b, const Model& m) const {
     SISet toReturn(false, maxInterval_);
     if (b.value()) {
         // max interval
-        SpanInterval max(maxInterval_.start(), maxInterval_.finish(), maxInterval_.start(), maxInterval_.finish(), maxInterval_);
-        toReturn.add(max);
+        toReturn.add(maxSpanInterval());
     }
     return toReturn;
 }
@@ -289,8 +288,7 @@ SISet Domain::liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const {
     SISet toReturn(true, maxInterval_);
     if (b.value()) {
         // max interval
-        SpanInterval max(maxInterval_.start(), maxInterval_.finish(), maxInterval_.start(), maxInterval_.finish(), maxInterval_);
-        toReturn.add(max);
+        toReturn.add(maxSpanInterval());
     }
     return toReturn;
 }

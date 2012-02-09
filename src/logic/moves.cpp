@@ -274,7 +274,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                 SISet phi2TrueAt = d.satisfied(*phi2, m);
                 if (b != d.maxInterval().finish()) {
                     // find the point after b where phi2 is true at
-                    SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish(), d.maxInterval());
+                    SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish());
                     SISet toScan(true, d.maxInterval());
                     toScan.add(toIntersect);
                     toScan = intersection(phi2TrueAt, toScan);
@@ -283,22 +283,22 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                     if (toScan.size() != 0) {
                         t = set_at(toScan.asSet(), 0).start().start()-1;
                         // satisfy precedent over that expinterval
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(b,t,b,t,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(b,t,b,t));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     }
                     // option 2, add the consequent
                     if (toScan.size() == 0) {
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b,b+1,b,b+1,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b,b+1,b,b+1));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     } else {
                         t = set_at(toScan.asSet(), 0).start().start()-1;
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b,b+1,b,b+1,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b,b+1,b,b+1));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     }
                 }
                 if (b != d.maxInterval().start()) {
                     // option 3, delete precedent all the way until consequent is true
-                    SpanInterval toIntersect(d.maxInterval().start(), b, d.maxInterval().start(), b, d.maxInterval());
+                    SpanInterval toIntersect(d.maxInterval().start(), b, d.maxInterval().start(), b);
                     SISet toScan(true, d.maxInterval());
                     toScan.add(toIntersect);
                     toScan = intersection(phi2TrueAt, toScan);
@@ -307,12 +307,12 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                     if (toScan.size() != 0) {
                         t = set_at(toScan.asSet(), toScan.asSet().size()-1).finish().finish();
                         // delete precedent over that interval
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     } else {
                         // just delete it all the way to maxInterval.begin()
                         std::vector<Move> localMoves = findMovesForLiquid(d, m, *body,
-                                SpanInterval(d.maxInterval().start(), b, d.maxInterval().start(), b, d.maxInterval()));
+                                SpanInterval(d.maxInterval().start(), b, d.maxInterval().start(), b));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     }
                 }
@@ -340,7 +340,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                 SISet phi2TrueAt = d.satisfied(*phi2, m);
                 if (b != d.maxInterval().start()) {
                     // find the point before b where phi2 is true at
-                    SpanInterval toIntersect(d.maxInterval().start(), b-1, d.maxInterval().start(),b-1, d.maxInterval());
+                    SpanInterval toIntersect(d.maxInterval().start(), b-1, d.maxInterval().start(),b-1);
                     SISet toScan(true, d.maxInterval());
                     toScan.add(toIntersect);
                     toScan = intersection(phi2TrueAt, toScan);
@@ -349,22 +349,22 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                     if (toScan.size() != 0) {
                         t = set_at(toScan.asSet(), toScan.asSet().size()-1).finish().finish()+1;
                         // satisfy precedent over that expinterval
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(t,b-1,t,b-1,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(t,b-1,t,b-1));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     }
                     // option 2, add the consequent
                     if (toScan.size() == 0) {
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b-2,b-1,b-2,b-1,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(b-2,b-1,b-2,b-1));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     } else {
                         t = set_at(toScan.asSet(), toScan.asSet().size()-1).finish().finish()+1;
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(t,b-1,t,b-1,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(t,b-1,t,b-1));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     }
                 }
                 if (b != d.maxInterval().finish()) {
                     // option 3, delete precedent all the way until consequent is true
-                    SpanInterval toIntersect(b, d.maxInterval().finish(), b, d.maxInterval().finish(), d.maxInterval());
+                    SpanInterval toIntersect(b, d.maxInterval().finish(), b, d.maxInterval().finish());
                     SISet toScan(true, d.maxInterval());
                     toScan.add(toIntersect);
                     toScan = intersection(phi2TrueAt, toScan);
@@ -373,12 +373,12 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                     if (toScan.size() != 0) {
                         t = set_at(toScan.asSet(), 0).start().start()-1;
                         // delete precedent over that interval
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(b,t,b,t,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(b,t,b,t));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     } else {
                         // just delete it all the way to maxInterval.end()
                         std::vector<Move> localMoves = findMovesForLiquid(d, m, *body,
-                                SpanInterval(b, d.maxInterval().finish(), b, d.maxInterval().finish(), d.maxInterval()));
+                                SpanInterval(b, d.maxInterval().finish(), b, d.maxInterval().finish()));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     }
                 }
@@ -405,7 +405,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             {
                 if (b != d.maxInterval().finish()) {
                     // find the point after b where phi2 is true at
-                    SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish(), d.maxInterval());
+                    SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish());
                     SISet toScan(true, d.maxInterval());
                     toScan.add(toIntersect);
                     toScan = intersection(phi2TrueAt, toScan);
@@ -414,7 +414,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                     if (toScan.size() != 0) {
                         t = set_at(toScan.asSet(), 0).finish().finish();
                         // satisfy precedent over that expinterval
-                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(b,t,b,t,d.maxInterval()));
+                        std::vector<Move> localMoves = findMovesForLiquid(d, m, *body->sentence(), SpanInterval(b,t,b,t));
                         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                     }
                 }
@@ -423,7 +423,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             {
                 if (b != d.maxInterval().start()) {
                     // find the point before b where phi2 is true at
-                    SpanInterval toIntersect(d.maxInterval().start(), b-1, d.maxInterval().start(), b-1, d.maxInterval());
+                    SpanInterval toIntersect(d.maxInterval().start(), b-1, d.maxInterval().start(), b-1);
                     SISet toScan(true, d.maxInterval());
                     toScan.add(toIntersect);
                     toScan = intersection(phi2TrueAt, toScan);
@@ -435,14 +435,14 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                     } else {
                         t = set_at(toScan.asSet(), toScan.asSet().size()-1).finish().finish()+1;
                     }
-                    std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b,d.maxInterval()));
+                    std::vector<Move> localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b));
                     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
                     // case 3: extend phi2 until phi1 is true
                     if (toScan.size() == 0) {
                         t = b-1;    // instead of adding it at 0, we will consider adding for the previous step
                     }
-                    localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(t,b,t,b,d.maxInterval()));
+                    localMoves = findMovesForLiquid(d, m, *phi2Liq->sentence(), SpanInterval(t,b,t,b));
                     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                 }
             }
@@ -470,7 +470,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                 SISet phi2TrueAt = d.satisfied(*phi2, m);
 
                 // find the point before b where phi2 is true at
-                SpanInterval toIntersect(toSatisfy.start().start(), b, toSatisfy.start().start(), b, d.maxInterval());
+                SpanInterval toIntersect(toSatisfy.start().start(), b, toSatisfy.start().start(), b);
                 SISet toScan(true, d.maxInterval());
                 toScan.add(toIntersect);
                 toScan = intersection(phi2TrueAt, toScan);
@@ -482,14 +482,14 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                     t = b-1;
                 }
                 // satisfy phi2 over that interval
-                std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq, SpanInterval(t,b,t,b,d.maxInterval()));
+                std::vector<Move> localMoves = findMovesForLiquid(d, m, *phi2Liq, SpanInterval(t,b,t,b));
                 moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
                 // case 2: delete phi1 until phi2 is true
                 if (toScan.size() == 0) {
                     t = toSatisfy.start().start();
                 }
-                localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b,d.maxInterval()));
+                localMoves = findMovesForLiquid(d, m, *body, SpanInterval(t,b,t,b));
                 moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
             }
@@ -603,19 +603,19 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
         // pick the first element
         t = set_at(toScan.asSet(), 0).start().start()-1;
         // choose local moves adding phik between b and t
-        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phik, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
+        std::vector<Move> localMoves = findMovesForLiquid(d, m, *phik, SpanInterval(b+1,t,b+1,t));
         moves.insert(moves.end(), localMoves.begin(), localMoves.end());
     } else { // CASE 2: extend phiPrime to satisfy violation at b
         t = b+1;
     }
 
-    std::vector<Move> localMoves = findMovesForLiquid(d, m, *phiPrime, SpanInterval(b+1,t,b+1,t, d.maxInterval()));
+    std::vector<Move> localMoves = findMovesForLiquid(d, m, *phiPrime, SpanInterval(b+1,t,b+1,t));
     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
     // CASE 3: delete phik until met by phiPrime (optionally deleting all of phik
     SISet phikTrueAt = d.satisfied(*phik, m);
     toIntersect = SISet(true, d.maxInterval());
-    toIntersect.add(SpanInterval(d.maxInterval().start(), b, d.maxInterval().start(), b, d.maxInterval()));
+    toIntersect.add(SpanInterval(d.maxInterval().start(), b, d.maxInterval().start(), b));
     toScan = intersection(phikTrueAt, toIntersect);
     // choose the last element
     unsigned int phikLowerBound = set_at(toScan.asSet(), toScan.asSet().size()-1).start().start();
@@ -623,7 +623,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
 
     // now find where phiPrime is true within phikLowerBound and b
     toIntersect = SISet(true, d.maxInterval());
-    toIntersect.add(SpanInterval(phikLowerBound, b, phikLowerBound, b, d.maxInterval()));
+    toIntersect.add(SpanInterval(phikLowerBound, b, phikLowerBound, b));
     toScan = intersection(phiPrimeTrueAt, toIntersect);
     if (toScan.size() == 0) {
         t = phikLowerBound;
@@ -632,7 +632,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
     }
     boost::shared_ptr<Sentence> phikCopy(phik->clone());
     boost::shared_ptr<Sentence> negatedPhik(new Negation(phikCopy));
-    localMoves = findMovesForLiquid(d, m, *negatedPhik, SpanInterval(t,b,t,b, d.maxInterval()));
+    localMoves = findMovesForLiquid(d, m, *negatedPhik, SpanInterval(t,b,t,b));
     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
     return moves;
@@ -681,7 +681,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
     SpanInterval toSatisfyOrig = violations.randomSI();
     // try to satisfy it over its liquid interval
     SpanInterval toSatisfy = SpanInterval(toSatisfyOrig.start().start(), toSatisfyOrig.finish().finish(),
-                             toSatisfyOrig.start().start(), toSatisfyOrig.finish().finish(), toSatisfyOrig.maxInterval());
+                             toSatisfyOrig.start().start(), toSatisfyOrig.finish().finish());
     SISet toSatisfySet(true, d.maxInterval());
     toSatisfySet.add(toSatisfy);
 
@@ -726,8 +726,8 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
             BOOST_FOREACH(SpanInterval spBefore, beforeTrueAt.asSet()) {
                 BOOST_FOREACH(SpanInterval spCurr, currTrueAt.asSet()) {
                     BOOST_FOREACH(SpanInterval spAfter, afterTrueAt.asSet()) {
-                        boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS);
-                        boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI);
+                        boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS, d.maxSpanInterval());
+                        boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval());
                         if (spBeforeRelOpt && spAfterRelOpt) {
                             SpanInterval leftover = intersection(intersection(spBeforeRelOpt.get(), spAfterRelOpt.get()), spCurr);
                             if (leftover.size() > 0) {
@@ -744,7 +744,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
         } else if (elementsBefore) {
             BOOST_FOREACH(SpanInterval spBefore, beforeTrueAt.asSet()) {
                 BOOST_FOREACH(SpanInterval spCurr, currTrueAt.asSet()) {
-                    boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS);
+                    boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS, d.maxSpanInterval());
                     if (spBeforeRelOpt) {
                         SpanInterval leftover = intersection(spBeforeRelOpt.get(), spCurr);
                         if (leftover.size() > 0) {
@@ -761,7 +761,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
         } else {
             BOOST_FOREACH(SpanInterval spAfter, afterTrueAt.asSet()) {
                 BOOST_FOREACH(SpanInterval spCurr, currTrueAt.asSet()) {
-                    boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI);
+                    boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval());
                     if (spAfterRelOpt) {
                         SpanInterval leftover = intersection(spAfterRelOpt.get(), spCurr);
                         if (leftover.size() > 0) {
@@ -779,9 +779,9 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
     }
     // NO we are still not done, now we consider deleting the head at the beginning/end
     SpanInterval a(toSatisfyOrig.start().start(), toSatisfyOrig.start().finish(),
-                    toSatisfyOrig.start().start(), toSatisfyOrig.start().finish(), d.maxInterval());
+                    toSatisfyOrig.start().start(), toSatisfyOrig.start().finish());
     SpanInterval b(toSatisfyOrig.finish().start(), toSatisfyOrig.finish().finish(),
-                    toSatisfyOrig.finish().start(), toSatisfyOrig.finish().finish(), d.maxInterval());
+                    toSatisfyOrig.finish().start(), toSatisfyOrig.finish().finish());
     std::vector<Move> localMoves = findMovesForLiquid(d, m, *precedent, a);
     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
     localMoves = findMovesForLiquid(d, m, *precedent, b);
@@ -811,7 +811,7 @@ Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &
         if (!a->isGrounded()) {
             throw std::runtime_error("cannot handle atoms with variables at the moment!");
         }
-        SISet original(true, si.maxInterval());
+        SISet original(true, d.maxInterval());
         original.add(si);
         SISet toModify = d.getModifiableSISet(a->name(), original);
         if (toModify.size() == 0) {
@@ -1039,7 +1039,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
         Move move;
         if (d.isLiquid(a->name()) && !si.isLiquid()) {
             // need to add it to a liquid spaninterval
-            SpanInterval si2(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish(), si.maxInterval());
+            SpanInterval si2(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish());
             move.toAdd.push_back(boost::make_tuple(*a, si2));
         } else {
             move.toAdd.push_back(boost::make_tuple(*a, si));
@@ -1061,7 +1061,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             // delete it from si
             Move move;
             if (d.isLiquid(a->name()) && !si.isLiquid()) {
-                SpanInterval si2(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish(), si.maxInterval());
+                SpanInterval si2(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish());
                 move.toDel.push_back(boost::make_tuple(*a, si2));
             } else {
                 move.toDel.push_back(boost::make_tuple(*a, si));
@@ -1075,7 +1075,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                 if (a) {
                     // We've got !<>{*}, this is easy
                     Move move;
-                    SpanInterval everywhere(d.maxInterval(), d.maxInterval(), d.maxInterval());
+                    SpanInterval everywhere(d.maxInterval(), d.maxInterval());
                     move.toDel.push_back(boost::make_tuple(*a, everywhere));
                     moves.push_back(move);
                     return moves;
@@ -1086,7 +1086,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                 // ASSUME for now that our moves are all disjoint!  probably not a valid assumption, but need to do something here...
                 Move move;
                 BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
-                    boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel));
+                    boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel), d.maxSpanInterval());
                     boost::shared_ptr<Sentence> insideClone(dia->sentence()->clone());
                     boost::shared_ptr<Negation> negatedInside(new Negation(insideClone));
                     if (siRel) {
@@ -1104,13 +1104,13 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             }
             if (dia->relations().size() == 0) return moves;
             // OK, we've got !<>{r} (phi), whether phi is liquid or an atom it should be relatively the same
-            boost::optional<SpanInterval> si2Opt = si.satisfiesRelation(inverseRelation(*dia->relations().begin()));
+            boost::optional<SpanInterval> si2Opt = si.satisfiesRelation(inverseRelation(*dia->relations().begin()), d.maxSpanInterval());
             if (!si2Opt) return moves;      // no moves available
             SpanInterval si2 = si2Opt.get();
             if (const Atom* a = dynamic_cast<const Atom*>(&*dia->sentence())) {
                 Move move;
                 if (d.isLiquid(a->name()) && !si2.isLiquid()) {
-                    SpanInterval si3(si2.start().start(), si2.finish().finish(), si2.start().start(), si2.finish().finish(), si2.maxInterval());
+                    SpanInterval si3(si2.start().start(), si2.finish().finish(), si2.start().start(), si2.finish().finish());
                     move.toDel.push_back(boost::make_tuple(*a, si3));
                 } else {
                     move.toDel.push_back(boost::make_tuple(*a, si2));
@@ -1147,8 +1147,8 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             }
 
             // find where leftAtom is true, intersected with si
-            SISet toIntersect(false, si.maxInterval());
-            toIntersect.add(SpanInterval(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish(), si.maxInterval()));
+            SISet toIntersect(false, d.maxInterval());
+            toIntersect.add(SpanInterval(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish()));
             SISet leftTrueAt = d.satisfied(*leftAtom, m);
             leftTrueAt = intersection(leftTrueAt, toIntersect);
             SISet rightTrueAt = d.satisfied(*rightAtom, m);
@@ -1163,7 +1163,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                         if (interOpt) {
                             Interval inter = interOpt.get();
                             // remove that part of the spanning interval
-                            SpanInterval siToRemove(inter.start(), leftSi.finish().finish(), inter.start(), leftSi.finish().finish(), leftSi.maxInterval());
+                            SpanInterval siToRemove(inter.start(), leftSi.finish().finish(), inter.start(), leftSi.finish().finish());
                             move.toDel.push_back(boost::make_tuple(*leftAtom, siToRemove));
                         }
                     }
@@ -1253,7 +1253,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                 // just add it at the beginning
                 Move move;
                 move.toAdd.push_back(boost::make_tuple(*a,
-                        SpanInterval(j, j, j, j, d.maxInterval())));
+                        SpanInterval(j, j, j, j)));
                 moves.push_back(move);
                 return moves;
             } else {
@@ -1281,7 +1281,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                 // just add it at the end
                 Move move;
                 move.toAdd.push_back(boost::make_tuple(*a,
-                        SpanInterval(j, j, j, j, d.maxInterval())));
+                        SpanInterval(j, j, j, j)));
                 moves.push_back(move);
                 return moves;
             } else {

@@ -39,11 +39,6 @@ Model::Model(const std::vector<FOL::Event>& pairs)
         SpanInterval interval = it->where();
         bool truthVal = it->truthVal();
 
-        // reinforce the max interval
-        boost::optional<SpanInterval> opt = interval.setMaxInterval(maxInterval);
-        if (!opt) continue;
-        interval = opt.get();
-
         SISet set(true, maxInterval);
 
         if (truthVal) set.add(interval);
@@ -163,7 +158,7 @@ void Model::compliment(const std::set<Atom, atomcmp>& allAtoms, const Interval& 
             }
         } else {
             SISet set(true, maxInterval);
-            set.add(SpanInterval(maxInterval, maxInterval, maxInterval));
+            set.add(SpanInterval(maxInterval, maxInterval));
             newModel.amap_.insert(std::pair<Atom, SISet>(atom, set));
         }
     }
