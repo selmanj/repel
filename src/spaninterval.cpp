@@ -23,85 +23,6 @@ SpanInterval::SpanInterval(unsigned int smallest, unsigned int largest)
     : maxInterval_.start()(smallest), maxInterval_.end()(largest) {
 }
 */
-SpanInterval::SpanInterval(const Interval& liq)
-: start_(liq), finish_(liq) {}
-
-SpanInterval::SpanInterval(const Interval& start, const Interval& end)
-: start_(start), finish_(end) {}
-
-SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo)
-: start_(startFrom, startTo), finish_(endFrom, endTo) {}
-
-SpanInterval::const_iterator SpanInterval::begin() const {return SpanIntervalIterator(*this);}
-SpanInterval::const_iterator SpanInterval::end() const {return SpanIntervalIterator();}
-
-bool SpanInterval::operator==(const SpanInterval& b) const {
-    return (start() == b.start() && finish() == b.finish());
-}
-
-bool SpanInterval::operator!=(const SpanInterval& b) const {
-    return !(*this == b);
-}
-
-bool SpanInterval::operator>(const SpanInterval& b) const {
-    if (*this == b) return false;
-    return !(*this < b);
-}
-
-bool SpanInterval::operator<(const SpanInterval& b) const {
-    if (*this == b) return false;
-    if (start().start() < b.start().start()) return true;
-    if (start().start() > b.start().start()) return false;
-    if (start().finish() < b.start().finish()) return true;
-    if (start().finish() > b.start().finish()) return false;
-    if (finish().start() < b.finish().start()) return true;
-    if (finish().start() > b.finish().start()) return false;
-    if (finish().finish() < b.finish().finish()) return true;
-    if (finish().finish() > b.finish().finish()) return false;
-    // return false as failure
-    return false;
-}
-
-bool SpanInterval::operator>=(const SpanInterval& b) const {
-    return !(*this < b);
-}
-
-bool SpanInterval::operator<=(const SpanInterval& b) const {
-    return !(*this > b);
-}
-
-
-unsigned int SpanInterval::liqSize() const {
-    if (isEmpty()) return 0;
-    SpanInterval si = normalize().get();
-
-    if (!si.isLiquid())
-        LOG_PRINT(LOG_WARN) << "calling liqSize() on a non-liquid interval; this is probably not something you want to do" << std::endl;
-
-    return si.start().size();
-}
-
-bool SpanInterval::isLiquid() const {
-    return (start().start() == finish().start() && start().finish() == finish().finish());
-}
-
-SpanInterval SpanInterval::toLiquid() const {
-    unsigned int i = std::max(start().start(), finish().start());
-    unsigned int j = std::min(start().finish(), finish().finish());
-    return SpanInterval(i, j, i, j);
-}
-
-
-boost::optional<SpanInterval> SpanInterval::normalize() const {
-    if (isEmpty()) {
-        return boost::optional<SpanInterval>();
-    }
-    int j = std::min(start_.finish(), finish_.finish());
-    int k = std::max(finish_.start(), start_.start());
-
-    return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, finish_.finish()));
-}
-
 
 boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation, const SpanInterval& universe) const {
     if (!universe.isLiquid()) throw std::invalid_argument("SpanInterval::satisfiesRelation() - universe variable is not liquid!  technically this can be supported, but currently is not.");
@@ -183,26 +104,4 @@ boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL
     //return result;
 }
 
-std::string SpanInterval::toString() const {
-    std::stringstream str;
-    str << *this;
-    return str.str();
-}
-
-std::ostream& operator<<(std::ostream& o, const SpanInterval& si) {
-    o << "[";
-    if (si.isLiquid()) {
-        o << si.start().start() << ":" << si.start().finish() << "]";
-    } else {
-        o << "(" << si.start().start() << ", " << si.start().finish() << "), (" << si.finish().start() << ", " << si.finish().finish() << ")]";
-    }
-    return o;
-}
-
-boost::optional<SpanInterval> intersection(const SpanInterval& a, const SpanInterval& b) {
-    return SpanInterval(std::max(a.start().start(), b.start().start()),
-            std::min(a.start().finish(), b.start().finish()),
-            std::max(a.finish().start(), b.finish().start()),
-            std::min(a.finish().finish(), b.finish().finish())).normalize();    // TODO: more sensible way to pick max interval
-}
 

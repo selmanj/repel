@@ -19,12 +19,12 @@
 #include <iostream>
 #include <stdexcept>
 #include "interval.h"
+#include "log.h"
 
 class SpanIntervalIterator;
 
 class SpanInterval {
 public:
-    //SpanInterval(unsigned int smallest=0, unsigned int largest=UINT_MAX);
     explicit SpanInterval(const Interval& liq);
     explicit SpanInterval(const Interval& start, const Interval& end);
     explicit SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
@@ -34,17 +34,17 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 
-    Interval const& start() const {return start_;};
-    Interval const& finish() const {return finish_;};
-    void setStart(const Interval& start) {start_ = start;};
-    void setFinish(const Interval& end) {finish_ = end;};
+    Interval const& start() const;
+    Interval const& finish() const;
+    void setStart(const Interval& start);
+    void setFinish(const Interval& end);
 
-    bool operator==(const SpanInterval& b) const;
-    bool operator!=(const SpanInterval& b) const;
-    bool operator>(const SpanInterval& b) const;
-    bool operator<(const SpanInterval& b) const;
-    bool operator>=(const SpanInterval& b) const;
-    bool operator<=(const SpanInterval& b) const;
+    friend bool operator==(const SpanInterval& a, const SpanInterval& b);
+    friend bool operator!=(const SpanInterval& a, const SpanInterval& b);
+    friend bool operator>(const SpanInterval& a, const SpanInterval& b);
+    friend bool operator<(const SpanInterval& a, const SpanInterval& b);
+    friend bool operator>=(const SpanInterval& a, const SpanInterval& b);
+    friend bool operator<=(const SpanInterval& a, const SpanInterval& b);
 
     bool isEmpty() const;
     unsigned int size() const;
@@ -74,93 +74,6 @@ public:
 private:
     Interval start_, finish_;
 };
-
-inline bool SpanInterval::isEmpty() const {
-    unsigned int j = std::min(start_.finish(), finish_.finish());
-    unsigned int k = std::max(finish_.start(), start_.start());
-
-    if (start_.start() > j
-            || finish_.finish() < k)
-        return true;
-    return false;
-}
-
-inline unsigned int SpanInterval::size() const {
-    if (isEmpty()) return 0;
-
-    SpanInterval si = normalize().get();
-
-    unsigned int i = si.start().start();
-    unsigned int j = si.start().finish();
-    unsigned int k = si.finish().start();
-    unsigned int l = si.finish().finish();
-
-    if (j <= k) {
-        return ((l-k)+1) * ((j-i)+1);
-    }
-    // I'm so sorry about the below formula; TODO: rewrite this nicer
-    return ((k-i)+1) * ((l-k)+1)
-              + (j-k)*(l+1) - (j*(j+1))/2 + (k*(k+1))/2;
-
-}
-
-template <class OutputIterator>
-void SpanInterval::compliment(const SpanInterval& universe, OutputIterator out) const {
-    universe.subtract(*this, out);
-}
-
-template <class OutputIterator>
-void SpanInterval::liqCompliment(const SpanInterval& universe, OutputIterator out) const {
-    universe.liqSubtract(*this, out);
-}
-
-template <class OutputIterator>
-void SpanInterval::subtract(const SpanInterval &remove, OutputIterator out) const {
-    boost::optional<SpanInterval> intersect = intersection(*this, remove);
-    if (!intersect) {   // no intersection, don't subtract anything
-        *out = *this;
-    } else {
-        boost::optional<Interval> a, b, c, d;
-
-        if (intersect->start().start()!=0)          a = Interval(start().start()               , intersect->start().start()-1);
-        if (intersect->start().finish()!=UINT_MAX)  b = Interval(intersect->start().finish()+1 , start().finish());
-        if (intersect->finish().start()!=0)         c = Interval(finish().start()              , intersect->finish().start()-1);
-        if (intersect->finish().finish()!=UINT_MAX) d = Interval(intersect->finish().finish()+1, finish().finish());
-
-        boost::optional<SpanInterval> s1,s2,s3,s4;
-        if (a) s1 = SpanInterval(*a, finish()).normalize();
-        if (c) s2 = SpanInterval(intersect->start(), *c).normalize();
-        if (d) s3 = SpanInterval(intersect->start(), *d).normalize();
-        if (b) s4 = SpanInterval(*b, finish()).normalize();
-
-        if (s1) {*out = *s1; out++;}
-        if (s2) {*out = *s2; out++;}
-        if (s3) {*out = *s3; out++;}
-        if (s4) {*out = *s4; out++;}
-    }
-}
-
-template <class OutputIterator>
-void SpanInterval::liqSubtract(const SpanInterval& remove, OutputIterator out) const {
-    if (!isLiquid()) throw std::invalid_argument("SpanInterval::liqSubtract - *this is not liquid");
-    if (!remove.isLiquid()) throw std::invalid_argument("SpanInterval::liqSubtract - remove is not liquid");
-
-    boost::optional<SpanInterval> intersect = intersection(*this, remove);
-    if (!intersect) {
-        *out = *this;   // no intersection, don't subtract anything
-    } else {
-        boost::optional<Interval> a, b;
-
-        if (intersect->start().start()!=0)         a = Interval(start().start(), intersect->start().start()-1);
-        if (intersect->start().finish()!=UINT_MAX) b = Interval(intersect->start().finish()+1, start().finish());
-
-        boost::optional<SpanInterval> s1, s2;
-        if (a) s1 = SpanInterval(*a, *a).normalize();
-        if (b) s2 = SpanInterval(*b, *b).normalize();
-        if (s1) {*out = *s1; out++;}
-        if (s2) {*out = *s2; out++;}
-    }
-}
 
 boost::optional<SpanInterval> intersection(const SpanInterval& a, const SpanInterval& b);
 
@@ -217,5 +130,185 @@ private:
     Interval curr_;
     bool isDead_;
 };
+
+// IMPLEMENTATION
+inline SpanInterval::SpanInterval(const Interval& liq)
+: start_(liq), finish_(liq) {}
+
+inline SpanInterval::SpanInterval(const Interval& start, const Interval& end)
+: start_(start), finish_(end) {}
+
+inline SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo)
+: start_(startFrom, startTo), finish_(endFrom, endTo) {}
+
+inline SpanInterval::const_iterator SpanInterval::begin() const {return SpanIntervalIterator(*this);}
+inline SpanInterval::const_iterator SpanInterval::end() const {return SpanIntervalIterator();}
+
+inline Interval const& SpanInterval::start() const {return start_;};
+inline Interval const& SpanInterval::finish() const {return finish_;};
+inline void SpanInterval::setStart(const Interval& start) {start_ = start;};
+inline void SpanInterval::setFinish(const Interval& end) {finish_ = end;};
+
+inline bool operator==(const SpanInterval& a, const SpanInterval& b) {
+    return (a.start() == b.start() && a.finish() == b.finish());
+}
+inline bool operator!=(const SpanInterval& a, const SpanInterval& b) {return !operator==(a,b);}
+inline bool operator<(const SpanInterval& a, const SpanInterval& b) {
+    if (operator==(a,b)) return false;
+    if (a.start() < b.start()) return true;
+    if (a.start() > b.start()) return false;
+    if (a.finish() < b.finish()) return true;
+    if (a.finish() > b.finish()) return false;
+    // return false as failure (should never hit this point)
+    throw std::runtime_error("error while applying operator< on spanintervals; must be equal, but == returns false");
+}
+
+inline bool operator> (const SpanInterval& a, const SpanInterval& b) {return  operator<(b,a);}
+inline bool operator>=(const SpanInterval& a, const SpanInterval& b) {return !operator<(a,b);}
+inline bool operator<=(const SpanInterval& a, const SpanInterval& b) {return !operator>(a,b);}
+
+inline bool SpanInterval::isEmpty() const {
+    unsigned int j = std::min(start_.finish(), finish_.finish());
+    unsigned int k = std::max(finish_.start(), start_.start());
+
+    if (start_.start() > j
+            || finish_.finish() < k)
+        return true;
+    return false;
+}
+
+inline unsigned int SpanInterval::liqSize() const {
+    if (isEmpty()) return 0;
+    SpanInterval si = normalize().get();
+
+    if (!si.isLiquid())
+        LOG_PRINT(LOG_WARN) << "calling liqSize() on a non-liquid interval; this is probably not something you want to do" << std::endl;
+
+    return si.start().size();
+}
+
+inline bool SpanInterval::isLiquid() const {
+    return (start().start() == finish().start() && start().finish() == finish().finish());
+}
+
+inline SpanInterval SpanInterval::toLiquid() const {
+    unsigned int i = std::max(start().start(), finish().start());
+    unsigned int j = std::min(start().finish(), finish().finish());
+    return SpanInterval(i, j, i, j);
+}
+
+
+inline boost::optional<SpanInterval> SpanInterval::normalize() const {
+    if (isEmpty()) {
+        return boost::optional<SpanInterval>();
+    }
+    int j = std::min(start_.finish(), finish_.finish());
+    int k = std::max(finish_.start(), start_.start());
+
+    return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, finish_.finish()));
+}
+
+
+inline unsigned int SpanInterval::size() const {
+    if (isEmpty()) return 0;
+
+    SpanInterval si = normalize().get();
+
+    unsigned int i = si.start().start();
+    unsigned int j = si.start().finish();
+    unsigned int k = si.finish().start();
+    unsigned int l = si.finish().finish();
+
+    if (j <= k) {
+        return ((l-k)+1) * ((j-i)+1);
+    }
+    // I'm so sorry about the below formula; TODO: rewrite this nicer
+    return ((k-i)+1) * ((l-k)+1)
+              + (j-k)*(l+1) - (j*(j+1))/2 + (k*(k+1))/2;
+
+}
+
+template <class OutputIterator>
+inline void SpanInterval::compliment(const SpanInterval& universe, OutputIterator out) const {
+    universe.subtract(*this, out);
+}
+
+template <class OutputIterator>
+inline void SpanInterval::liqCompliment(const SpanInterval& universe, OutputIterator out) const {
+    universe.liqSubtract(*this, out);
+}
+
+template <class OutputIterator>
+void SpanInterval::subtract(const SpanInterval &remove, OutputIterator out) const {
+    boost::optional<SpanInterval> intersect = intersection(*this, remove);
+    if (!intersect) {   // no intersection, don't subtract anything
+        *out = *this;
+    } else {
+        boost::optional<Interval> a, b, c, d;
+
+        if (intersect->start().start()!=0)          a = Interval(start().start()               , intersect->start().start()-1);
+        if (intersect->start().finish()!=UINT_MAX)  b = Interval(intersect->start().finish()+1 , start().finish());
+        if (intersect->finish().start()!=0)         c = Interval(finish().start()              , intersect->finish().start()-1);
+        if (intersect->finish().finish()!=UINT_MAX) d = Interval(intersect->finish().finish()+1, finish().finish());
+
+        boost::optional<SpanInterval> s1,s2,s3,s4;
+        if (a) s1 = SpanInterval(*a, finish()).normalize();
+        if (c) s2 = SpanInterval(intersect->start(), *c).normalize();
+        if (d) s3 = SpanInterval(intersect->start(), *d).normalize();
+        if (b) s4 = SpanInterval(*b, finish()).normalize();
+
+        if (s1) {*out = *s1; out++;}
+        if (s2) {*out = *s2; out++;}
+        if (s3) {*out = *s3; out++;}
+        if (s4) {*out = *s4; out++;}
+    }
+}
+
+template <class OutputIterator>
+void SpanInterval::liqSubtract(const SpanInterval& remove, OutputIterator out) const {
+    if (!isLiquid()) throw std::invalid_argument("SpanInterval::liqSubtract - *this is not liquid");
+    if (!remove.isLiquid()) throw std::invalid_argument("SpanInterval::liqSubtract - remove is not liquid");
+
+    boost::optional<SpanInterval> intersect = intersection(*this, remove);
+    if (!intersect) {
+        *out = *this;   // no intersection, don't subtract anything
+    } else {
+        boost::optional<Interval> a, b;
+
+        if (intersect->start().start()!=0)         a = Interval(start().start(), intersect->start().start()-1);
+        if (intersect->start().finish()!=UINT_MAX) b = Interval(intersect->start().finish()+1, start().finish());
+
+        boost::optional<SpanInterval> s1, s2;
+        if (a) s1 = SpanInterval(*a, *a).normalize();
+        if (b) s2 = SpanInterval(*b, *b).normalize();
+        if (s1) {*out = *s1; out++;}
+        if (s2) {*out = *s2; out++;}
+    }
+}
+
+inline std::string SpanInterval::toString() const {
+    std::stringstream str;
+    str << *this;
+    return str.str();
+}
+
+inline std::ostream& operator<<(std::ostream& o, const SpanInterval& si) {
+    o << "[";
+    if (si.isLiquid()) {
+        o << si.start().start() << ":" << si.start().finish() << "]";
+    } else {
+        o << "(" << si.start().start() << ", " << si.start().finish() << "), (" << si.finish().start() << ", " << si.finish().finish() << ")]";
+    }
+    return o;
+}
+
+inline boost::optional<SpanInterval> intersection(const SpanInterval& a, const SpanInterval& b) {
+    return SpanInterval(std::max(a.start().start(), b.start().start()),
+            std::min(a.start().finish(), b.start().finish()),
+            std::max(a.finish().start(), b.finish().start()),
+            std::min(a.finish().finish(), b.finish().finish())).normalize();    // TODO: more sensible way to pick max interval
+}
+
+
 
 #endif /* SPANINTERVAL_H */

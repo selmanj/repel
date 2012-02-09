@@ -205,6 +205,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 
     // enforce maxInterval on our formulas
     for(FormulaList::iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+        if (!it->isQuantified()) continue;
         SISet set = it->quantification();
         set.setMaxInterval(maxInterval_);
         it->setQuantification(set);
