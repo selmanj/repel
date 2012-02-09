@@ -23,6 +23,8 @@ SpanInterval::SpanInterval(unsigned int smallest, unsigned int largest)
     : maxInterval_.start()(smallest), maxInterval_.end()(largest) {
 }
 */
+SpanInterval::SpanInterval(const Interval& liq)
+: start_(liq), finish_(liq) {}
 
 SpanInterval::SpanInterval(const Interval& start, const Interval& end)
 : start_(start), finish_(end) {}
@@ -102,7 +104,7 @@ boost::optional<SpanInterval> SpanInterval::normalize() const {
 
 
 boost::optional<SpanInterval> SpanInterval::satisfiesRelation(Interval::INTERVAL_RELATION relation, const SpanInterval& universe) const {
-    if (!universe.isLiquid()) throw std::invalid_argument("SpanInterval::satisfiesRelation() - universe variable is not liquid!  technically this can be supported, but currently is not.")
+    if (!universe.isLiquid()) throw std::invalid_argument("SpanInterval::satisfiesRelation() - universe variable is not liquid!  technically this can be supported, but currently is not.");
     unsigned int neg_inf = universe.start().start();
     unsigned int pos_inf = universe.start().finish();
 

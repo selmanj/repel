@@ -19,15 +19,15 @@
 #include <iostream>
 #include <stdexcept>
 #include "interval.h"
-#include "siset.h"
 
 class SpanIntervalIterator;
 
 class SpanInterval {
 public:
     //SpanInterval(unsigned int smallest=0, unsigned int largest=UINT_MAX);
-    SpanInterval(const Interval& start, const Interval& end);
-    SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
+    explicit SpanInterval(const Interval& liq);
+    explicit SpanInterval(const Interval& start, const Interval& end);
+    explicit SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
 
     typedef SpanIntervalIterator const_iterator;
 
