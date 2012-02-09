@@ -199,10 +199,10 @@ std::ostream& operator<<(std::ostream& o, const SpanInterval& si) {
     return o;
 }
 
-SpanInterval intersection(const SpanInterval& a, const SpanInterval& b) {
+boost::optional<SpanInterval> intersection(const SpanInterval& a, const SpanInterval& b) {
     return SpanInterval(std::max(a.start().start(), b.start().start()),
             std::min(a.start().finish(), b.start().finish()),
             std::max(a.finish().start(), b.finish().start()),
-            std::min(a.finish().finish(), b.finish().finish()));    // TODO: more sensible way to pick max interval
+            std::min(a.finish().finish(), b.finish().finish())).normalize();    // TODO: more sensible way to pick max interval
 }
 

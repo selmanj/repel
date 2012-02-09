@@ -38,10 +38,16 @@ BOOST_AUTO_TEST_CASE( basic_test )
         std::list<SpanInterval> removed;
         sp1.subtract(sp2,back_inserter(removed));
 
-        BOOST_CHECK(removed.size() == 3);
-        BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(1,4,10,14))!=removed.end());
-        BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(5,7,10,14))!=removed.end());
-        BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(8,11,10,14))!=removed.end());
+        BOOST_CHECK(removed.size() == 1);
+        BOOST_CHECK(std::find(removed.begin(), removed.end(), SpanInterval(1,11,10,14))!=removed.end());
+    }
+
+    {
+        std::list<SpanInterval> shouldBeEmpty;
+        SpanInterval sp(1,10,1,10);
+        sp.subtract(sp, std::back_inserter(shouldBeEmpty));
+
+        BOOST_CHECK_EQUAL(shouldBeEmpty.size(), 0);
     }
 
 }
@@ -58,10 +64,12 @@ BOOST_AUTO_TEST_CASE( siset_test ) {
     set.makeDisjoint();
     BOOST_CHECK(set.isDisjoint());
 
+
     // TODO turn this part into a test
     //std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
+
     SISet dcompliment = set.compliment().compliment();
-    dcompliment.makeDisjoint();
+    dcompliment.makeDisjoint(); //
     //std::cout << "double compliment is " << dcompliment.toString() << std::endl;
 }
 
@@ -70,8 +78,8 @@ BOOST_AUTO_TEST_CASE( hammingliq_dist_test) {
     SISet a(true, maxInterval);
     SISet b(true, maxInterval);
 
-    a.add(SpanInterval(1,5,1,5,maxInterval));
-    b.add(SpanInterval(2,5,2,5,maxInterval));
+    a.add(SpanInterval(1,5,1,5));
+    b.add(SpanInterval(2,5,2,5));
 
     BOOST_CHECK_EQUAL(hammingDistance(a,b), 1);
 }
@@ -81,8 +89,8 @@ BOOST_AUTO_TEST_CASE( hamming_dist_test) {
     SISet a(false, maxInterval);
     SISet b(false, maxInterval);
 
-    a.add(SpanInterval(1,5,1,5,maxInterval));
-    b.add(SpanInterval(2,5,2,5,maxInterval));
+    a.add(SpanInterval(1,5,1,5));
+    b.add(SpanInterval(2,5,2,5));
 
     BOOST_CHECK_EQUAL(hammingDistance(a,b), 5);
 }
@@ -107,32 +115,33 @@ BOOST_AUTO_TEST_CASE( sisetliq_test ) {
 
 BOOST_AUTO_TEST_CASE( spanInterval_relations ) {
     Interval maxInterval(0, 1000);
-    SpanInterval sp1(1,5,6,10, maxInterval);
-    boost::optional<SpanInterval> sp2 = sp1.satisfiesRelation(Interval::MEETS);
+    SpanInterval universe(maxInterval);
+    SpanInterval sp1(1,5,6,10);
+    boost::optional<SpanInterval> sp2 = sp1.satisfiesRelation(Interval::MEETS, universe);
     BOOST_CHECK(sp2);
     SpanInterval si = sp2.get();
     BOOST_CHECK_EQUAL(si.toString(), "[(7, 11), (7, 1000)]");
-    sp1 = SpanInterval(999, 1000, 1000, 1000, maxInterval);
-    sp2 = sp1.satisfiesRelation(Interval::MEETS);
+    sp1 = SpanInterval(999, 1000, 1000, 1000);
+    sp2 = sp1.satisfiesRelation(Interval::MEETS, universe);
     BOOST_CHECK(!sp2);
 
-    sp1 = SpanInterval(1,4,7,9, maxInterval);
-    sp2 = sp1.satisfiesRelation(Interval::OVERLAPS);
+    sp1 = SpanInterval(1,4,7,9);
+    sp2 = sp1.satisfiesRelation(Interval::OVERLAPS, universe);
     BOOST_CHECK(sp2);
     si = sp2.get();
     BOOST_CHECK_EQUAL(si.toString(), "[(2, 9), (8, 1000)]");
 
-    sp2 = sp1.satisfiesRelation(Interval::OVERLAPSI);
+    sp2 = sp1.satisfiesRelation(Interval::OVERLAPSI, universe);
     BOOST_CHECK(sp2);
     si = sp2.get();
     BOOST_CHECK_EQUAL(si.toString(), "[(0, 3), (1, 8)]");
 
-    sp2 = sp1.satisfiesRelation(Interval::STARTS);
+    sp2 = sp1.satisfiesRelation(Interval::STARTS, universe);
     BOOST_CHECK(sp2);
     si = sp2.get();
     BOOST_CHECK_EQUAL(si.toString(), "[(1, 4), (8, 1000)]");
 
-    sp2 = sp1.satisfiesRelation(Interval::STARTSI);
+    sp2 = sp1.satisfiesRelation(Interval::STARTSI, universe);
     BOOST_CHECK(sp2);
     si = sp2.get();
     BOOST_CHECK_EQUAL(si.toString(), "[(1, 4), (1, 8)]");
@@ -142,7 +151,7 @@ BOOST_AUTO_TEST_CASE( spanIntervalspan ) {
     SpanInterval sp1(1,5,6,10);
     SpanInterval sp2(3,7,9,11);
 
-    SISet set = span(sp1, sp2);
+    SISet set = span(sp1, sp2, Interval(1,11));
     /*
     BOOST_FOREACH(SpanInterval sp, set.set()) {
         std::cout << "si = " << sp.toString() << std::endl;
@@ -201,10 +210,10 @@ BOOST_AUTO_TEST_CASE ( siSetSubtractTest) {
 BOOST_AUTO_TEST_CASE( siSetComplimentTest) {
     // [(1, 9), (1, 20)], [(1, 18), (20, 20)], [(10, 10), (10, 19)], [11:20]
     Interval maxInt = Interval(1,20);
-    SpanInterval sp1(1,9,1,20, maxInt);
-    SpanInterval sp2(1,18,20,20, maxInt);
-    SpanInterval sp3(10,10,10,19, maxInt);
-    SpanInterval sp4(11,20,11,20, maxInt);
+    SpanInterval sp1(1,9,1,20);
+    SpanInterval sp2(1,18,20,20);
+    SpanInterval sp3(10,10,10,19);
+    SpanInterval sp4(11,20,11,20);
     SISet set(false, maxInt);
 
     set.add(sp1);

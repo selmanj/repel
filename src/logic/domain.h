@@ -128,7 +128,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         std::runtime_error e("no facts given: currently need at least one fact to determine the interval to reason over!");
         throw e;
     }
-    unsigned int smallest=std::numeric_limits<unsigned int>::max(), largest=0;
+    unsigned int smallest=std::numeric_limits<unsigned int>::max(), largest=std::numeric_limits<unsigned int>::min();
     for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
         SpanInterval interval = it->where();
 
@@ -201,6 +201,13 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
             set.add(interval);
             observations_.setAtom(*atom, set);
         }
+    }
+
+    // enforce maxInterval on our formulas
+    for(FormulaList::iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+        SISet set = it->quantification();
+        set.setMaxInterval(maxInterval_);
+        it->setQuantification(set);
     }
 };
 

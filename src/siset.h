@@ -62,18 +62,16 @@ public:
     friend bool operator !=(const SISet& l, const SISet& r);
 
     friend SISet intersection(const SISet& a, const SISet& b);
-    friend SISet span(const SpanInterval& a, const SpanInterval& b);
+    friend SISet intersection(const SISet& a, const SpanInterval& si);
+    friend SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInterval);
     friend bool equalByInterval(const SISet& a, const SISet& b);
 private:
     std::list<SpanInterval> set_;
     bool forceLiquid_;
     Interval maxInterval_;
 };
-
-SISet intersection(const SISet& a, const SpanInterval& si);
-SISet intersection(const SISet& a, const SISet& b);
-SISet span(const SpanInterval& a, const SpanInterval& b);
-SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION);
+SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInterval);
+SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION, const SpanInterval& universe);
 bool equalByInterval(const SISet& a, const SISet& b);
 
 unsigned long hammingDistance(const SISet& a, const SISet& b);

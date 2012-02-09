@@ -95,8 +95,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
     }
     */
 
-    SpanInterval maxSI = SpanInterval(d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval().start(), d.maxInterval().finish(), d.maxInterval());
-    unsigned long maxSize = maxSI.size();
+    unsigned long maxSize = d.maxSpanInterval().size();
     // initialize best score to the current score
     unsigned long bestScore = currentScore;
     Model bestModel = currentModel;

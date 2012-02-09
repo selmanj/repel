@@ -68,7 +68,7 @@ public:
 
     std::string toString() const;
 
-    friend SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
+    friend boost::optional<SpanInterval> intersection(const SpanInterval& a, const SpanInterval& b);
     friend std::ostream& operator<<(std::ostream& o, const SpanInterval& si);
 
 private:
@@ -120,15 +120,18 @@ void SpanInterval::subtract(const SpanInterval &remove, OutputIterator out) cons
     if (!intersect) {   // no intersection, don't subtract anything
         *out = *this;
     } else {
-        Interval a(start().start()               , intersect->start().start()-1);
-        Interval b(intersect->start().finish()+1 , start().finish());
-        Interval c(finish().start()              , intersect->finish().start()-1);
-        Interval d(intersect->finish().finish()+1, finish().finish());
+        boost::optional<Interval> a, b, c, d;
 
-        boost::optional<SpanInterval> s1 = SpanInterval(a, c).normalize();
-        boost::optional<SpanInterval> s2 = SpanInterval(a, d).normalize();
-        boost::optional<SpanInterval> s3 = SpanInterval(b, c).normalize();
-        boost::optional<SpanInterval> s4 = SpanInterval(b, d).normalize();
+        if (intersect->start().start()!=0)          a = Interval(start().start()               , intersect->start().start()-1);
+        if (intersect->start().finish()!=UINT_MAX)  b = Interval(intersect->start().finish()+1 , start().finish());
+        if (intersect->finish().start()!=0)         c = Interval(finish().start()              , intersect->finish().start()-1);
+        if (intersect->finish().finish()!=UINT_MAX) d = Interval(intersect->finish().finish()+1, finish().finish());
+
+        boost::optional<SpanInterval> s1,s2,s3,s4;
+        if (a) s1 = SpanInterval(*a, finish()).normalize();
+        if (c) s2 = SpanInterval(intersect->start(), *c).normalize();
+        if (d) s3 = SpanInterval(intersect->start(), *d).normalize();
+        if (b) s4 = SpanInterval(*b, finish()).normalize();
 
         if (s1) {*out = *s1; out++;}
         if (s2) {*out = *s2; out++;}
@@ -146,17 +149,20 @@ void SpanInterval::liqSubtract(const SpanInterval& remove, OutputIterator out) c
     if (!intersect) {
         *out = *this;   // no intersection, don't subtract anything
     } else {
-        Interval a(start().start(), intersect->start().start()-1);
-        Interval b(intersect->start().finish()+1, start().finish());
+        boost::optional<Interval> a, b;
 
-        boost::optional<SpanInterval> s1 = SpanInterval(a, a).normalize();
-        boost::optional<SpanInterval> s2 = SpanInterval(b, b).normalize();
+        if (intersect->start().start()!=0)         a = Interval(start().start(), intersect->start().start()-1);
+        if (intersect->start().finish()!=UINT_MAX) b = Interval(intersect->start().finish()+1, start().finish());
+
+        boost::optional<SpanInterval> s1, s2;
+        if (a) s1 = SpanInterval(*a, *a).normalize();
+        if (b) s2 = SpanInterval(*b, *b).normalize();
         if (s1) {*out = *s1; out++;}
         if (s2) {*out = *s2; out++;}
     }
 }
 
-SpanInterval intersection(const SpanInterval& a, const SpanInterval& b);
+boost::optional<SpanInterval> intersection(const SpanInterval& a, const SpanInterval& b);
 
 class SpanIntervalIterator : public std::iterator<std::forward_iterator_tag, Interval> {
 public:

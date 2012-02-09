@@ -203,7 +203,7 @@ SISet Domain::satisfiedConjunction(const Conjunction& c, const Model& m) const {
     BOOST_FOREACH(SpanInterval i, leftSat.intervals()) {
         BOOST_FOREACH(SpanInterval j, rightSat.intervals()) {
             BOOST_FOREACH(Interval::INTERVAL_RELATION rel, c.relations()) {
-                result.add(composedOf(i, j, rel));
+                result.add(composedOf(i, j, rel, maxSpanInterval()));
             }
         }
     }

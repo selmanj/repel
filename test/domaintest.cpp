@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( sat_where ) {
 
     // now try only doing it at timepoints [5:7]
     SISet someTime(true, d.maxInterval());
-    someTime.add(SpanInterval(5,7,5,7,d.maxInterval()));
+    someTime.add(SpanInterval(5,7,5,7));
 
     trueAt = d.satisfied(*query, d.defaultModel(), &someTime);
     BOOST_CHECK_EQUAL(trueAt.toString(), "{[5:7]}");

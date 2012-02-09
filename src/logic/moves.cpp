@@ -729,8 +729,10 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
                         boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS, d.maxSpanInterval());
                         boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval());
                         if (spBeforeRelOpt && spAfterRelOpt) {
-                            SpanInterval leftover = intersection(intersection(spBeforeRelOpt.get(), spAfterRelOpt.get()), spCurr);
-                            if (leftover.size() > 0) {
+                            boost::optional<SpanInterval> spShareRelOpt = intersection(spBeforeRelOpt.get(), spAfterRelOpt.get());
+                            if (!spShareRelOpt) continue;
+                            boost::optional<SpanInterval> leftover = intersection(*spShareRelOpt, spCurr);
+                            if (leftover && leftover->size() > 0) {
                                 // generate a move deleting it here
                                 boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
                                 boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
@@ -746,8 +748,8 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
                 BOOST_FOREACH(SpanInterval spCurr, currTrueAt.asSet()) {
                     boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS, d.maxSpanInterval());
                     if (spBeforeRelOpt) {
-                        SpanInterval leftover = intersection(spBeforeRelOpt.get(), spCurr);
-                        if (leftover.size() > 0) {
+                        boost::optional<SpanInterval> leftover = intersection(spBeforeRelOpt.get(), spCurr);
+                        if (leftover && leftover->size() > 0) {
                             // generate a move deleting it here
                             boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
                             boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
@@ -763,8 +765,8 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
                 BOOST_FOREACH(SpanInterval spCurr, currTrueAt.asSet()) {
                     boost::optional<SpanInterval> spAfterRelOpt = spAfter.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval());
                     if (spAfterRelOpt) {
-                        SpanInterval leftover = intersection(spAfterRelOpt.get(), spCurr);
-                        if (leftover.size() > 0) {
+                        boost::optional<SpanInterval> leftover = intersection(spAfterRelOpt.get(), spCurr);
+                        if (leftover && leftover->size() > 0) {
                             // generate a move deleting it here
                             boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
                             boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
@@ -1177,7 +1179,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                         if (interOpt) {
                             Interval inter = interOpt.get();
                             // remove that part of the spanning interval
-                            SpanInterval siToRemove(rightSi.start().start(), inter.finish(), rightSi.start().start(), inter.finish(), rightSi.maxInterval());
+                            SpanInterval siToRemove(rightSi.start().start(), inter.finish(), rightSi.start().start(), inter.finish());
                             move.toDel.push_back(boost::make_tuple(*rightAtom, siToRemove));
                         }
                     }
@@ -1198,7 +1200,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             const Sentence* sub = &*dia->sentence();
             BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
                 //LOG_PRINT(LOG_DEBUG) << "si = " << si.toString() << std::endl;
-                boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel));
+                boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel), d.maxSpanInterval());
                 if (siRel) {
                     std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *sub, siRel.get());
                     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
@@ -1228,7 +1230,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
         // TODO: implement moves for diamond operator
         if (dia->relations().size() == 0) return moves;
         if (dia->relations().find(Interval::DURING) != dia->relations().end()) {
-            boost::optional<SpanInterval> durIntOpt = si.satisfiesRelation(Interval::DURINGI);
+            boost::optional<SpanInterval> durIntOpt = si.satisfiesRelation(Interval::DURINGI, d.maxSpanInterval());
             if (!durIntOpt) return moves;
             SpanInterval durInt = durIntOpt.get();
             // how to choose where to add it?  ideally we'd choose a transition point
@@ -1237,14 +1239,14 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             // instead we will choose a random point in the interval and add it there
             unsigned int point = durInt.start().start() + (rand() % durInt.start().size());
             Move move;
-            move.toAdd.push_back(boost::make_tuple(*a, SpanInterval(point, point, point, point, si.maxInterval())));
+            move.toAdd.push_back(boost::make_tuple(*a, SpanInterval(point, point, point, point)));
             moves.push_back(move);
             return moves;
         }
         if (dia->relations().find(Interval::MEETS) != dia->relations().end()) {
             // unfortunately we can only add (or extend) phi to satisfy this relation
-            if (!si.satisfiesRelation(Interval::MEETSI)) return moves;
-            SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETSI).get();
+            if (!si.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval())) return moves;
+            SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval()).get();
             SISet insideSatisfiedAt = d.satisfied(*a,m);
             insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
             unsigned int j = whereToSat.finish().finish();
@@ -1263,16 +1265,15 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                         SpanInterval(mostRecent.finish().finish()+1,
                                 j,
                                 mostRecent.finish().finish()+1,
-                                j,
-                                d.maxInterval())));
+                                j)));
                 moves.push_back(move);
                 return moves;
             }
         }
         if (dia->relations().find(Interval::MEETSI) != dia->relations().end()) {
             // unfortunately we can only add (or extend) phi to satisfy this relation
-            if (!si.satisfiesRelation(Interval::MEETS)) return moves;
-            SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETS).get();
+            if (!si.satisfiesRelation(Interval::MEETS, d.maxSpanInterval())) return moves;
+            SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETS, d.maxSpanInterval()).get();
             SISet insideSatisfiedAt = d.satisfied(*a,m);
             insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
             unsigned int j = whereToSat.start().start();
@@ -1291,8 +1292,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                         SpanInterval(j,
                                 mostRecent.start().start(),
                                 j,
-                                mostRecent.start().start(),
-                                d.maxInterval())));
+                                mostRecent.start().start())));
                 moves.push_back(move);
                 return moves;
             }
@@ -1513,7 +1513,7 @@ bool moveContainsObservationPreds(const Domain& d, const Move &m) {
         //if (d.observedPredicates().find(it->get<0>().name()) != d.observedPredicates().end()) {
         //  return true;
         //}
-        SISet original(d.isLiquid(it->get<0>().name()), it->get<1>().maxInterval());
+        SISet original(d.isLiquid(it->get<0>().name()), d.maxInterval());
         original.add(it->get<1>());
         SISet modifiable = d.getModifiableSISet(it->get<0>().name(), original);
         if (modifiable.size() != original.size()) return true;
@@ -1530,7 +1530,7 @@ bool moveContainsObservationPreds(const Domain& d, const Move &m) {
         }
         if (it->get<0>().name().find("D-") == 0) return true;
         */
-        SISet original(d.isLiquid(it->get<0>().name()), it->get<1>().maxInterval());
+        SISet original(d.isLiquid(it->get<0>().name()), d.maxInterval());
         original.add(it->get<1>());
         SISet modifiable = d.getModifiableSISet(it->get<0>().name(), original);
         if (modifiable.size() != original.size()) return true;
