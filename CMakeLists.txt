@@ -20,7 +20,8 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 include_directories("${PROJECT_BINARY_DIR}/src")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-find_package(Boost COMPONENTS program_options unit_test_framework REQUIRED)
+set(Boost_USE_STATIC_LIBS 	ON)
+find_package(Boost 1.48.0 COMPONENTS program_options unit_test_framework REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src)
