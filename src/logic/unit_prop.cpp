@@ -38,7 +38,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     Model obs = d.defaultModel();
     std::set<Atom, atomcmp> atoms = obs.atoms();
 
-    for (std::set<Atom>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
+    for (std::set<Atom, atomcmp>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
         SISet trueAt = obs.getAtom(*it);
         SISet falseAt = trueAt.compliment();
 

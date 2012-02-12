@@ -181,7 +181,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         obsJustPreds.insert(it->first);
     }
     std::set<std::string> foundPreds;
-    for (std::set<Atom>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
+    for (std::set<Atom, atomcmp>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
         foundPreds.insert(it->toString());
     }
     std::set_difference(foundPreds.begin(), foundPreds.end(),
