@@ -9,7 +9,7 @@ configure_file (
   "${PROJECT_BINARY_DIR}/src/PELConfig.h"
   )
 
-# force error messages to eb one line
+# force error messages to be one line
 IF(CMAKE_COMPILER_IS_GNUCC)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0")
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
