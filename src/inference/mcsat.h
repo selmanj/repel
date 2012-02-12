@@ -15,7 +15,7 @@ public:
     void run(const Domain& d);
 
     unsigned int numIterations() const;
-
+    Model performIteration(const Model& m, const Domain& d) const;
     void setNumIterations(unsigned int num);
 private:
     unsigned int numIterations_;
