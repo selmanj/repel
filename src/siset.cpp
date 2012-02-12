@@ -17,15 +17,13 @@
 #include "log.h"
 #include "infix_ostream_iterator.h"
 
-/*
+
 SISet::SISet(const SpanInterval& si, bool forceLiquid,
             const Interval& maxInterval)
-    : forceLiquid_(forceLiquid), maxInterval_(maxInterval) {
-    SpanInterval copy = si;
-    copy.setMaxInterval(maxInterval_);
-    set_.insert(copy);
+    : set_(), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {
+    set_.push_back(si);
 }
-*/
+
 
 std::set<SpanInterval> SISet::asSet() const {
     return std::set<SpanInterval>(set_.begin(), set_.end());
