@@ -13,6 +13,9 @@
 #include "sentencevisitor.h"
 #include "constant.h"
 
+class Domain;
+class Model;
+
 class Atom : public Sentence {
 public:
     typedef boost::ptr_vector<Term>::size_type size_type;
@@ -36,6 +39,8 @@ public:
 
     void push_back(std::auto_ptr<Term> t);
     virtual void visit(SentenceVisitor& v) const;
+protected:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     std::string pred;
     boost::ptr_vector<Term> terms;
@@ -46,6 +51,7 @@ private:
     virtual void doToString(std::stringstream& str) const;
     virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
+
 };
 
 struct atomcmp {

@@ -23,3 +23,10 @@ void Disjunction::doToString(std::stringstream& str) const {
         str << right_->toString();
     }
 };
+
+SISet Disjunction::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+    SISet leftSat = left_->satisfied(m, d, forceLiquid);
+    SISet rightSat = right_->satisfied(m, d, forceLiquid);
+    leftSat.add(rightSat);
+    return leftSat;
+}

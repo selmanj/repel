@@ -10,4 +10,6 @@ add_library(pel-syntax
   negation.cpp
   sentence.cpp
   variable.cpp
+  ../model.cpp
+  ../domain.cpp
   )

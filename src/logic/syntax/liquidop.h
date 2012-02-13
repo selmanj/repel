@@ -4,6 +4,9 @@
 #include <boost/shared_ptr.hpp>
 #include "sentence.h"
 
+class Model;
+class Domain;
+
 class LiquidOp : public Sentence {
 public:
     LiquidOp(boost::shared_ptr<Sentence> sentence);
@@ -17,6 +20,8 @@ public:
     boost::shared_ptr<const Sentence> sentence() const;
 
     void setSentence(boost::shared_ptr<Sentence> s);
+protected:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     boost::shared_ptr<Sentence> s_;
 

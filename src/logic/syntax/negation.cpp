@@ -20,5 +20,11 @@ void Negation::doToString(std::stringstream& str) const {
     }
 }
 
+SISet Negation::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+    // return the compliment of the set inside the negation
+    SISet sat = s_->satisfied(m, d, forceLiquid);
+
+    return sat.compliment();
+}
 
 

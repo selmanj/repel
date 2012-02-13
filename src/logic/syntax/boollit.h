@@ -22,6 +22,8 @@ public:
     bool value() const;
     void setValue(bool val);
     virtual void visit(SentenceVisitor& s) const;
+protected:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     bool val_;
 

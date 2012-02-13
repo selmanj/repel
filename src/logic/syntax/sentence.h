@@ -7,6 +7,9 @@
 #include "sentencevisitor.h"
 #include "../../siset.h"
 
+class Domain;
+class Model;
+
 /**
  * Abstract base class representing a logical sentence.
  * The Sentence class is the abstract base class representing any sentence in
@@ -80,7 +83,22 @@ public:
      * @return true if the sentence is found, false otherwise
      */
     bool contains(const Sentence& s) const;
+
+    /**
+     * Given a model and a domain, return the set of intervals where this
+     * sentence is satisfied (where it is true).
+     *
+     * @param m a model to evaluate the sentence on
+     * @param d domain that the sentence and model belong to
+     * @param forceLiquid whether or not to force the resulting SISet to be
+     *   liquid.  If in doubt, leave it set to false.
+     * @param where optional pointer to a SISet specifying where to check the
+     * truth value at.
+     * @return a SISet containing the intervals where the sentence is true at.
+     */
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid=false, const SISet* where=NULL) const;
 private:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const = 0;
     virtual void doToString(std::stringstream& str) const = 0;
     virtual Sentence* doClone() const = 0;
     virtual bool doEquals(const Sentence& t) const = 0;

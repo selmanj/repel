@@ -8,6 +8,9 @@
 #include "sentencevisitor.h"
 #include "../../interval.h"
 
+class Domain;
+class Model;
+
 class Conjunction : public Sentence {
 public:
     template<class InputIterator>
@@ -50,6 +53,8 @@ public:
     virtual void visit(SentenceVisitor& v) const;
 
     static const std::set<Interval::INTERVAL_RELATION>& defaultRelations();
+protected:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
 
     boost::shared_ptr<Sentence>  left_;
@@ -62,6 +67,7 @@ private:
     virtual void doToString(std::stringstream& str) const;
     virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
+
 };
 
 // IMPLEMENTATION

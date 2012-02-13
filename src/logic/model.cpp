@@ -55,8 +55,10 @@ Model::Model(const Model& m)
     : amap_(m.amap_) {
 }
 
+/*
 Model::~Model() {
 }
+*/
 
 std::set<Atom, atomcmp> Model::atoms() const {
     std::set<Atom, atomcmp> atoms;

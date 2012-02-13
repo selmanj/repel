@@ -1,4 +1,5 @@
 #include "diamondop.h"
+#include "../domain.h"
 
 const std::set<Interval::INTERVAL_RELATION>& DiamondOp::defaultRelations() {
     static std::set<Interval::INTERVAL_RELATION>* defaults = new std::set<Interval::INTERVAL_RELATION>();
@@ -48,3 +49,21 @@ void DiamondOp::doToString(std::stringstream& str) const {
         }
     }
 };
+
+SISet DiamondOp::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+    if (forceLiquid) throw std::runtime_error("DiamondOp::doSatisfied(): given parameter forceLiquid=true, but diamond op is a non liquid operator!");
+
+    SISet sat = s_->satisfied(m, d, false);
+
+    SISet newsat(false, sat.maxInterval());
+    for(SISet::const_iterator sIt = sat.begin(); sIt != sat.end(); sIt++) {
+        for(std::set<Interval::INTERVAL_RELATION>::const_iterator relIt = rels_.begin();
+                relIt != rels_.end();
+                relIt++) {
+            boost::optional<SpanInterval> spr = sIt->satisfiesRelation(*relIt, d.maxSpanInterval());
+            if (spr) newsat.add(*spr);
+        }
+    }
+
+    return newsat;
+}

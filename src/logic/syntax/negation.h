@@ -18,6 +18,8 @@ public:
     boost::shared_ptr<const Sentence> sentence() const;
 
     void setSentence(boost::shared_ptr<Sentence> s);
+protected:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     boost::shared_ptr<Sentence> s_;
 

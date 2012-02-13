@@ -5,6 +5,9 @@
 #include "sentence.h"
 #include "sentencevisitor.h"
 
+class Domain;
+class Model;
+
 class Disjunction : public Sentence {
 public:
     Disjunction(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);
@@ -21,7 +24,8 @@ public:
 
     void setLeft(boost::shared_ptr<Sentence> s);
     void setRight(boost::shared_ptr<Sentence> s);
-
+protected:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     boost::shared_ptr<Sentence> left_;
     boost::shared_ptr<Sentence> right_;

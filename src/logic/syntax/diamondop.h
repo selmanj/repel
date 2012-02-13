@@ -35,6 +35,8 @@ public:
     template<typename T>
     void setRelations(T begin, T end);
     void setTQConstraints(const TQConstraints& tq);
+protected:
+    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     std::set<Interval::INTERVAL_RELATION> rels_;
     boost::shared_ptr<Sentence> s_;

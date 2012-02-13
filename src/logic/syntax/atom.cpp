@@ -7,6 +7,8 @@
 
 #include "atom.h"
 #include "term.h"
+#include "../domain.h"
+#include "../model.h"
 #include <boost/ptr_container/ptr_vector.hpp>
 
 bool Atom::isGrounded() const {
@@ -40,3 +42,19 @@ void Atom::doToString(std::stringstream& str) const {
     }
     str << ")";
 };
+
+SISet Atom::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+    if (isGrounded()) {
+        // make sure its in model
+        if (m.hasAtom(*this)){
+            SISet set = m.getAtom(*this);
+            set.setForceLiquid(forceLiquid);
+            return set;
+        } else {
+            return SISet(forceLiquid, d.maxInterval());
+        }
+    }
+    // grounding out of atoms currently not implemented yet!
+    std::runtime_error e("Domain::satisfiedAtom grounding out of atoms not implemented!");
+    throw e;
+}

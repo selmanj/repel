@@ -6,6 +6,7 @@
  */
 
 #include "conjunction.h"
+#include "../domain.h"
 
 void Conjunction::visit(SentenceVisitor& v) const {
     left_->visit(v);
@@ -71,4 +72,27 @@ void Conjunction::doToString(std::stringstream& str) const {
     } else {
         str << right_->toString();
     }
+}
+
+SISet Conjunction::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+    SISet leftSat = left_->satisfied(m, d, forceLiquid);
+    SISet rightSat = right_->satisfied(m, d, forceLiquid);
+
+    if (forceLiquid) {
+        // conjunction must be intersection
+        return intersection(leftSat, rightSat);
+    }
+
+    SISet result(false, d.maxInterval());
+    for(SISet::const_iterator lIt = leftSat.begin(); lIt != leftSat.end(); lIt++ ) {
+        for (SISet::const_iterator rIt = rightSat.begin(); rIt != rightSat.end(); rIt++) {
+            for(std::set<Interval::INTERVAL_RELATION>::const_iterator relIt = rels_.begin();
+                    relIt != rels_.end();
+                    relIt++) {
+                result.add(composedOf(*lIt, *rIt, *relIt, d.maxSpanInterval()));
+            }
+        }
+    }
+
+    return result;
 }
