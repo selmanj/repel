@@ -2,6 +2,7 @@
 #define CONSTANT_H
 
 #include <string>
+#include <boost/functional/hash.hpp>
 #include "term.h"
 
 class Constant : public Term {
@@ -11,6 +12,8 @@ public:
     ~Constant();
 
     Constant& operator=(const Constant& other);
+
+    friend std::size_t hash_value(const Constant& c);
 protected:
     virtual void doToString(std::string& str) const;
 private:
@@ -19,7 +22,9 @@ private:
     virtual Term* doClone() const;
     virtual std::string doName() const;
     virtual bool doEquals(const Term& t) const;
+    virtual std::size_t doHash() const;
 };
+
 
 // implementation
 inline Constant::Constant(std::string name) : name_(name) {}
@@ -43,6 +48,13 @@ inline bool Constant::doEquals(const Term& t) const {
         return false; // wrong type
     }
     return con->name_ == name_;
+}
+
+inline std::size_t Constant::doHash() const {return hash_value(*this);}
+
+inline std::size_t hash_value(const Constant& c) {
+    boost::hash<std::string> hasher;
+    return hasher(c.name_);
 }
 
 

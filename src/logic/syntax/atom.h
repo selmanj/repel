@@ -39,6 +39,10 @@ public:
 
     void push_back(std::auto_ptr<Term> t);
     virtual void visit(SentenceVisitor& v) const;
+
+    friend std::size_t hash_value(const Atom& a);
+    friend bool operator==(const Atom& l, const Atom& r);
+    friend bool operator!=(const Atom& l, const Atom& r);
 protected:
     virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
@@ -88,6 +92,16 @@ inline Term& Atom::at(size_type n) {return terms[n];};
 inline const Term& Atom::at(size_type n) const {return terms[n];};
 
 inline void Atom::push_back(std::auto_ptr<Term> t)  {terms.push_back(t);};
+
+inline std::size_t hash_value(const Atom& a) {
+    std::size_t seed = 0;
+    boost::hash_combine(seed, a.pred);
+    boost::hash_range(seed, a.terms.begin(), a.terms.end());
+    return seed;
+}
+
+inline bool operator==(const Atom& l, const Atom& r) {return (l.pred == r.pred && l.terms == r.terms);}
+inline bool operator!=(const Atom& l, const Atom& r) {return !operator==(l, r);}
 
 inline void Atom::visit(SentenceVisitor& v) const {
     v.accept(*this);

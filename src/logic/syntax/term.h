@@ -16,6 +16,8 @@ public:
 
     std::string toString() const;
 
+    friend std::size_t hash_value(const Term& t);
+
 protected:
     virtual void doToString(std::string& str) const = 0;
 
@@ -23,6 +25,7 @@ private:
     virtual Term* doClone() const = 0;
     virtual std::string doName() const = 0;
     virtual bool doEquals(const Term& t) const = 0;
+    virtual std::size_t doHash() const = 0;
 };
 
 // IMPLEMENTATION
@@ -38,6 +41,10 @@ inline std::string Term::toString() const {
     std::string str;
     doToString(str);
     return str;
+}
+
+inline std::size_t hash_value(const Term& t) {
+    return t.doHash();
 }
 
 inline Term* new_clone(const Term& t) {return t.clone();}

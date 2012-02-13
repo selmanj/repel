@@ -8,14 +8,14 @@
 #ifndef MODEL_H_
 #define MODEL_H_
 
-#include <map>
+#include <boost/unordered_map.hpp>
 #include "el_syntax.h"
 #include "../siset.h"
 
 class Model {
 public:
-    typedef std::map<Atom, SISet, atomcmp>::const_iterator const_iterator;
-    typedef std::map<Atom, SISet, atomcmp>::value_type value_type;
+    typedef boost::unordered_map<Atom, SISet>::const_iterator const_iterator;
+    typedef boost::unordered_map<Atom, SISet>::value_type value_type;
 
     Model();
     Model(const std::vector<FOL::Event>& pairs);
@@ -45,7 +45,7 @@ public:
     bool operator ==(const Model& a) const;
     bool operator !=(const Model& a) const {return !(*this == a);}
 
-    typedef std::map<Atom, SISet, atomcmp> atom_map;
+    typedef boost::unordered_map<Atom, SISet> atom_map;
 
 private:
 
