@@ -261,7 +261,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             boost::shared_ptr<Sentence> bodyCopy(body->clone());
             boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
             // find where this statement is not true
-            falseAt = d.satisfied(*disSingle, m).compliment();
+            falseAt = disSingle->satisfied(m, d).compliment();
             LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
         }
         if (falseAt.size() != 0) {
@@ -271,7 +271,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             unsigned int b = toSatisfy.finish().start();
             // case 1 and 2:  extend the precedent (or consequent) so that it meets with the next spot the consequent is true at
             {
-                SISet phi2TrueAt = d.satisfied(*phi2, m);
+                SISet phi2TrueAt = phi2->satisfied(m, d);
                 if (b != d.maxInterval().finish()) {
                     // find the point after b where phi2 is true at
                     SpanInterval toIntersect(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish());
@@ -328,7 +328,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             boost::shared_ptr<Sentence> bodyCopy(body->clone());
             boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
             // find where this statement is not true
-            falseAt = d.satisfied(*disSingle, m).compliment();
+            falseAt = disSingle->satisfied(m, d).compliment();
             LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
         }
         if (falseAt.size() != 0) {
@@ -337,7 +337,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             unsigned int b = toSatisfy.start().start();
             // case 1 and 2:  extend the precedent (or consequent) so that it meets with the next spot the consequent is true at
             {
-                SISet phi2TrueAt = d.satisfied(*phi2, m);
+                SISet phi2TrueAt = phi2->satisfied(m, d);
                 if (b != d.maxInterval().start()) {
                     // find the point before b where phi2 is true at
                     SpanInterval toIntersect(d.maxInterval().start(), b-1, d.maxInterval().start(),b-1);
@@ -393,7 +393,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             boost::shared_ptr<Sentence> bodyCopy(body->clone());
             boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
             // find where this statement is not true
-            falseAt = d.satisfied(*disSingle, m).compliment();
+            falseAt = disSingle->satisfied(m, d).compliment();
             LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
         }
         if (falseAt.size() != 0) {
@@ -401,7 +401,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             SpanInterval toSatisfy = falseAt.randomSI();
             unsigned int b = toSatisfy.finish().finish();
             // case 1: extend phi1 to satisfy violation at b
-            SISet phi2TrueAt = d.satisfied(*phi2, m);
+            SISet phi2TrueAt = phi2->satisfied(m, d);
             {
                 if (b != d.maxInterval().finish()) {
                     // find the point after b where phi2 is true at
@@ -458,7 +458,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                 boost::shared_ptr<Sentence> bodyCopy(body->clone());
                 boost::shared_ptr<Sentence> disSingle(new Disjunction(headDiaSingle, bodyCopy));
                 // find where this statement is not true
-                falseAt = d.satisfied(*disSingle, m).compliment();
+                falseAt = disSingle->satisfied(m, d).compliment();
                 LOG(LOG_DEBUG) << "false at :" << falseAt.toString();
             }
             if (falseAt.size() != 0) {
@@ -467,7 +467,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
                 SpanInterval toSatisfy = falseAt.randomSI();
                 unsigned int b = toSatisfy.finish().finish();
                 // case 1: extend phi2 to satisfy violation ending at b
-                SISet phi2TrueAt = d.satisfied(*phi2, m);
+                SISet phi2TrueAt = phi2->satisfied(m, d);
 
                 // find the point before b where phi2 is true at
                 SpanInterval toIntersect(toSatisfy.start().start(), b, toSatisfy.start().start(), b);
@@ -578,7 +578,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
     /////// DONE PARSING OUT IMPORTANT PIECES /////////
 
     // pick an interval to satisfy where this sentence is violated
-    SISet violations = d.satisfied(dis, m);
+    SISet violations = dis.satisfied(m, d);
     violations = violations.compliment();
 
     if (violations.size() == 0) {
@@ -593,7 +593,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
 
     // CASE 1: extend phik to satisfy violation at b
     // find the next point of time that phiPrime is true at
-    SISet phiPrimeTrueAt = d.satisfied(*phiPrime, m);
+    SISet phiPrimeTrueAt = phiPrime->satisfied(m, d);
     // we only care about time points after b
     SISet toIntersect(true, d.maxInterval());
     toIntersect.add(SpanInterval(b+1, d.maxInterval().finish(), b+1, d.maxInterval().finish()));
@@ -613,7 +613,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
 
     // CASE 3: delete phik until met by phiPrime (optionally deleting all of phik
-    SISet phikTrueAt = d.satisfied(*phik, m);
+    SISet phikTrueAt = phik->satisfied(m, d);
     toIntersect = SISet(true, d.maxInterval());
     toIntersect.add(SpanInterval(d.maxInterval().start(), b, d.maxInterval().start(), b));
     toScan = intersection(phikTrueAt, toIntersect);
@@ -671,7 +671,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
     std::vector<const Sentence *> consArgs = getMeetsConjunctionArgs(*consConj);
 
     // find an interval to satisfy this over
-    SISet violations = d.satisfied(dis, m);
+    SISet violations = dis.satisfied(m, d);
     violations = violations.compliment();
     if (violations.size() == 0) {
         LOG_PRINT(LOG_WARN) << "given a sentence that has no violations for form 3! sentence: " << dis.toString();
@@ -696,10 +696,10 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
         SISet beforeTrueAt(false, d.maxInterval());
         bool elementsBefore=true;
         if (eleBefore.size() == 1) {
-            beforeTrueAt = d.satisfied(*eleBefore[0], m);
+            beforeTrueAt = eleBefore[0]->satisfied(m, d);
             beforeTrueAt = intersection(toSatisfySet, beforeTrueAt);
         } else if (eleBefore.size() > 1) {
-            beforeTrueAt = d.satisfied(*wrapInMeetsConjunction(eleBefore), m);
+            beforeTrueAt = wrapInMeetsConjunction(eleBefore)->satisfied(m, d);
             beforeTrueAt = intersection(toSatisfySet, beforeTrueAt);
         } else {
             elementsBefore = false;
@@ -707,16 +707,16 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
         SISet afterTrueAt(false, d.maxInterval());
         bool elementsAfter=true;
         if (eleAfter.size() == 1) {
-            afterTrueAt = d.satisfied(*eleAfter[0], m);
+            afterTrueAt = eleAfter[0]->satisfied(m, d);
             afterTrueAt = intersection(toSatisfySet, afterTrueAt);
         } else if (eleAfter.size() > 1) {
-            afterTrueAt = d.satisfied(*wrapInMeetsConjunction(eleAfter), m);
+            afterTrueAt = wrapInMeetsConjunction(eleAfter)->satisfied(m, d);
             afterTrueAt = intersection(toSatisfySet, afterTrueAt);
         } else {
             elementsAfter = false;
         }
 
-        SISet currTrueAt = d.satisfied(**it, m);
+        SISet currTrueAt = (*it)->satisfied(m, d);
 
         currTrueAt = intersection(currTrueAt, toSatisfySet);
 
@@ -917,7 +917,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
     std::vector<Move> moves;
     if (dynamic_cast<const LiquidOp*>(&s)) {
         // pick an si to satisfy
-        SISet notSat = d.satisfied(s, m);
+        SISet notSat = s.satisfied(m, d);
         notSat.setForceLiquid(true);
         LOG(LOG_DEBUG) << "sentence " << s.toString() << " satisfied at " << notSat.toString();
         notSat = notSat.compliment();
@@ -935,7 +935,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
         moves = findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));
     } else if (isPELCNFLiteral(s)) {
         // pick an si to satisfy
-        SISet notSat = d.satisfied(s, m);
+        SISet notSat = s.satisfied(m, d);
         notSat = notSat.compliment();
         if (notSat.size() == 0) return moves;
 
@@ -943,7 +943,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
         moves = findMovesForPELCNFLiteral(d, m, s, si);
     } else if (isDisjunctionOfCNFLiterals(s)) {
         // instead of choosing just one si, we'll try them all
-        SISet notSat = d.satisfied(s, m);
+        SISet notSat = s.satisfied(m, d);
         LOG(LOG_DEBUG) << "sentence true at :" << notSat.toString();
         notSat = notSat.compliment();
         LOG(LOG_DEBUG) << "sentence NOT true at :" << notSat.toString();
@@ -1151,9 +1151,9 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             // find where leftAtom is true, intersected with si
             SISet toIntersect(false, d.maxInterval());
             toIntersect.add(SpanInterval(si.start().start(), si.finish().finish(), si.start().start(), si.finish().finish()));
-            SISet leftTrueAt = d.satisfied(*leftAtom, m);
+            SISet leftTrueAt = leftAtom->satisfied(m, d);
             leftTrueAt = intersection(leftTrueAt, toIntersect);
-            SISet rightTrueAt = d.satisfied(*rightAtom, m);
+            SISet rightTrueAt = rightAtom->satisfied(m, d);
             rightTrueAt = intersection(rightTrueAt, toIntersect);
 
             if (con->relations().find(Interval::LESSTHAN) != con->relations().end()) {
@@ -1247,7 +1247,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             // unfortunately we can only add (or extend) phi to satisfy this relation
             if (!si.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval())) return moves;
             SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETSI, d.maxSpanInterval()).get();
-            SISet insideSatisfiedAt = d.satisfied(*a,m);
+            SISet insideSatisfiedAt = a->satisfied(m, d);
             insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
             unsigned int j = whereToSat.finish().finish();
 
@@ -1274,7 +1274,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             // unfortunately we can only add (or extend) phi to satisfy this relation
             if (!si.satisfiesRelation(Interval::MEETS, d.maxSpanInterval())) return moves;
             SpanInterval whereToSat = si.satisfiesRelation(Interval::MEETS, d.maxSpanInterval()).get();
-            SISet insideSatisfiedAt = d.satisfied(*a,m);
+            SISet insideSatisfiedAt = a->satisfied(m, d);
             insideSatisfiedAt = intersection(insideSatisfiedAt, whereToSat);
             unsigned int j = whereToSat.start().start();
 

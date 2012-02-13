@@ -85,8 +85,10 @@ bool Domain::isLiquid(const std::string& predicate) const {
 }
 
 unsigned long Domain::score(const ELSentence& w, const Model& m) const {
-    const Sentence& s = *(w.sentence());
-    SISet sat = satisfied(s, m);
+    SISet quantification = SISet(maxSpanInterval(), false, maxInterval());
+    if (w.isQuantified()) quantification = w.quantification();
+
+    SISet sat = w.sentence()->satisfied(m, *this, false, &quantification);
     if (!sat.isDisjoint()) sat.makeDisjoint();
     return sat.size() * w.weight();
 }
@@ -98,6 +100,7 @@ unsigned long Domain::score(const Model& m) const {
     }
     return sum;
 }
+/*
 
 SISet Domain::satisfied(const Sentence& s, const Model& m, const SISet* where) const {
 
@@ -292,3 +295,4 @@ SISet Domain::liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const {
     }
     return toReturn;
 }
+*/

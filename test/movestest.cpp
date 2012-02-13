@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondConjTest) {
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
     ELSentence form1 = d.formulas().at(0);
-    SISet sat = d.satisfied(*form1.sentence(), d.defaultModel());
+    SISet sat = form1.sentence()->satisfied(d.defaultModel(), d);
     std::cout << "sat = " << sat.toString() << std::endl;
     std::cout << "sat compliment is = " << sat.compliment().toString() << std::endl;
 
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(pelCNFDisjLiqTest) {
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
     ELSentence form1 = d.formulas().at(0);
-    SISet sat = d.satisfied(*form1.sentence(), d.defaultModel());
+    SISet sat = form1.sentence()->satisfied(d.defaultModel(), d);
     BOOST_CHECK_EQUAL(sat.toString(), "{[1:34], [35:50]}");
 }
 
