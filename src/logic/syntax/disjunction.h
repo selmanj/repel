@@ -10,6 +10,8 @@ class Model;
 
 class Disjunction : public Sentence {
 public:
+    static const std::size_t TypeCode = 5;
+
     Disjunction(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);
     Disjunction(const Disjunction& a);
     virtual ~Disjunction();
@@ -24,8 +26,10 @@ public:
 
     void setLeft(boost::shared_ptr<Sentence> s);
     void setRight(boost::shared_ptr<Sentence> s);
-protected:
-    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
+
+    virtual std::size_t getTypeCode() const;
+    friend std::size_t hash_value(const Disjunction& d);
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     boost::shared_ptr<Sentence> left_;
     boost::shared_ptr<Sentence> right_;
@@ -37,7 +41,7 @@ private:
     virtual void visit(SentenceVisitor& v) const;
     virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
-
+    virtual std::size_t doHashValue() const;
 };
 
 // IMPLEMENTATION
@@ -57,6 +61,16 @@ inline Disjunction& Disjunction::operator=(Disjunction b) {
     swap(*this, b);
     return *this;
 }
+inline std::size_t Disjunction::getTypeCode() const { return Disjunction::TypeCode;}
+
+inline std::size_t hash_value(const Disjunction& d) {
+    std::size_t seed = Disjunction::TypeCode;
+    boost::hash_combine(seed, *d.left_);
+    boost::hash_combine(seed, *d.right_);
+    return seed;
+}
+
+inline std::size_t Disjunction::doHashValue() const { return hash_value(*this);}
 
 inline boost::shared_ptr<Sentence> Disjunction::left() {return left_;}
 inline boost::shared_ptr<const Sentence> Disjunction::left() const {return left_;}

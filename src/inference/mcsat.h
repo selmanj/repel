@@ -60,7 +60,7 @@ Model MCSat::performIteration(const Model& m, const Domain& d, URNG& rng) const 
         }
         SISet where = (curForm.isQuantified() ? curForm.quantification() : SISet(d.maxSpanInterval(), false, d.maxInterval()));
         // find where it's satisfied
-        SISet trueAt = curForm.sentence()->satisfied(m, d, false, &where);
+        SISet trueAt = curForm.sentence()->dSatisfied(m, d, where);
         if (trueAt == where) {
             // keep enforcing it for now, it's satisfied everywhere
             formsToEnforce.push_back(curForm);

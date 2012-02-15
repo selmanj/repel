@@ -11,6 +11,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
+#include <boost/functional/hash.hpp>
 #include <climits>
 #include <set>
 #include <vector>
@@ -45,6 +46,7 @@ public:
     friend bool operator<(const SpanInterval& a, const SpanInterval& b);
     friend bool operator>=(const SpanInterval& a, const SpanInterval& b);
     friend bool operator<=(const SpanInterval& a, const SpanInterval& b);
+    friend std::size_t hash_value(const SpanInterval& si);
 
     bool isEmpty() const;
     unsigned int size() const;
@@ -166,6 +168,12 @@ inline bool operator<(const SpanInterval& a, const SpanInterval& b) {
 inline bool operator> (const SpanInterval& a, const SpanInterval& b) {return  operator<(b,a);}
 inline bool operator>=(const SpanInterval& a, const SpanInterval& b) {return !operator<(a,b);}
 inline bool operator<=(const SpanInterval& a, const SpanInterval& b) {return !operator>(a,b);}
+inline std::size_t hash_value(const SpanInterval& si) {
+    std::size_t seed = 0;
+    boost::hash_combine(seed, si.start_);
+    boost::hash_combine(seed, si.finish_);
+    return seed;
+}
 
 inline bool SpanInterval::isEmpty() const {
     unsigned int j = std::min(start_.finish(), finish_.finish());

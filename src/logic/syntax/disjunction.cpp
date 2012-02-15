@@ -24,9 +24,16 @@ void Disjunction::doToString(std::stringstream& str) const {
     }
 };
 
-SISet Disjunction::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+SISet Disjunction::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     SISet leftSat = left_->satisfied(m, d, forceLiquid);
     SISet rightSat = right_->satisfied(m, d, forceLiquid);
+    if (!forceLiquid) {
+        leftSat.setForceLiquid(false);
+        rightSat.setForceLiquid(false);
+    } else {
+        leftSat.setForceLiquid(true);
+        rightSat.setForceLiquid(true);
+    }
     leftSat.add(rightSat);
     return leftSat;
 }

@@ -4,6 +4,7 @@
 #include <set>
 #include <utility>
 #include <boost/shared_ptr.hpp>
+#include <boost/functional/hash.hpp>
 #include "sentence.h"
 #include "sentencevisitor.h"
 #include "../../interval.h"
@@ -13,6 +14,8 @@ class Model;
 
 class Conjunction : public Sentence {
 public:
+    static const std::size_t TypeCode = 2;
+
     template<class InputIterator>
     Conjunction(boost::shared_ptr<Sentence> left,
             boost::shared_ptr<Sentence> right,
@@ -35,6 +38,9 @@ public:
     friend void swap(Conjunction& left, Conjunction& right);
     Conjunction& operator=(Conjunction b);
 
+    virtual std::size_t getTypeCode() const;
+    friend std::size_t hash_value(const Conjunction& c);
+
     boost::shared_ptr<Sentence> left();
     boost::shared_ptr<const Sentence> left() const;
     boost::shared_ptr<Sentence> right();
@@ -53,8 +59,7 @@ public:
     virtual void visit(SentenceVisitor& v) const;
 
     static const std::set<Interval::INTERVAL_RELATION>& defaultRelations();
-protected:
-    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
 
     boost::shared_ptr<Sentence>  left_;
@@ -67,7 +72,7 @@ private:
     virtual void doToString(std::stringstream& str) const;
     virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
-
+    virtual std::size_t doHashValue() const;
 };
 
 // IMPLEMENTATION
@@ -112,6 +117,20 @@ inline Conjunction& Conjunction::operator=(Conjunction b) {
     swap(*this, b);
     return *this;
 }
+inline std::size_t Conjunction::getTypeCode() const {
+    return Conjunction::TypeCode;
+}
+
+inline std::size_t hash_value(const Conjunction& c) {
+    std::size_t seed = Conjunction::TypeCode;
+    boost::hash_combine(seed, *c.left_);
+    boost::hash_combine(seed, *c.right_);
+    boost::hash_range(seed, c.rels_.begin(), c.rels_.end());
+    // TODO: we can't currently hash SISets, so we just ignore TQConstraints
+    // This is ok, but causes conflicts and reduces performance.
+    return seed;
+}
+
 
 inline boost::shared_ptr<Sentence> Conjunction::left() {return left_;}
 inline boost::shared_ptr<const Sentence> Conjunction::left() const {return left_;}
@@ -136,6 +155,8 @@ inline void Conjunction::setTQConstraints(const std::pair<TQConstraints, TQConst
 }
 // private members
 inline Sentence* Conjunction::doClone() const { return new Conjunction(*this); }
+inline std::size_t Conjunction::doHashValue() const {return hash_value(*this);}
+
 
 inline bool Conjunction::doEquals(const Sentence& s) const {
     const Conjunction *con = dynamic_cast<const Conjunction*>(&s);

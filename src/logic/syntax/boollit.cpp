@@ -17,7 +17,7 @@ bool BoolLit::doEquals(const Sentence& t) const {
     return bt->val_ == val_;
 }
 
-SISet BoolLit::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+SISet BoolLit::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     if (!val_) return SISet(forceLiquid, d.maxInterval());
     return SISet(d.maxSpanInterval(), forceLiquid, d.maxInterval());
 }

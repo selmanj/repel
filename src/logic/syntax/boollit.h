@@ -9,9 +9,12 @@
 #define BOOLLIT_H_
 
 #include "sentence.h"
+#include "boost/functional/hash.hpp"
 
 class BoolLit: public Sentence {
 public:
+    static const std::size_t TypeCode = 1;
+
     BoolLit(bool value);
     BoolLit(const BoolLit& other);
     virtual ~BoolLit();
@@ -22,8 +25,10 @@ public:
     bool value() const;
     void setValue(bool val);
     virtual void visit(SentenceVisitor& s) const;
-protected:
-    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
+
+    friend std::size_t hash_value(const BoolLit& b);
+    virtual std::size_t getTypeCode() const;
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     bool val_;
 
@@ -32,6 +37,7 @@ private:
     virtual bool doEquals(const Sentence& t) const;
     virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
+    virtual std::size_t doHashValue() const;
 };
 
 // IMPLEMENTATION
@@ -47,6 +53,14 @@ inline BoolLit& BoolLit::operator=(BoolLit other) {swap(*this, other); return *t
 
 inline bool BoolLit::value() const {return val_;};
 inline void BoolLit::setValue(bool val) {val_ = val;};
+
+inline std::size_t hash_value(const BoolLit& b) {
+    std::size_t seed = BoolLit::TypeCode;
+    boost::hash_combine(seed, b.val_);
+    return seed;
+
+}
+inline std::size_t BoolLit::doHashValue() const { return hash_value(*this);}
 inline void BoolLit::visit(SentenceVisitor& s) const {s.accept(*this);}
 
 // private members
@@ -57,5 +71,6 @@ inline void BoolLit::doToString(std::stringstream& str) const {
 inline Sentence* BoolLit::doClone() const { return new BoolLit(*this);};
 inline int BoolLit::doPrecedence() const { return 0;}
 inline bool BoolLit::doContains(const Sentence& s) const {return *this == s;}
+inline std::size_t BoolLit::getTypeCode() const { return BoolLit::TypeCode;}
 
 #endif /* BOOLLIT_H_ */

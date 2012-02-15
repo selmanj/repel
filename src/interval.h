@@ -2,6 +2,7 @@
 #define INTERVAL_H
 
 #include <string>
+#include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
 #include <iostream>
 
@@ -187,6 +188,11 @@ bool after (const Interval& lhs, const Interval& rhs);
 bool before(const Interval& lhs, const Interval& rhs);
 
 /**
+ * Compute the hash value for an interval.
+ */
+std::size_t hash_value(const Interval& i);
+
+/**
  * Output the interval to a stream.  An interval is displayed as "(a, b)",
  * where a is the start point and b is the finish point.
  */
@@ -311,6 +317,13 @@ inline bool after(const Interval& lhs, const Interval& rhs) {
 
 inline bool before(const Interval& lhs, const Interval& rhs) {
     return lhs.e_+1 < rhs.s_;
+}
+
+inline std::size_t hash_value(const Interval& i) {
+    std::size_t seed = 0;
+    boost::hash_combine(seed, i.start());
+    boost::hash_combine(seed, i.finish());
+    return seed;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Interval& obj) {

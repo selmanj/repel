@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <boost/utility.hpp>
+#include <boost/functional/hash.hpp>
 #include "sentencevisitor.h"
 #include "../../siset.h"
 
@@ -96,14 +97,30 @@ public:
      * truth value at.
      * @return a SISet containing the intervals where the sentence is true at.
      */
-    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid=false, const SISet* where=NULL) const;
+    //virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid, const SISet* where) const;
+
+    SISet dSatisfied(const Model& m, const Domain& d) const;
+    SISet dSatisfied(const Model& m, const Domain& d, const SISet& where) const;
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const = 0;
+
+
+    /**
+     * Get a std::size_t value representing the type.  This value can be
+     * compared at runtime to the static value typeCode() on each class to
+     * cheaply see what class you are dealing with.
+     *
+     * @return a std::size_t value uniquely defined for each class
+     */
+    virtual std::size_t getTypeCode() const = 0;
+
+    friend std::size_t hash_value(const Sentence& s);
 private:
-    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const = 0;
     virtual void doToString(std::stringstream& str) const = 0;
     virtual Sentence* doClone() const = 0;
     virtual bool doEquals(const Sentence& t) const = 0;
     virtual int doPrecedence() const = 0;
     virtual bool doContains(const Sentence& s) const = 0;
+    virtual std::size_t doHashValue() const = 0;
 };
 
 /**
@@ -141,6 +158,23 @@ inline bool Sentence::contains(const Sentence& s) const { return doContains(s);}
 inline Sentence* new_clone(const Sentence& t) {
     return t.clone();
 };
+
+inline std::size_t hash_value(const Sentence& s) {
+    return s.doHashValue();
+}
+
+inline SISet Sentence::dSatisfied(const Model& m, const Domain& d) const {
+    SISet set = satisfied(m, d, false);
+    set.makeDisjoint();
+    return set;
+}
+
+inline SISet Sentence::dSatisfied(const Model& m, const Domain& d, const SISet &where) const {
+    SISet set = satisfied(m, d, false);
+    set = intersection(set, where);
+    set.makeDisjoint();
+    return set;
+}
 
 inline bool TQConstraints::operator==(const TQConstraints& b) const {
     return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);

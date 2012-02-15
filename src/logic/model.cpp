@@ -179,14 +179,17 @@ unsigned long Model::size() const {
 std::string Model::toString() const {
     std::stringstream stream;
 
-    for (atom_map::const_iterator it = amap_.begin(); it != amap_.end(); it++) {
-        const Atom a = it->first;
-        SISet set = it->second;
+    // sort it
+    std::set<Atom, atomcmp> at = atoms();
+    for (std::set<Atom, atomcmp>::const_iterator it = at.begin(); it != at.end(); it++) {
+        Atom a = *it;
+        SISet set = amap_.at(a);
         stream << a.toString() << " @ " << set.toString() << std::endl;
     }
     return stream.str();
 }
 
+/*
 bool Model::operator ==(const Model& a) const {
     if (atoms() != a.atoms()) return false;
     BOOST_FOREACH(Atom atom, atoms()) {
@@ -195,8 +198,9 @@ bool Model::operator ==(const Model& a) const {
         if (ourSet != theirSet) return false;
     }
     return true;
-}
 
+}
+*/
 
 
 Model subtractModel(const Model& from, const Model& toSubtract) {

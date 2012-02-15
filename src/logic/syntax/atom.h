@@ -20,6 +20,8 @@ class Atom : public Sentence {
 public:
     typedef boost::ptr_vector<Term>::size_type size_type;
 
+    static const std::size_t TypeCode = 0;
+
     Atom(std::string name);
     template <class AutoPtrIterator>
     Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last);
@@ -43,8 +45,8 @@ public:
     friend std::size_t hash_value(const Atom& a);
     friend bool operator==(const Atom& l, const Atom& r);
     friend bool operator!=(const Atom& l, const Atom& r);
-protected:
-    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
+    virtual std::size_t getTypeCode() const;
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     std::string pred;
     boost::ptr_vector<Term> terms;
@@ -55,7 +57,7 @@ private:
     virtual void doToString(std::stringstream& str) const;
     virtual int doPrecedence() const;
     virtual bool doContains(const Sentence& s) const;
-
+    virtual std::size_t doHashValue() const;
 };
 
 struct atomcmp {
@@ -94,7 +96,7 @@ inline const Term& Atom::at(size_type n) const {return terms[n];};
 inline void Atom::push_back(std::auto_ptr<Term> t)  {terms.push_back(t);};
 
 inline std::size_t hash_value(const Atom& a) {
-    std::size_t seed = 0;
+    std::size_t seed = Atom::TypeCode;
     boost::hash_combine(seed, a.pred);
     boost::hash_range(seed, a.terms.begin(), a.terms.end());
     return seed;
@@ -109,8 +111,10 @@ inline void Atom::visit(SentenceVisitor& v) const {
 
 
 inline Sentence* Atom::doClone() const {return new Atom(*this);};
+inline std::size_t Atom::doHashValue() const {return hash_value(*this);}
 inline int Atom::doPrecedence() const {return 0;};
 inline bool Atom::doContains(const Sentence& s) const {return *this == s;};
+inline std::size_t Atom::getTypeCode() const {return Atom::TypeCode;}
 
 
 #endif

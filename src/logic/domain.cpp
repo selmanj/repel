@@ -88,7 +88,7 @@ unsigned long Domain::score(const ELSentence& w, const Model& m) const {
     SISet quantification = SISet(maxSpanInterval(), false, maxInterval());
     if (w.isQuantified()) quantification = w.quantification();
 
-    SISet sat = w.sentence()->satisfied(m, *this, false, &quantification);
+    SISet sat = w.sentence()->dSatisfied(m, *this, quantification);
     if (!sat.isDisjoint()) sat.makeDisjoint();
     return sat.size() * w.weight();
 }

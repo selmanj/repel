@@ -50,10 +50,11 @@ void DiamondOp::doToString(std::stringstream& str) const {
     }
 };
 
-SISet DiamondOp::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+SISet DiamondOp::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     if (forceLiquid) throw std::runtime_error("DiamondOp::doSatisfied(): given parameter forceLiquid=true, but diamond op is a non liquid operator!");
 
     SISet sat = s_->satisfied(m, d, false);
+    sat.setForceLiquid(false);
 
     SISet newsat(false, sat.maxInterval());
     for(SISet::const_iterator sIt = sat.begin(); sIt != sat.end(); sIt++) {

@@ -42,9 +42,12 @@ public:
 
     std::string toString() const;
 
+    /*
     bool operator ==(const Model& a) const;
     bool operator !=(const Model& a) const {return !(*this == a);}
-
+*/
+    friend bool operator==(const Model& l, const Model& r);
+    friend bool operator!=(const Model& l, const Model& r);
     typedef boost::unordered_map<Atom, SISet> atom_map;
 
 private:
@@ -56,5 +59,8 @@ Model subtractModel(const Model& from, const Model& toSubtract);
 Model intersectModel(const Model& a, const Model& b);
 Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval);
 
+// IMPLEMENTATION
+inline bool operator==(const Model& l, const Model& r) {return l.amap_ == r.amap_;}
+inline bool operator!=(const Model& l, const Model& r) {return !operator==(l, r);}
 
 #endif /* MODEL_H_ */

@@ -51,6 +51,16 @@ public:
     void setForceLiquid(bool forceLiquid);
     void subtract(const SpanInterval& si);
     void subtract(const SISet& sis);
+
+    /**
+     * Check to see if this SISet includes another SISet.  This is equivalent
+     * to set inclusion.
+     *
+     * @param s SISet to check to see if it's included
+     * @return true if s is in this, false otherwise
+     */
+    bool includes(const SISet& s) const;
+
     const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const;
 
     static SISet randomSISet(bool forceLiquid, const Interval& maxInterval);
@@ -81,7 +91,13 @@ inline SISet::const_iterator SISet::begin() const {return set_.begin();}
 inline SISet::const_iterator SISet::end() const {return set_.end();}
 inline bool SISet::empty() const { return size() == 0;}
 
-inline bool operator==(const SISet& l, const SISet& r) {return (l.set_ == r.set_);}    //TODO: is this the right thing to do???
+inline bool SISet::includes(const SISet& s) const {
+    SISet copy = s;
+    copy.subtract(*this);
+    return copy.empty();
+}
+
+inline bool operator==(const SISet& l, const SISet& r) {return l.includes(r) && r.includes(l);}    //TODO: is this the right thing to do???
 inline bool operator!=(const SISet& l, const SISet& r) {return !operator==(l,r);}
 
 

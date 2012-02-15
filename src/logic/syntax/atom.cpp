@@ -43,7 +43,7 @@ void Atom::doToString(std::stringstream& str) const {
     str << ")";
 };
 
-SISet Atom::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+SISet Atom::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     if (isGrounded()) {
         // make sure its in model
         if (m.hasAtom(*this)){

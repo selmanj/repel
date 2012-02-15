@@ -74,13 +74,18 @@ void Conjunction::doToString(std::stringstream& str) const {
     }
 }
 
-SISet Conjunction::doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+SISet Conjunction::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     SISet leftSat = left_->satisfied(m, d, forceLiquid);
     SISet rightSat = right_->satisfied(m, d, forceLiquid);
 
     if (forceLiquid) {
+        leftSat.setForceLiquid(true);
+        rightSat.setForceLiquid(true);
         // conjunction must be intersection
         return intersection(leftSat, rightSat);
+    } else {
+        leftSat.setForceLiquid(false);
+        rightSat.setForceLiquid(false);
     }
 
     SISet result(false, d.maxInterval());

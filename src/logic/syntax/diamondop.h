@@ -9,6 +9,8 @@
 
 class DiamondOp : public Sentence {
 public:
+    static const std::size_t TypeCode = 3;
+
     static const std::set<Interval::INTERVAL_RELATION>& defaultRelations();
 
     DiamondOp(boost::shared_ptr<Sentence> sentence, const TQConstraints* tqconstraints=0);
@@ -35,8 +37,10 @@ public:
     template<typename T>
     void setRelations(T begin, T end);
     void setTQConstraints(const TQConstraints& tq);
-protected:
-    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
+
+    friend std::size_t hash_value(const DiamondOp& d);
+    virtual std::size_t getTypeCode() const;
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     std::set<Interval::INTERVAL_RELATION> rels_;
     boost::shared_ptr<Sentence> s_;
@@ -50,6 +54,7 @@ private:
     virtual int doPrecedence() const;
     virtual void visit(SentenceVisitor& v) const;
     virtual bool doContains(const Sentence& s) const;
+    virtual std::size_t doHashValue() const;
 };
 
 // implementation below
@@ -101,6 +106,18 @@ template<typename T>
 inline void DiamondOp::setRelations(T begin, T end) {rels_.clear(); std::copy(begin, end, std::inserter(rels_, rels_.end()));}
 inline void DiamondOp::setTQConstraints(const TQConstraints& tq) {tqconstraints_ = tq;}
 
+inline std::size_t hash_value(const DiamondOp& d) {
+    std::size_t seed = DiamondOp::TypeCode;
+    boost::hash_range(seed, d.rels_.begin(), d.rels_.end());
+    boost::hash_combine(seed, *d.s_);
+    // TODO: we can't currently hash SISets, so we just ignore TQConstraints
+    // This is ok, but causes conflicts and reduces performance.
+    return seed;
+}
+
+inline std::size_t DiamondOp::getTypeCode() const {
+    return DiamondOp::TypeCode;
+}
 // private methods
 inline Sentence* DiamondOp::doClone() const { return new DiamondOp(*this); }
 inline bool DiamondOp::doEquals(const Sentence& s) const {
@@ -121,4 +138,6 @@ inline void DiamondOp::visit(SentenceVisitor& v) const {
 
     v.accept(*this);
 }
+
+inline std::size_t DiamondOp::doHashValue() const { return hash_value(*this);}
 #endif

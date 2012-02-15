@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
         for(FormulaList::const_iterator it = d->formulas().begin(); it != d->formulas().end(); it++) {
             ELSentence formula = *it;
             //SISet satisfied = d->satisfied(*(formula.sentence()), model);
-            SISet satisfied = formula.sentence()->satisfied(model, *d);
+            SISet satisfied = formula.sentence()->dSatisfied(model, *d);
             unsigned long weight = d->score(formula, model);
             sum += weight;
             LOG_PRINT(LOG_INFO) << "formula: (" << formula.sentence()->toString() << ")";

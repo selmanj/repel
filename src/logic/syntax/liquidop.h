@@ -9,6 +9,8 @@ class Domain;
 
 class LiquidOp : public Sentence {
 public:
+    static const std::size_t TypeCode=7;
+
     LiquidOp(boost::shared_ptr<Sentence> sentence);
     LiquidOp(const LiquidOp& liq);
     virtual ~LiquidOp();
@@ -20,8 +22,9 @@ public:
     boost::shared_ptr<const Sentence> sentence() const;
 
     void setSentence(boost::shared_ptr<Sentence> s);
-protected:
-    virtual SISet doSatisfied(const Model& m, const Domain& d, bool forceLiquid) const;
+    virtual std::size_t getTypeCode() const;
+    friend std::size_t hash_value(const LiquidOp& l);
+    virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
     boost::shared_ptr<Sentence> s_;
 
@@ -32,6 +35,7 @@ private:
 
     virtual void visit(SentenceVisitor& v) const;
     virtual bool doContains(const Sentence& s) const;
+    virtual std::size_t doHashValue() const;
 };
 
 // IMPLEMENTATION
@@ -54,6 +58,12 @@ inline boost::shared_ptr<const Sentence> LiquidOp::sentence() const {return s_;}
 
 inline void LiquidOp::setSentence(boost::shared_ptr<Sentence> s) {s_ = s;}
 
+inline std::size_t LiquidOp::getTypeCode() const { return LiquidOp::TypeCode;}
+inline std::size_t hash_value(const LiquidOp& l) {
+    std::size_t seed = LiquidOp::TypeCode;
+    boost::hash_combine(seed, *l.s_);
+    return seed;
+}
 // private members
 
 inline Sentence* LiquidOp::doClone() const { return new LiquidOp(*this); }
@@ -75,5 +85,5 @@ inline void LiquidOp::visit(SentenceVisitor& v) const {
 inline bool LiquidOp::doContains(const Sentence& s) const {
     return (*this == s || s_->contains(s));
 }
-
+inline std::size_t LiquidOp::doHashValue() const { return hash_value(*this);}
 #endif
