@@ -10,9 +10,7 @@
 #include "model.h"
 
 Model::Model()
-    : amap_() {
-
-}
+    : amap_() {}
 
 Model::Model(const std::vector<FOL::Event>& pairs)
     : amap_() {
@@ -188,20 +186,6 @@ std::string Model::toString() const {
     }
     return stream.str();
 }
-
-/*
-bool Model::operator ==(const Model& a) const {
-    if (atoms() != a.atoms()) return false;
-    BOOST_FOREACH(Atom atom, atoms()) {
-        SISet ourSet= getAtom(atom);
-        SISet theirSet = a.getAtom(atom);
-        if (ourSet != theirSet) return false;
-    }
-    return true;
-
-}
-*/
-
 
 Model subtractModel(const Model& from, const Model& toSubtract) {
     Model mcopy(from);
