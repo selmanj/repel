@@ -24,8 +24,22 @@ public:
     template<typename URNG>
     Model performIteration(const Model& m, const Domain& d, URNG& rng) const;
     void setNumIterations(unsigned int num);
+
+
 private:
     unsigned int numIterations_;
+
+    /**
+     * Given a list of formulas, find where they are satisfied in the model
+     * and split them into two different lists.
+     */
+    template<class InputIterator, class satisfiedOutIt, class unsatisfiedOutIt>
+    void splitSatisfiedRules(const Model& m,
+            const Domain& d,
+            InputIterator begin,
+            InputIterator end,
+            satisfiedOutIt satIt,
+            unsatisfiedOutIt unsatIt) const;
 };
 
 // IMPLEMENTATION
@@ -38,16 +52,71 @@ void MCSat::run(const Domain& d, URNG& rng) {
     // first, use the default model as the initial model
     //Model initialmodel = d.defaultModel();
 
-    Model currModel = d.defaultModel();
+    Model currModel = d.randomModel();
+    std::cout << currModel.toString() << std::endl;
+
+    // find rules currently satisfied, add them to the set
+    std::list<ELSentence> formsSatisfied;
+    std::list<ELSentence> formsNotSatisfied;
+    FormulaList list = d.formulas();
+
+    splitSatisfiedRules(currModel, d, list.begin(), list.end(), std::back_inserter(formsSatisfied), std::back_inserter(formsNotSatisfied));
+
+    std::cout << "satisfied: ";
+    std::copy(formsSatisfied.begin(), formsSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+    std::cout << std::endl;
+    std::cout << "unsatisfied: ";
+    std::copy(formsNotSatisfied.begin(), formsNotSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+    std::cout << std::endl;
+
+    /*
     for (unsigned int i = 0; i < numIterations_; i++ ) {
         currModel = performIteration(currModel, d, rng);
     }
-
+    */
     throw std::runtime_error("MCSat::run not implemented");
+}
+
+template<class InputIterator, class satisfiedOutIt, class unsatisfiedOutIt>
+void MCSat::splitSatisfiedRules(const Model& m,
+        const Domain& d,
+        InputIterator begin,
+        InputIterator end,
+        satisfiedOutIt satIt,
+        unsatisfiedOutIt unsatIt) const {
+    for (InputIterator it = begin; it != end; it++) {
+        ELSentence formula = *it;
+        if (!formula.isQuantified()) {
+            formula.setQuantification(SISet(d.maxSpanInterval(), false, d.maxInterval()));
+        }
+        SISet quantification = formula.quantification();
+        if (quantification.empty()) {
+            continue;   // this formula applies nowhere?
+        }
+        SISet satisfiedAt = formula.dSatisfied(m, d);
+        std::cout << "satisfied = " << satisfiedAt << ", compliment = " << satisfiedAt.compliment() << std::endl;
+        std::cout << "quantification  " << quantification << std::endl;
+        SISet unsatisfiedAt = formula.dNotSatisfied(m, d);
+        std::cout << "unsatisfiedAt = " << unsatisfiedAt << std::endl;
+
+        if (!satisfiedAt.empty()) {
+            ELSentence newForm = formula;
+            newForm.setQuantification(satisfiedAt);
+            *satIt = newForm;
+            satIt++;
+        }
+        if (!unsatisfiedAt.empty()) {
+            ELSentence newForm = formula;
+            newForm.setQuantification(unsatisfiedAt);
+            *unsatIt = newForm;
+            unsatIt++;
+        }
+    }
 }
 
 template<typename URNG>
 Model MCSat::performIteration(const Model& m, const Domain& d, URNG& rng) const {
+    /*
     // first, select a subset of the rules in the domain to enforce as hard,
     // based on their weight
     FormulaList formsToEnforce;
@@ -78,6 +147,7 @@ Model MCSat::performIteration(const Model& m, const Domain& d, URNG& rng) const 
             }
         }
     }
+    */
 
     throw std::runtime_error("MCSat::performIteration not implemented");
 }
