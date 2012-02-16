@@ -16,6 +16,9 @@
 #include "siset.h"
 #include "sentence.h"
 
+class Model;
+class Domain;
+
 class ELSentence {
 public:
     ELSentence(const boost::shared_ptr<Sentence>& s);
@@ -25,6 +28,8 @@ public:
 
     friend bool operator==(const ELSentence& a, const ELSentence& b);
     friend bool operator!=(const ELSentence& a, const ELSentence& b);
+
+    friend std::ostream& operator<<(std::ostream& out, const ELSentence& e);
 
     boost::shared_ptr<Sentence> sentence();
     boost::shared_ptr<const Sentence> sentence() const;
@@ -41,6 +46,9 @@ public:
     void setIsQuantified(bool b);
 
     std::string toString() const;
+
+    SISet dSatisfied(const Model& m, const Domain& d) const;
+    SISet dNotSatisfied(const Model& m, const Domain& d) const;
 private:
     boost::shared_ptr<Sentence> s_;
     unsigned int w_;
@@ -66,6 +74,17 @@ inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int
     : s_(s), w_(w), hasInfWeight_(false), isQuantified_(true), quantification_(q) {}
 
 inline ELSentence::~ELSentence() {}
+
+inline std::ostream& operator<<(std::ostream& out, const ELSentence& e) {
+    if (e.hasInfWeight_) out << "inf: ";
+    else                 out << e.w_ << ": ";
+
+    out << e.s_->toString() << " @ ";   // COME BACK AND REWRITE THIS
+
+    if (e.isQuantified_) out << e.quantification_;
+    else                 out << "<everywhere>";
+    return out;
+}
 
 inline bool operator !=(const ELSentence& a, const ELSentence& b) {return !operator==(a,b);}
 
@@ -94,6 +113,5 @@ inline void ELSentence::setWeight(unsigned int w) {w_ = w; hasInfWeight_ = false
 inline void ELSentence::setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
 inline void ELSentence::setHasInfWeight(bool b) { hasInfWeight_ = b;};
 inline void ELSentence::setIsQuantified(bool b) { isQuantified_ = b;};
-
 
 #endif /* ELSENTENCE_H_ */

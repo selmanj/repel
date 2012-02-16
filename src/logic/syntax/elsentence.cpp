@@ -31,3 +31,13 @@ std::string ELSentence::toString() const {
 
     return str.str();
 };
+
+SISet ELSentence::dSatisfied(const Model& m, const Domain& d) const {
+    if (isQuantified()) return s_->dSatisfied(m, d, quantification_);
+    else return s_->dSatisfied(m, d);
+}
+
+SISet ELSentence::dNotSatisfied(const Model& m, const Domain& d) const {
+    if (isQuantified()) return s_->dNotSatisfied(m, d, quantification_);
+    else return s_->dNotSatisfied(m, d);
+}

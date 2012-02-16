@@ -101,6 +101,8 @@ public:
 
     SISet dSatisfied(const Model& m, const Domain& d) const;
     SISet dSatisfied(const Model& m, const Domain& d, const SISet& where) const;
+    SISet dNotSatisfied(const Model& m, const Domain& d) const;
+    SISet dNotSatisfied(const Model& m, const Domain& d, const SISet& where) const;
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const = 0;
 
 
@@ -176,6 +178,19 @@ inline SISet Sentence::dSatisfied(const Model& m, const Domain& d, const SISet &
     return set;
 }
 
+inline SISet Sentence::dNotSatisfied(const Model& m, const Domain& d) const {
+    SISet set = satisfied(m, d, false);
+    set = set.compliment();
+    set.makeDisjoint();
+    return set;
+}
+
+inline SISet Sentence::dNotSatisfied(const Model& m, const Domain& d, const SISet& where) const {
+    SISet set = satisfied(m, d, false);
+    set = intersection(set.compliment(), where);
+    set.makeDisjoint();
+    return set;
+}
 inline bool TQConstraints::operator==(const TQConstraints& b) const {
     return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);
 }
