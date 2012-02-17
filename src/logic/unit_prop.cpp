@@ -23,8 +23,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     // add quantification to any formulas that may be missing them
     for (FormulaList::iterator it = formulas.begin(); it != formulas.end(); it++) {
         if (!it->isQuantified()) {
-            SISet everywhere(false, d.maxInterval());
-            everywhere.add(d.maxSpanInterval());
+            SISet everywhere(d.maxSpanInterval(), false, d.maxInterval());
             it->setQuantification(everywhere);
         }
     }
