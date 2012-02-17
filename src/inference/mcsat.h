@@ -94,10 +94,7 @@ void MCSat::splitSatisfiedRules(const Model& m,
             continue;   // this formula applies nowhere?
         }
         SISet satisfiedAt = formula.dSatisfied(m, d);
-        std::cout << "satisfied = " << satisfiedAt << ", compliment = " << satisfiedAt.compliment() << std::endl;
-        std::cout << "quantification  " << quantification << std::endl;
         SISet unsatisfiedAt = formula.dNotSatisfied(m, d);
-        std::cout << "unsatisfiedAt = " << unsatisfiedAt << std::endl;
 
         if (!satisfiedAt.empty()) {
             ELSentence newForm = formula;

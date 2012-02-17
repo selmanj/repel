@@ -16,5 +16,7 @@ void LiquidOp::doToString(std::stringstream& str) const {
 };
 
 SISet LiquidOp::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
-    return s_->satisfied(m, d, true); // override value of forceLiquid
+    SISet set = s_->satisfied(m, d, true); // override value of forceLiquid
+    set.setForceLiquid(forceLiquid);
+    return set;
 }
