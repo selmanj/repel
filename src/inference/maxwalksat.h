@@ -16,8 +16,10 @@
 #include <ostream>
 #include <iterator>
 #include "../log.h"
-#include "logic/el_syntax.h"
-#include "logic/moves.h"
+#include "../logic/el_syntax.h"
+#include "../logic/moves.h"
+#include "../logic/model.h"
+#include "../logic/domain.h"
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model& initialModel);
 
