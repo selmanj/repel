@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include "model.h"
+#include "el_syntax.h"
 
 Model::Model()
     : amap_() {}
@@ -48,11 +49,11 @@ Model::Model(const std::vector<FOL::Event>& pairs)
         amap_.insert(pair);
     }
 }
-
+/*
 Model::Model(const Model& m)
     : amap_(m.amap_) {
 }
-
+*/
 /*
 Model::~Model() {
 }

@@ -9,8 +9,10 @@
 #define MODEL_H_
 
 #include <boost/unordered_map.hpp>
-#include "el_syntax.h"
+//#include "el_syntax.h"
 #include "../siset.h"
+#include "syntax/atom.h"
+#include "event.h"
 
 class Model {
 public:
@@ -19,7 +21,7 @@ public:
 
     Model();
     Model(const std::vector<FOL::Event>& pairs);
-    Model(const Model& m);
+   // Model(const Model& m);
   //  virtual ~Model();
 
     std::set<Atom, atomcmp> atoms() const;
@@ -48,6 +50,8 @@ public:
 */
     friend bool operator==(const Model& l, const Model& r);
     friend bool operator!=(const Model& l, const Model& r);
+
+    Model& operator=(const Model m) { if (*this != m) amap_ = m.amap_; return *this;}
     typedef boost::unordered_map<Atom, SISet> atom_map;
 
 private:
