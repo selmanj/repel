@@ -59,23 +59,8 @@ public:
     unsigned long score(const ELSentence& s, const Model& m) const;
     unsigned long score(const Model& m) const;
 
-    //SISet satisfied(const Sentence& s, const Model& m, const SISet* where=NULL) const;
 private:
-    /*
-    SISet satisfiedAtom(const Atom& a, const Model& m) const;
-    SISet satisfiedNegation(const Negation& n, const Model& m) const;
-    SISet satisfiedDisjunction(const Disjunction& d, const Model& m) const;
-    SISet satisfiedDiamond(const DiamondOp& d, const Model& m) const;
-    SISet satisfiedConjunction(const Conjunction& c, const Model& m) const;
-    SISet satisfiedBoolLit(const BoolLit& b, const Model& m) const;
 
-    SISet liqSatisfied(const Sentence& s, const Model& m) const;
-    SISet liqSatisfiedAtom(const Atom& a, const Model& m) const;
-    SISet liqSatisfiedNegation(const Negation& a, const Model& m) const;
-    SISet liqSatisfiedDisjunction(const Disjunction& d, const Model& m) const;
-    SISet liqSatisfiedConjunction(const Conjunction& c, const Model& m) const;
-    SISet liqSatisfiedBoolLit(const BoolLit& b, const Model& m) const;
-*/
     typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
 
     bool assumeClosedWorld_;
