@@ -91,7 +91,7 @@ private:
 
     NameGenerator generator_;
 
-    struct ModelSentencePair_cmp {
+    struct ModelSentencePair_cmp : public std::binary_function<ModelSentencePair, ModelSentencePair, bool> {
         bool operator() (const ModelSentencePair& a, const ModelSentencePair& b) const {
             if (a.first < b.first) return true;
             if (a.first > b.first) return false;
