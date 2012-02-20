@@ -7,7 +7,6 @@
 
 #ifndef DOMAIN_H_
 #define DOMAIN_H_
-#define DOMAIN_CACHE_SIZE 0
 
 #include <set>
 #include <string>
@@ -50,7 +49,6 @@ public:
     Interval maxInterval() const;
     SpanInterval maxSpanInterval() const;
     void setMaxInterval(const Interval& maxInterval);
-    void clearCache() const {cache_.clear();}
 
     bool isLiquid(const std::string& predicate) const;
     bool dontModifyObsPreds() const;
@@ -102,11 +100,11 @@ private:
         }
     };
 
-    mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
+    //mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
 };
 
 // IMPLEMENTATION
-inline Domain::Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(), cache_(DOMAIN_CACHE_SIZE) {};
+inline Domain::Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(){};
 
 template <class FactsForwardIterator>
 Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
@@ -120,8 +118,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
           maxInterval_(0,0),
           formulas_(formSet),
           observations_(),
-          generator_(),
-          cache_(DOMAIN_CACHE_SIZE) {
+          generator_() {
 
     // find the maximum interval of time
     if (factsBegin == factsEnd) {
