@@ -10,6 +10,8 @@
 
 #include <cmath>
 #include <boost/random.hpp>
+#include <algorithm>
+
 #include "../logic/domain.h"
 
 class MCSat {
@@ -42,6 +44,15 @@ private:
             unsatisfiedOutIt unsatIt) const;
 };
 
+// private namespace
+namespace {
+    struct isInfWeightPred : public std::unary_function<ELSentence, bool> {
+        bool operator()(const ELSentence& s) const {
+            return s.hasInfWeight();
+        }
+    };
+}
+
 // IMPLEMENTATION
 inline MCSat::MCSat() : numIterations_(1000) {};
 inline unsigned int MCSat::numIterations() const {return numIterations_;}
@@ -55,12 +66,20 @@ void MCSat::run(const Domain& d, URNG& rng) {
     Model currModel = d.randomModel();
     std::cout << currModel.toString() << std::endl;
 
+    FormulaList list = d.formulas();
+    // split out inf weighted formulas
+    std::list<ELSentence> infForms;
+    std::list<ELSentence> weightedForms;
+    std::remove_copy_if(list.begin(), list.end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
+    std::remove_copy_if(list.begin(), list.end(), std::back_inserter(weightedForms), isInfWeightPred());
+
+    // before starting, run a sat solver to try to get an initial model
+
     // find rules currently satisfied, add them to the set
     std::list<ELSentence> formsSatisfied;
     std::list<ELSentence> formsNotSatisfied;
-    FormulaList list = d.formulas();
 
-    splitSatisfiedRules(currModel, d, list.begin(), list.end(), std::back_inserter(formsSatisfied), std::back_inserter(formsNotSatisfied));
+    splitSatisfiedRules(currModel, d, weightedForms.begin(), weightedForms.end(), std::back_inserter(formsSatisfied), std::back_inserter(formsNotSatisfied));
 
     std::cout << "satisfied: ";
     std::copy(formsSatisfied.begin(), formsSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
@@ -68,6 +87,8 @@ void MCSat::run(const Domain& d, URNG& rng) {
     std::cout << "unsatisfied: ";
     std::copy(formsNotSatisfied.begin(), formsNotSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
     std::cout << std::endl;
+
+
 
     /*
     for (unsigned int i = 0; i < numIterations_; i++ ) {
