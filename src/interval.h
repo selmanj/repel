@@ -83,6 +83,15 @@ public:
      */
     void setFinish(unsigned int finish);
 
+    /**
+     * Check to see if this interval spans another interval.  An interval "A"
+     * spans interval "B" if A.start <= A.start and A.finish >= B.finish.
+     *
+     * @param i Interval to check to see if it's spanned by this.
+     * @return true if this spans i, false otherwise
+     */
+    bool spans(const Interval& i) const;
+
     /* friend functions */
     friend bool meets (const Interval& lhs, const Interval& rhs);
     friend bool meetsI(const Interval& lhs, const Interval& rhs);
@@ -264,6 +273,9 @@ inline unsigned int Interval::size() const {
 inline void Interval::setStart(unsigned int start) {s_ = start;};
 inline void Interval::setFinish(unsigned int end) {e_ = end;};
 
+inline bool Interval::spans(const Interval& i) const {
+    return (s_ <= i.s_ && e_ >= i.e_);
+}
 
 inline bool meets(const Interval& lhs, const Interval& rhs) {
     return lhs.e_+1 == rhs.s_;

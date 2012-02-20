@@ -43,6 +43,9 @@ public:
     formula_const_iterator formula_begin() const;
     formula_const_iterator formula_end() const;
 
+    void clearFormulas();
+    void addFormula(const ELSentence& e);
+
     void addObservedPredicate(const Atom& a);
     const std::map<std::string, SISet>& observedPredicates() const; // TODO RENAME
     SISet getModifiableSISet(const std::string& name) const;
@@ -72,8 +75,7 @@ private:
     bool dontModifyObsPreds_;
 
     std::map<std::string, SISet> obsPreds_;
-    std::set<std::string> unobsPreds_;
-    std::set<std::string> constants_;
+
     Interval maxInterval_;
 
     std::vector<ELSentence> formulas_;
@@ -103,8 +105,6 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         : assumeClosedWorld_(assumeClosedWorld),
           dontModifyObsPreds_(true),
           obsPreds_(),
-          unobsPreds_(),
-          constants_(),
           maxInterval_(0,0),
           formulas_(formSet),
           observations_(),
@@ -172,9 +172,6 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
     for (std::set<Atom, atomcmp>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
         foundPreds.insert(it->toString());
     }
-    std::set_difference(foundPreds.begin(), foundPreds.end(),
-            obsJustPreds.begin(), obsJustPreds.end(),
-            std::inserter(unobsPreds_, unobsPreds_.end()));
 
     // initialize observations
     for (FactsForwardIterator it = factsBegin; it != factsEnd; it++) {
@@ -204,6 +201,28 @@ inline Domain::~Domain() {};
 
 inline Domain::formula_const_iterator Domain::formula_begin() const {return formulas_.begin();}
 inline Domain::formula_const_iterator Domain::formula_end() const {return formulas_.end();}
+
+inline void Domain::clearFormulas() {
+    formulas_.clear();
+    // TODO: nothing to do for default model, right?
+}
+
+inline void Domain::addFormula(const ELSentence& e) {
+    ELSentence toAdd = e;
+    if (toAdd.isQuantified()) {
+        SISet set = toAdd.quantification();
+        Interval toAddMaxInt = set.maxInterval();
+        if (toAddMaxInt.start() < maxInterval_.start()
+                || toAddMaxInt.finish() > maxInterval_.finish()) {
+            // need to resize
+            setMaxInterval(toAddMaxInt);
+        } else if (toAddMaxInt != maxInterval_) {
+            set.setMaxInterval(maxInterval_);
+            toAdd.setQuantification(set);
+        }
+    }
+    formulas_.push_back(e);
+}
 
 inline const std::map<std::string, SISet>& Domain::observedPredicates() const {return obsPreds_;};
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
