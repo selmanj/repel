@@ -60,7 +60,7 @@ private:
 
 
 
-typedef std::vector<ELSentence> FormulaList;
+//typedef std::vector<ELSentence> FormulaList;
 
 // IMPLEMENTATION
 

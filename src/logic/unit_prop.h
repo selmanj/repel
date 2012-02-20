@@ -75,7 +75,7 @@ CNFClause convertToCNFClause(boost::shared_ptr<Sentence> s);
  * @param list FormulaList to convert
  * @return a QCNFClauseList representing the converted formulas
  */
-QCNFClauseList convertToQCNFClauseList(const FormulaList& list);
+QCNFClauseList convertToQCNFClauseList(const std::vector<ELSentence>& list);
 
 /**
  * Convert an ELSentence into QCNF form.

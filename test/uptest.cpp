@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
 
-    FormulaList flist = d.formulas();
+    std::vector<ELSentence> flist(d.formula_begin(), d.formula_end());
     QCNFClauseList clauseList = convertToQCNFClauseList(flist);
 
     QUnitsFormulasPair result = performUnitPropagation(clauseList);
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( dia_lit ) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
 
-    FormulaList flist = d.formulas();
+    std::vector<ELSentence> flist(d.formula_begin(), d.formula_end());
     QCNFClauseList clauseList = convertToQCNFClauseList(flist);
 
     QUnitsFormulasPair result = performUnitPropagation(clauseList);
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( simple_lit_directly ) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
 
-    FormulaList flist = d.formulas();
+    std::vector<ELSentence> flist(d.formula_begin(), d.formula_end());
     ELSentence s1 = flist[0];
     ELSentence s2 = flist[1];
     ELSentence s3 = flist[2];

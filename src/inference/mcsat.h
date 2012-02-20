@@ -66,12 +66,11 @@ void MCSat::run(const Domain& d, URNG& rng) {
     Model currModel = d.randomModel();
     std::cout << currModel.toString() << std::endl;
 
-    FormulaList list = d.formulas();
     // split out inf weighted formulas
     std::list<ELSentence> infForms;
     std::list<ELSentence> weightedForms;
-    std::remove_copy_if(list.begin(), list.end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
-    std::remove_copy_if(list.begin(), list.end(), std::back_inserter(weightedForms), isInfWeightPred());
+    std::remove_copy_if(d.formula_begin(), d.formula_end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
+    std::remove_copy_if(d.formula_begin(), d.formula_end(), std::back_inserter(weightedForms), isInfWeightPred());
 
     // before starting, run a sat solver to try to get an initial model
 

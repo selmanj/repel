@@ -30,14 +30,19 @@ std::string modelToString(const Model& m);
 
 class Domain {
 public:
+    typedef std::vector<ELSentence>::const_iterator formula_const_iterator;
+
     Domain();
     template <class FactsForwardIterator>
     Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
-            FormulaList formSet,
+            const std::vector<ELSentence>& formSet,
             bool assumeClosedWorld=true);
     virtual ~Domain();
+    //const FormulaList& formulas() const;
 
-    const FormulaList& formulas() const;
+    formula_const_iterator formula_begin() const;
+    formula_const_iterator formula_end() const;
+
     void addObservedPredicate(const Atom& a);
     const std::map<std::string, SISet>& observedPredicates() const; // TODO RENAME
     SISet getModifiableSISet(const std::string& name) const;
@@ -71,7 +76,7 @@ private:
     std::set<std::string> constants_;
     Interval maxInterval_;
 
-    FormulaList formulas_;
+    std::vector<ELSentence> formulas_;
     Model observations_;
 
     NameGenerator generator_;
@@ -93,7 +98,7 @@ inline Domain::Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas
 
 template <class FactsForwardIterator>
 Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
-        FormulaList formSet,
+        const std::vector<ELSentence>& formSet,
         bool assumeClosedWorld)
         : assumeClosedWorld_(assumeClosedWorld),
           dontModifyObsPreds_(true),
@@ -123,7 +128,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         smallest = (std::min)(interval.start().start(), smallest);
         largest = (std::max)(interval.finish().finish(), largest);
     }
-    for (FormulaList::iterator it = formSet.begin(); it != formSet.end(); it++) {
+    for (std::vector<ELSentence>::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
         if (!it->isQuantified()) continue;
         SISet set = it->quantification();
         for (SISet::const_iterator it2 = set.begin(); it2 != set.end(); it2++) {
@@ -152,7 +157,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
     // now collect all unobserved preds
 
     PredCollector predCollector;
-    for (FormulaList::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+    for (std::vector<ELSentence>::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
         it->sentence()->visit(predCollector);
     }
 
@@ -187,7 +192,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
     }
 
     // enforce maxInterval on our formulas
-    for(FormulaList::iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+    for(std::vector<ELSentence>::iterator it = formulas_.begin(); it != formulas_.end(); it++) {
         if (!it->isQuantified()) continue;
         SISet set = it->quantification();
         set.setMaxInterval(maxInterval_);
@@ -197,7 +202,9 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 
 inline Domain::~Domain() {};
 
-inline const FormulaList& Domain::formulas() const {return formulas_;};
+inline Domain::formula_const_iterator Domain::formula_begin() const {return formulas_.begin();}
+inline Domain::formula_const_iterator Domain::formula_end() const {return formulas_.end();}
+
 inline const std::map<std::string, SISet>& Domain::observedPredicates() const {return obsPreds_;};
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
 inline Model Domain::defaultModel() const {return observations_;};

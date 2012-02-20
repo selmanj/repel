@@ -18,10 +18,10 @@
 
 QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     LOG(LOG_INFO) << "performing unit propagation...";
-    FormulaList formulas = d.formulas();
+    std::vector<ELSentence> formulas(d.formula_begin(), d.formula_end());
 
     // add quantification to any formulas that may be missing them
-    for (FormulaList::iterator it = formulas.begin(); it != formulas.end(); it++) {
+    for (std::vector<ELSentence>::iterator it = formulas.begin(); it != formulas.end(); it++) {
         if (!it->isQuantified()) {
             SISet everywhere(d.maxSpanInterval(), false, d.maxInterval());
             it->setQuantification(everywhere);
@@ -388,9 +388,9 @@ namespace {
 }
 
 
-QCNFClauseList convertToQCNFClauseList(const FormulaList& list) {
+QCNFClauseList convertToQCNFClauseList(const std::vector<ELSentence>& list) {
     QCNFClauseList result;
-    for (FormulaList::const_iterator it = list.begin(); it != list.end(); it++) {
+    for (std::vector<ELSentence>::const_iterator it = list.begin(); it != list.end(); it++) {
         if (it->hasInfWeight()) {
             result.push_back(convertToQCNFClause(*it));
         }

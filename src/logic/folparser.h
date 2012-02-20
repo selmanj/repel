@@ -123,7 +123,7 @@ void doParseEvents(std::vector<FOL::Event>& store, iters<ForwardIterator> &its) 
 }
 
 template <class ForwardIterator>
-void doParseFormulas(FormulaList& store, iters<ForwardIterator> &its) {
+void doParseFormulas(std::vector<ELSentence>& store, iters<ForwardIterator> &its) {
     while (!endOfTokens(its)) {
         if (peekTokenType(FOLParse::ENDL, its)) {
             consumeTokenType(FOLParse::ENDL, its);
@@ -640,7 +640,7 @@ void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store)
     file.close();
 };
 
-void parseFormulaFile(const std::string &filename, FormulaList& store) {
+void parseFormulaFile(const std::string &filename, std::vector<ELSentence>& store) {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
         std::runtime_error e("unable to open event file for parsing");
@@ -654,7 +654,7 @@ void parseFormulaFile(const std::string &filename, FormulaList& store) {
 
 template <class ForwardIterator>
 void parseFormulas(const ForwardIterator &first,
-        const ForwardIterator &last, FormulaList& store) {
+        const ForwardIterator &last, std::vector<ELSentence>& store) {
     iters<std::vector<FOLToken>::const_iterator> its(first, last);
     doParseFormulas(store, its);
 }
@@ -662,7 +662,7 @@ void parseFormulas(const ForwardIterator &first,
 boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
     std::vector<FOL::Event> events;
     //std::vector<WSentence> formulas;
-    FormulaList formSet;
+    std::vector<ELSentence> formSet;
 
     parseEventFile(eventfile, events);
     std::cout << "Read " << events.size() << " events from file." << std::endl;
