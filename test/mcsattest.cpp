@@ -16,7 +16,9 @@
 BOOST_AUTO_TEST_CASE( mcsat_test)
 {
     std::string facts("P(a) @ [1:10]\n");
-    std::string formulas("1: [ P(a) ] @ [1:15]\n");
+    std::string formulas("1: [ P(a) ] @ [1:15]\n"
+            "inf: P(a) -> Q(a) \n");
+
 
     Domain d = loadDomainWithStreams(facts, formulas);
 

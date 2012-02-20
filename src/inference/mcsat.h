@@ -11,7 +11,7 @@
 #include <cmath>
 #include <boost/random.hpp>
 #include <algorithm>
-
+#include "maxwalksat.h"
 #include "../logic/domain.h"
 
 class MCSat {
@@ -28,6 +28,7 @@ public:
     void setNumIterations(unsigned int num);
 
 
+
 private:
     unsigned int numIterations_;
 
@@ -42,6 +43,9 @@ private:
             InputIterator end,
             satisfiedOutIt satIt,
             unsatisfiedOutIt unsatIt) const;
+
+    Model solveSATProblemWithFormulas(const Model& initModel, const Domain& d, const std::list<ELSentence> forms) const;
+
 };
 
 // private namespace
@@ -72,7 +76,10 @@ void MCSat::run(const Domain& d, URNG& rng) {
     std::remove_copy_if(d.formula_begin(), d.formula_end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
     std::remove_copy_if(d.formula_begin(), d.formula_end(), std::back_inserter(weightedForms), isInfWeightPred());
 
-    // before starting, run a sat solver to try to get an initial model
+    // before starting, run a sat solver to try to get an initial model if we have hard constraints
+    if (!infForms.empty()) {
+        Model solution = solveSATProblemWithFormulas(currModel, d, infForms);
+    }
 
     // find rules currently satisfied, add them to the set
     std::list<ELSentence> formsSatisfied;
@@ -167,6 +174,22 @@ Model MCSat::performIteration(const Model& m, const Domain& d, URNG& rng) const 
     */
 
     throw std::runtime_error("MCSat::performIteration not implemented");
+}
+
+Model MCSat::solveSATProblemWithFormulas(const Model& initModel, const Domain& d, const std::list<ELSentence> forms) const {
+    // TODO: add unit prop
+    Domain newDomain = d;
+    newDomain.clearFormulas();
+    for(std::list<ELSentence>::const_iterator it = forms.begin(); it != forms.end(); it++) {
+        ELSentence s = *it;
+        s.setWeight(1); // hard coded to 1
+        newDomain.addFormula(s);
+    }
+
+    Model m = maxWalkSat(newDomain, 1000, 0.3, &initModel);
+    std::cout << "model after sat = " << m.toString() << std::endl;
+
+    return m;
 }
 
 
