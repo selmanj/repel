@@ -109,7 +109,10 @@ inline bool ELSentence::hasInfWeight() const {return hasInfWeight_;}
 inline bool ELSentence::isQuantified() const {return isQuantified_; }
 
 inline void ELSentence::setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
-inline void ELSentence::setWeight(unsigned int w) {w_ = w; hasInfWeight_ = false;};
+inline void ELSentence::setWeight(unsigned int w) {
+    w_ = w;
+    hasInfWeight_ = false;
+};
 inline void ELSentence::setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
 inline void ELSentence::setHasInfWeight(bool b) { hasInfWeight_ = b;};
 inline void ELSentence::setIsQuantified(bool b) { isQuantified_ = b;};
