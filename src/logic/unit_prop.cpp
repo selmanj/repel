@@ -180,6 +180,7 @@ namespace {
                        continue;
                    }
                 }
+
                 QCNFLiteral qlit;
                 qlit.first = lit;
                 qlit.second = it->second;
