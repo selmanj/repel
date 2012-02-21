@@ -25,6 +25,6 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
     MCSat mcSatSolver;
     mcSatSolver.setNumIterations(1000);
     boost::mt19937 gen(0);
-    mcSatSolver.run(d, gen);
-
+    Model m = mcSatSolver.run(d, gen);
+    std::cout << "model m = " << m.toString() << std::endl;
 }

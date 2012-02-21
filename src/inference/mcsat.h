@@ -23,7 +23,7 @@ public:
     MCSat();
 
     template<typename URNG>
-    void run(const Domain& d, URNG& u);
+    Model run(const Domain& d, URNG& u);
 
     unsigned int numIterations() const;
     unsigned int walksatIterations() const;
@@ -64,6 +64,24 @@ namespace {
             return s.hasInfWeight();
         }
     };
+
+    struct WeightComparator : public std::binary_function<ELSentence, ELSentence, int> {
+        int operator()(const ELSentence& l, const ELSentence& r) const {
+            return l.weight()*l.quantification().size() < r.weight()*r.quantification().size();
+        }
+    };
+
+    struct EnforceQuantification : public std::unary_function<ELSentence, void> {
+        EnforceQuantification(const Domain& domain) : d(domain) {}
+
+        void operator()(ELSentence& s) const {
+            if (s.hasInfWeight()) {
+                s.setQuantification(SISet(d.maxSpanInterval(), false, d.maxInterval()));
+            }
+        }
+
+        const Domain& d;
+    };
 }
 
 // IMPLEMENTATION
@@ -78,43 +96,88 @@ inline void MCSat::setWalksatIterations(unsigned int walksatIterations) {walksat
 inline void MCSat::setWalksatRandomMoveProb(double walksatRandomMoveProb) {walksatRandomMoveProb_ = walksatRandomMoveProb;}
 
 template<typename URNG>
-void MCSat::run(const Domain& d, URNG& rng) {
-    // first, use the default model as the initial model
-    //Model initialmodel = d.defaultModel();
-    Model currModel = d.randomModel();
-    std::cout << currModel.toString() << std::endl;
+Model MCSat::run(const Domain& d, URNG& rng) {
+    // first, make a copy of the domain where all the formulas have quantification
+    std::list<ELSentence> formulas(d.formulas_begin(), d.formulas_end());
+    std::for_each(formulas.begin(), formulas.end(), EnforceQuantification(d));
+    Domain dFixed = d;
+    dFixed.clearFormulas();
+    for(std::list<ELSentence>::const_iterator it = formulas.begin(); it != formulas.end(); it++) {
+        dFixed.addFormula(*it);
+    }
+
     // split out inf weighted formulas
     std::list<ELSentence> infForms;
     std::list<ELSentence> weightedForms;
-    std::remove_copy_if(d.formulas_begin(), d.formulas_end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
-    std::remove_copy_if(d.formulas_begin(), d.formulas_end(), std::back_inserter(weightedForms), isInfWeightPred());
+    std::remove_copy_if(formulas.begin(), formulas.end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
+    std::remove_copy_if(formulas.begin(), formulas.end(), std::back_inserter(weightedForms), isInfWeightPred());
 
-    // before starting, run a sat solver to try to get an initial model if we have hard constraints
+    std::list<ELSentence> currentFormSet;
     if (!infForms.empty()) {
-        Model solution = solveSATProblemWithFormulas(currModel, d, infForms);
+        // before starting, run a sat solver to try to get an initial model if we have hard constraints
+        currentFormSet.insert(currentFormSet.end(), infForms.begin(), infForms.end());
+    } else {
+        if (weightedForms.empty()) {
+            std::cerr << "no formulas to solve!";
+            throw std::invalid_argument("no formulas to solve");
+        }
+        // add the best looking rule so far
+        std::list<ELSentence>::iterator bestRuleIt = std::max_element(weightedForms.begin(), weightedForms.end(), WeightComparator());
+        currentFormSet.push_back(*bestRuleIt);
+        weightedForms.erase(bestRuleIt);
     }
+    Model currModel = dFixed.randomModel();
+    std::cout << currModel.toString() << std::endl;
+    std::list<ELSentence> notSatisfiable;
+    for (unsigned int iteration = 1; iteration <= numIterations_; iteration++) {
+        // call sat solver on current formula set
+        Model candidateModel = solveSATProblemWithFormulas(currModel, d, currentFormSet);
+        if (d.isFullySatisfied(candidateModel)) {
+            // find new formulas to add to the set
+            std::list<ELSentence> formsSatisfied;
+            std::list<ELSentence> formsNotSatisfied;
 
-    // find rules currently satisfied, add them to the set
-    std::list<ELSentence> formsSatisfied;
-    std::list<ELSentence> formsNotSatisfied;
-
-    splitSatisfiedRules(currModel, d, weightedForms.begin(), weightedForms.end(), std::back_inserter(formsSatisfied), std::back_inserter(formsNotSatisfied));
-
-    std::cout << "satisfied: ";
-    std::copy(formsSatisfied.begin(), formsSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
-    std::cout << std::endl;
-    std::cout << "unsatisfied: ";
-    std::copy(formsNotSatisfied.begin(), formsNotSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
-    std::cout << std::endl;
-
+            splitSatisfiedRules(currModel, d, weightedForms.begin(), weightedForms.end(), std::back_inserter(formsSatisfied), std::back_inserter(formsNotSatisfied));
 
 
-    /*
-    for (unsigned int i = 0; i < numIterations_; i++ ) {
-        currModel = performIteration(currModel, d, rng);
+            std::cout << "satisfied: ";
+            std::copy(formsSatisfied.begin(), formsSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+            std::cout << std::endl;
+            std::cout << "unsatisfied: ";
+            std::copy(formsNotSatisfied.begin(), formsNotSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+            std::cout << std::endl;
+
+            // first, check to see if we are done
+             if (formsNotSatisfied.empty()) return candidateModel;
+
+            // add all the forms already satisfied to our set
+            currentFormSet.insert(currentFormSet.end(), formsSatisfied.begin(), formsSatisfied.end());
+            // update weighted forms with our unsatisfied set
+            weightedForms = formsNotSatisfied;
+            // add the best looking rule and update
+            std::list<ELSentence>::iterator bestRuleIt = std::max_element(weightedForms.begin(), weightedForms.end(), WeightComparator());
+            currentFormSet.push_back(*bestRuleIt);
+            weightedForms.erase(bestRuleIt);
+            currModel = candidateModel;
+        } else {
+            // TODO: bug, assuming we can add or remove the entire rule, but what if its satisfied over some of the interval?
+
+            // last rule added can't be satisfied (or at least we will assume it cannot).
+            // add it to the list, remove and continue on
+            ELSentence lastAdded = currentFormSet.back();
+            currentFormSet.pop_back();
+            notSatisfiable.push_back(lastAdded);
+
+            if (weightedForms.empty()) return currModel;
+            // try the next best
+            std::list<ELSentence>::iterator bestRuleIt = std::max_element(weightedForms.begin(), weightedForms.end(), WeightComparator());
+            currentFormSet.push_back(*bestRuleIt);
+            weightedForms.erase(bestRuleIt);
+        }
     }
-    */
-    throw std::runtime_error("MCSat::run not implemented");
+    return currModel;   // ran out of iterations
+
+
 }
 
 template<class InputIterator, class satisfiedOutIt, class unsatisfiedOutIt>
