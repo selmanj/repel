@@ -237,11 +237,23 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
     }
     std::cout << std::endl;
 
-    BOOST_CHECK_EQUAL(randomModel.toString(), "Q(a) @ {[1:3], [17:18]}\n"
-            "R(a) @ {[1:1], [4:4], [6:10], [12:13], [16:17]}\n"
-            "S(a) @ {[1:1], [5:5], [7:7], [11:20]}\n");
+    BOOST_CHECK_EQUAL(randomModel.toString(), "Q(a) @ {[1:3], [16:17]}\n"
+            "R(a) @ {[1:1], [5:13]}\n"
+            "S(a) @ {[1:3], [6:7], [9:9], [11:20]}\n");
     //std::cout << "random model: " << randomModel.toString() << std::endl;
+}
 
+BOOST_AUTO_TEST_CASE( atomIteratorTest) {
+    std::string facts("P(a) @ [1:10]\n"
+            "Q(a) @ [11:20]\n");
+    std::string formulas("inf: [ P(a) -> S(a) ]");
+    Domain d = loadDomainWithStreams(facts, formulas);
+
+    std::set<Atom, atomcmp> atoms(d.atoms_begin(), d.atoms_end());
+    std::stringstream str;
+    std::copy(atoms.begin(), atoms.end(), std::ostream_iterator<Atom>(str, ", "));
+    BOOST_REQUIRE_EQUAL(atoms.size(), 3);
+    BOOST_CHECK_EQUAL(str.str(), "P(a), Q(a), S(a), ");
 }
 
 
