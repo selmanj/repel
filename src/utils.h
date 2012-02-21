@@ -55,8 +55,9 @@ public:
 
     T& operator*() {
         if (cur1_ != end1_) return *cur1_;
-        return cur2_;
+        return *cur2_;
     }
+
     T* operator->() {
         if (cur1_ != end1_) return cur1_.operator->();
         return cur2_.operator->();
