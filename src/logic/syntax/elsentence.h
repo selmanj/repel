@@ -47,6 +47,7 @@ public:
 
     std::string toString() const;
 
+    bool fullySatisfied(const Model& m, const Domain& d) const;
     SISet dSatisfied(const Model& m, const Domain& d) const;
     SISet dNotSatisfied(const Model& m, const Domain& d) const;
 private:
@@ -116,5 +117,6 @@ inline void ELSentence::setWeight(unsigned int w) {
 inline void ELSentence::setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
 inline void ELSentence::setHasInfWeight(bool b) { hasInfWeight_ = b;};
 inline void ELSentence::setIsQuantified(bool b) { isQuantified_ = b;};
+
 
 #endif /* ELSENTENCE_H_ */

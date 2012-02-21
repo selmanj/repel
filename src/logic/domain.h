@@ -78,6 +78,7 @@ public:
     unsigned long score(const ELSentence& s, const Model& m) const;
     unsigned long score(const Model& m) const;
 
+    bool isFullySatisfied(const Model& m) const;
 private:
     typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
 
@@ -282,5 +283,6 @@ inline bool Domain::dontModifyObsPreds() const {return dontModifyObsPreds_;};
 inline bool Domain::assumeClosedWorld() const {return assumeClosedWorld_;};
 inline void Domain::setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
 inline void Domain::setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
+
 
 #endif /* DOMAIN_H_ */

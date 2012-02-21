@@ -201,7 +201,9 @@ Model MCSat::solveSATProblemWithFormulas(const Model& initModel, const Domain& d
 
     Model m = maxWalkSat(newDomain, walksatIterations_, walksatRandomMoveProb_, &initModel);
     std::cout << "model after sat = " << m.toString() << std::endl;
-
+    if (!newDomain.isFullySatisfied(m)) {
+        std::cout << "warning, domain NOT fully satisfied" << std::endl;
+    }
     return m;
 }
 

@@ -100,3 +100,9 @@ unsigned long Domain::score(const Model& m) const {
     return sum;
 }
 
+bool Domain::isFullySatisfied(const Model& m) const {
+    for (formula_const_iterator it = formulas_begin(); it != formulas_end(); it++) {
+        if (!it->fullySatisfied(m, *this)) return false;
+    }
+    return true;
+}
