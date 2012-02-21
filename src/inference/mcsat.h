@@ -16,21 +16,30 @@
 
 class MCSat {
 public:
+    static const unsigned int defNumIterations = 1000;
+    static const unsigned int defWalksatIterations = 1000;
+    static const double defWalksatRandomMoveProb = 0.2;
+
     MCSat();
 
     template<typename URNG>
     void run(const Domain& d, URNG& u);
 
     unsigned int numIterations() const;
+    unsigned int walksatIterations() const;
+    double walksatRandomMoveProb() const;
+
+    void setNumIterations(unsigned int numIterations);
+    void setWalksatIterations(unsigned int walksatIterations);
+    void setWalksatRandomMoveProb(double walksatRandomMoveProb);
 
     template<typename URNG>
     Model performIteration(const Model& m, const Domain& d, URNG& rng) const;
-    void setNumIterations(unsigned int num);
-
-
 
 private:
     unsigned int numIterations_;
+    unsigned int walksatIterations_;
+    double walksatRandomMoveProb_;
 
     /**
      * Given a list of formulas, find where they are satisfied in the model
@@ -58,23 +67,27 @@ namespace {
 }
 
 // IMPLEMENTATION
-inline MCSat::MCSat() : numIterations_(1000) {};
+inline MCSat::MCSat()
+: numIterations_(MCSat::defNumIterations), walksatIterations_(MCSat::defWalksatIterations), walksatRandomMoveProb_(MCSat::defWalksatRandomMoveProb) {};
 inline unsigned int MCSat::numIterations() const {return numIterations_;}
+inline unsigned int MCSat::walksatIterations() const { return walksatIterations_;}
+inline double MCSat::walksatRandomMoveProb() const {return walksatRandomMoveProb_;}
+
 inline void MCSat::setNumIterations(unsigned int num) {numIterations_ = num;}
+inline void MCSat::setWalksatIterations(unsigned int walksatIterations) {walksatIterations_ = walksatIterations;}
+inline void MCSat::setWalksatRandomMoveProb(double walksatRandomMoveProb) {walksatRandomMoveProb_ = walksatRandomMoveProb;}
 
 template<typename URNG>
 void MCSat::run(const Domain& d, URNG& rng) {
     // first, use the default model as the initial model
     //Model initialmodel = d.defaultModel();
-
     Model currModel = d.randomModel();
     std::cout << currModel.toString() << std::endl;
-
     // split out inf weighted formulas
     std::list<ELSentence> infForms;
     std::list<ELSentence> weightedForms;
-    std::remove_copy_if(d.formula_begin(), d.formula_end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
-    std::remove_copy_if(d.formula_begin(), d.formula_end(), std::back_inserter(weightedForms), isInfWeightPred());
+    std::remove_copy_if(d.formulas_begin(), d.formulas_end(), std::back_inserter(infForms), std::not1(isInfWeightPred()));
+    std::remove_copy_if(d.formulas_begin(), d.formulas_end(), std::back_inserter(weightedForms), isInfWeightPred());
 
     // before starting, run a sat solver to try to get an initial model if we have hard constraints
     if (!infForms.empty()) {
@@ -186,7 +199,7 @@ Model MCSat::solveSATProblemWithFormulas(const Model& initModel, const Domain& d
         newDomain.addFormula(s);
     }
 
-    Model m = maxWalkSat(newDomain, 1000, 0.3, &initModel);
+    Model m = maxWalkSat(newDomain, walksatIterations_, walksatRandomMoveProb_, &initModel);
     std::cout << "model after sat = " << m.toString() << std::endl;
 
     return m;

@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
         LOG(LOG_INFO) << "evaluating model...";
         unsigned long sum = 0;
         // evaluate the weight of each formula in the domain
-        for(Domain::formula_const_iterator it = d->formula_begin(); it != d->formula_end(); it++) {
+        for(Domain::formula_const_iterator it = d->formulas_begin(); it != d->formulas_end(); it++) {
             ELSentence formula = *it;
             //SISet satisfied = d->satisfied(*(formula.sentence()), model);
             SISet satisfied = formula.sentence()->dSatisfied(model, *d);

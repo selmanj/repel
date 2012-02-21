@@ -17,6 +17,7 @@
 #include <limits>
 #include <stdexcept>
 #include <boost/optional.hpp>
+#include <boost/unordered_set.hpp>
 #include "el_syntax.h"
 #include "predcollector.h"
 #include "model.h"
@@ -40,8 +41,8 @@ public:
     virtual ~Domain();
     //const FormulaList& formulas() const;
 
-    formula_const_iterator formula_begin() const;
-    formula_const_iterator formula_end() const;
+    formula_const_iterator formulas_begin() const;
+    formula_const_iterator formulas_end() const;
 
     void clearFormulas();
     void addFormula(const ELSentence& e);
@@ -68,14 +69,14 @@ public:
     unsigned long score(const Model& m) const;
 
 private:
-
     typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
 
     bool assumeClosedWorld_;
     bool dontModifyObsPreds_;
 
-    std::map<std::string, SISet> obsPreds_;
-
+    std::map<std::string, SISet> obsPredsFixedAt_;
+    boost::unordered_set<Atom> obsPreds_;
+    boost::unordered_set<Atom> unobsPreds_;
     Interval maxInterval_;
 
     std::vector<ELSentence> formulas_;
@@ -96,7 +97,16 @@ private:
 };
 
 // IMPLEMENTATION
-inline Domain::Domain() : dontModifyObsPreds_(true), maxInterval_(0,0), formulas_(), generator_(){};
+inline Domain::Domain()
+    : assumeClosedWorld_(true),
+      dontModifyObsPreds_(true),
+      obsPredsFixedAt_(),
+      obsPreds_(),
+      unobsPreds_(),
+      maxInterval_(0,0),
+      formulas_(),
+      observations_(),
+      generator_(){};
 
 template <class FactsForwardIterator>
 Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
@@ -104,7 +114,9 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         bool assumeClosedWorld)
         : assumeClosedWorld_(assumeClosedWorld),
           dontModifyObsPreds_(true),
+          obsPredsFixedAt_(),
           obsPreds_(),
+          unobsPreds_(),
           maxInterval_(0,0),
           formulas_(formSet),
           observations_(),
@@ -143,15 +155,18 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         boost::shared_ptr<const Atom> a = it->atom();
         SpanInterval si = it->where();
 
-        if (obsPreds_.find(a->name()) == obsPreds_.end()) {
+        if (obsPredsFixedAt_.find(a->name()) == obsPredsFixedAt_.end()) {
             SISet newSet(true, maxInterval_);       // TODO: assumes all unobs are liquid!!!
             newSet.add(si);
-            obsPreds_.insert(std::pair<std::string, SISet>(a->name(), newSet));
+            obsPredsFixedAt_.insert(std::pair<std::string, SISet>(a->name(), newSet));
+
+            // add it as an observed predicate
+            obsPreds_.insert(*a);
         } else {
-            SISet curSet = obsPreds_.find(a->name())->second;
+            SISet curSet = obsPredsFixedAt_.find(a->name())->second;
             curSet.add(si);
-            obsPreds_.erase(a->name());
-            obsPreds_.insert(std::pair<std::string, SISet>(a->name(), curSet));
+            obsPredsFixedAt_.erase(a->name());
+            obsPredsFixedAt_.insert(std::pair<std::string, SISet>(a->name(), curSet));
         }
     }
     // now collect all unobserved preds
@@ -162,15 +177,17 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
     }
 
     // remove the predicates we know are observed
+    /*
     std::set<std::string> obsJustPreds;
-    for (std::map<std::string, SISet>::const_iterator it = obsPreds_.begin();
-            it != obsPreds_.end();
+    for (std::map<std::string, SISet>::const_iterator it = obsPredsFixedAt_.begin();
+            it != obsPredsFixedAt_.end();
             it++) {
         obsJustPreds.insert(it->first);
-    }
-    std::set<std::string> foundPreds;
+    }*/
     for (std::set<Atom, atomcmp>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
-        foundPreds.insert(it->toString());
+        if (obsPreds_.find(*it) == obsPreds_.end()) {
+            unobsPreds_.insert(*it);
+        }
     }
 
     // initialize observations
@@ -199,8 +216,8 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
 
 inline Domain::~Domain() {};
 
-inline Domain::formula_const_iterator Domain::formula_begin() const {return formulas_.begin();}
-inline Domain::formula_const_iterator Domain::formula_end() const {return formulas_.end();}
+inline Domain::formula_const_iterator Domain::formulas_begin() const {return formulas_.begin();}
+inline Domain::formula_const_iterator Domain::formulas_end() const {return formulas_.end();}
 
 inline void Domain::clearFormulas() {
     formulas_.clear();
@@ -224,7 +241,7 @@ inline void Domain::addFormula(const ELSentence& e) {
     formulas_.push_back(e);
 }
 
-inline const std::map<std::string, SISet>& Domain::observedPredicates() const {return obsPreds_;};
+inline const std::map<std::string, SISet>& Domain::observedPredicates() const {return obsPredsFixedAt_;};
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
 inline Model Domain::defaultModel() const {return observations_;};
 

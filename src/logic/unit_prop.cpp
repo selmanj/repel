@@ -18,7 +18,7 @@
 
 QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     LOG(LOG_INFO) << "performing unit propagation...";
-    std::vector<ELSentence> formulas(d.formula_begin(), d.formula_end());
+    std::vector<ELSentence> formulas(d.formulas_begin(), d.formulas_end());
 
     // add quantification to any formulas that may be missing them
     for (std::vector<ELSentence>::iterator it = formulas.begin(); it != formulas.end(); it++) {
