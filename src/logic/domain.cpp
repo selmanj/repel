@@ -48,12 +48,11 @@ void Domain::unsetAtomAt(const std::string& name, const SISet& where) {
 
 
 Model Domain::randomModel() const {
-    // first check to see if we are even allowed to modify obs preds.  if not, just return the default model
-    if (assumeClosedWorld()) {
-        return defaultModel();
-    }
     Model newModel;
-    std::set<Atom, atomcmp> atoms = observations_.atoms();
+    //std::set<Atom, atomcmp> atoms = observations_.atoms();
+    boost::unordered_set<Atom> atoms = obsPreds_;
+    std::copy(unobsPreds_.begin(), unobsPreds_.end(), std::inserter(atoms, atoms.end()));
+
     BOOST_FOREACH(Atom atom, atoms) {
         SISet random = SISet::randomSISet(isLiquid(atom.name()), maxInterval_);
         // intersect it with the places that are currently unset
