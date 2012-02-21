@@ -45,6 +45,8 @@ public:
     friend std::size_t hash_value(const Atom& a);
     friend bool operator==(const Atom& l, const Atom& r);
     friend bool operator!=(const Atom& l, const Atom& r);
+    friend std::ostream& operator<<(std::ostream& out, const Atom& a);
+
     virtual std::size_t getTypeCode() const;
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:

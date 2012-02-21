@@ -29,19 +29,24 @@ bool Atom::doEquals(const Sentence& t) const {
 }
 
 void Atom::doToString(std::stringstream& str) const {
-    str << pred << "(";
-    for (boost::ptr_vector<Term>::const_iterator it = terms.begin();
-            it != terms.end();
-            it++) {
-        const Term *t = &(*it);
+    str << *this;
+};
 
-        str << t->toString();
-        if (it + 1 != terms.end()) {
-            str << ", ";
+std::ostream& operator<<(std::ostream& out, const Atom& a) {
+    out << a.pred << "(";
+    for (boost::ptr_vector<Term>::const_iterator it = a.terms.begin();
+            it != a.terms.end();
+            it++) {
+        const Term& t = *it;
+
+        out << t.toString();
+        if (it + 1 != a.terms.end()) {
+            out << ", ";
         }
     }
-    str << ")";
-};
+    out << ")";
+    return out;
+}
 
 SISet Atom::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     if (isGrounded()) {
