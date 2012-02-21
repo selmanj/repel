@@ -24,6 +24,7 @@
 #include "../siset.h"
 #include "namegenerator.h"
 #include "../lrucache.h"
+#include "../utils.h"
 
 std::string modelToString(const Model& m);
 
@@ -32,6 +33,9 @@ std::string modelToString(const Model& m);
 class Domain {
 public:
     typedef std::vector<ELSentence>::const_iterator formula_const_iterator;
+    typedef boost::unordered_set<Atom>::const_iterator obsAtoms_const_iterator;
+    typedef boost::unordered_set<Atom>::const_iterator unobsAtoms_const_iterator;
+    typedef MergedIterator<obsAtoms_const_iterator, unobsAtoms_const_iterator, const Atom> atoms_const_iterator;
 
     Domain();
     template <class FactsForwardIterator>
@@ -43,6 +47,12 @@ public:
 
     formula_const_iterator formulas_begin() const;
     formula_const_iterator formulas_end() const;
+    obsAtoms_const_iterator obsAtoms_begin() const;
+    obsAtoms_const_iterator obsAtoms_end() const;
+    unobsAtoms_const_iterator unobsAtoms_begin() const;
+    unobsAtoms_const_iterator unobsAtoms_end() const;
+    atoms_const_iterator atoms_begin() const;
+    atoms_const_iterator atoms_end() const;
 
     void clearFormulas();
     void addFormula(const ELSentence& e);
@@ -218,9 +228,20 @@ inline Domain::~Domain() {};
 
 inline Domain::formula_const_iterator Domain::formulas_begin() const {return formulas_.begin();}
 inline Domain::formula_const_iterator Domain::formulas_end() const {return formulas_.end();}
+inline Domain::obsAtoms_const_iterator Domain::obsAtoms_begin() const {return obsPreds_.begin();}
+inline Domain::obsAtoms_const_iterator Domain::obsAtoms_end() const {return obsPreds_.end();}
+inline Domain::unobsAtoms_const_iterator Domain::unobsAtoms_begin() const {return unobsPreds_.begin();}
+inline Domain::unobsAtoms_const_iterator Domain::unobsAtoms_end() const {return unobsPreds_.end();}
+inline Domain::atoms_const_iterator Domain::atoms_begin() const {
+    return atoms_const_iterator(obsPreds_.begin(), obsPreds_.end(), unobsPreds_.begin(), unobsPreds_.end());
+}
+inline Domain::atoms_const_iterator Domain::atoms_end() const {
+    return atoms_const_iterator(obsPreds_.end(), obsPreds_.end(), unobsPreds_.end(), unobsPreds_.end());
+}
 
 inline void Domain::clearFormulas() {
     formulas_.clear();
+    unobsPreds_.clear();
     // TODO: nothing to do for default model, right?
 }
 
@@ -237,6 +258,12 @@ inline void Domain::addFormula(const ELSentence& e) {
             set.setMaxInterval(maxInterval_);
             toAdd.setQuantification(set);
         }
+    }
+    // update our list of unobs preds
+    PredCollector collect;
+    toAdd.sentence()->visit(collect);
+    for (std::set<Atom, atomcmp>::const_iterator it = collect.preds.begin(); it != collect.preds.end(); it++) {
+        if (obsPreds_.count(*it) == 0) unobsPreds_.insert(*it);
     }
     formulas_.push_back(e);
 }
