@@ -79,25 +79,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
         formScores.push_back(localScore);
         currentScore += localScore;
     }
-    /*
-    {
-        std::stringstream stream;
-        stream << "occurs = ";
-        for(AtomOccurences::const_iterator it = occurs.begin(); it != occurs.end(); it++) {
-            Atom a = it->first;
-            FormSet set = it->second;
 
-            stream << a.toString() << " -> (";
-            for(FormSet::const_iterator it = set.begin(); it != set.end(); it++) {
-                stream << *it << ", ";
-            }
-            stream << ")\n";
-        }
-        LOG(LOG_DEBUG) << stream.str();
-    }
-    */
-
-    unsigned long maxSize = d.maxSpanInterval().size();
     // initialize best score to the current score
     unsigned long bestScore = currentScore;
     Model bestModel = currentModel;
@@ -120,7 +102,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 
             ELSentence wsent = curFormulas.at(i);
             //const WSentence *wsentence = *it;
-            if (maxSize*wsent.weight() == formScores[i]) {
+            if (wsent.fullySatisfied(currentModel, d)) {
                 it = notFullySatisfied.erase(it);
             } else {
                 it++;
@@ -135,9 +117,9 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 
         // pick one at random
         ELSentence toImprove = curFormulas.at(notFullySatisfied[rand() % notFullySatisfied.size()]);
-        LOG(LOG_DEBUG) << "choosing sentence: " << toImprove.sentence()->toString() << " to improve.";
+        LOG(LOG_DEBUG) << "choosing formula: " << toImprove << " to improve.";
         // find the set of moves that improve it
-        std::vector<Move> moves = findMovesFor(d, currentModel, *(toImprove.sentence()));
+        std::vector<Move> moves = findMovesFor(d, currentModel, toImprove);
         if (moves.size() == 0) {
             LOG(LOG_WARN) << "WARNING: unable to find moves for sentence " << toImprove.sentence()->toString()
                     << " but couldn't find any (even though its violated)!  continuing...";
