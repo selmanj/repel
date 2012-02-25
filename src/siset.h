@@ -17,8 +17,10 @@ public:
     SISet(bool forceLiquid=false,
             const Interval& maxInterval=Interval(0, UINT_MAX))
     : set_(), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
+
     explicit SISet(const SpanInterval& si, bool forceLiquid=false,
           const Interval& maxInterval=Interval(0, UINT_MAX));
+
     template <class InputIterator>
     SISet(InputIterator begin, InputIterator end,
             bool forceLiquid=false,
