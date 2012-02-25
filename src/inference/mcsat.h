@@ -65,8 +65,8 @@ namespace {
         }
     };
 
-    struct WeightComparator : public std::binary_function<ELSentence, ELSentence, int> {
-        int operator()(const ELSentence& l, const ELSentence& r) const {
+    struct WeightComparator : public std::binary_function<ELSentence, ELSentence, bool> {
+        bool operator()(const ELSentence& l, const ELSentence& r) const {
             return l.weight()*l.quantification().size() < r.weight()*r.quantification().size();
         }
     };
@@ -83,6 +83,14 @@ namespace {
         const Domain& d;
     };
 }
+
+class unsatisfiable_exception : public std::exception {
+public:
+    unsatisfiable_exception(const Model& m) throw() : std::exception(), partialModel(m) {};
+    unsatisfiable_exception(const unsatisfiable_exception& e) throw() : std::exception(e), partialModel(e.partialModel) {};
+    virtual ~unsatisfiable_exception() throw() {}
+    Model partialModel;
+};
 
 // IMPLEMENTATION
 inline MCSat::MCSat()
@@ -114,6 +122,10 @@ Model MCSat::run(const Domain& d, URNG& rng) {
 
     std::list<ELSentence> currentFormSet;
     if (!infForms.empty()) {
+        std::cout << "adding all infinite weighted formulas to start with" << std::endl;
+        std::cout << "infinite constraints: ";
+        std::copy(infForms.begin(), infForms.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+        std::cout << std::endl;
         // before starting, run a sat solver to try to get an initial model if we have hard constraints
         currentFormSet.insert(currentFormSet.end(), infForms.begin(), infForms.end());
     } else {
@@ -121,18 +133,23 @@ Model MCSat::run(const Domain& d, URNG& rng) {
             std::cerr << "no formulas to solve!";
             throw std::invalid_argument("no formulas to solve");
         }
+        std::cout << "no infinite weighted formulas - choosing the best looking constraint to add" << std::endl;
         // add the best looking rule so far
         std::list<ELSentence>::iterator bestRuleIt = std::max_element(weightedForms.begin(), weightedForms.end(), WeightComparator());
         currentFormSet.push_back(*bestRuleIt);
         weightedForms.erase(bestRuleIt);
+        std::cout << "added constraint: " << *bestRuleIt << std::endl;
     }
     Model currModel = dFixed.randomModel();
-    std::cout << currModel.toString() << std::endl;
+    std::cout << "Random model: " << currModel.toString() << std::endl;
     std::list<ELSentence> notSatisfiable;
     for (unsigned int iteration = 1; iteration <= numIterations_; iteration++) {
+        std::cout << "** Starting iteration 1" << std::endl;
         // call sat solver on current formula set
-        Model candidateModel = solveSATProblemWithFormulas(currModel, d, currentFormSet);
-        if (d.isFullySatisfied(candidateModel)) {
+        try {
+            Model candidateModel = solveSATProblemWithFormulas(currModel, d, currentFormSet);
+            std::cout << "candidateModel = " << candidateModel.toString() << std::endl;
+            std::cout << "our model is fully satisfied (solved the sat problem).  finding a new rule to add" << std::endl;
             // find new formulas to add to the set
             std::list<ELSentence> formsSatisfied;
             std::list<ELSentence> formsNotSatisfied;
@@ -140,26 +157,35 @@ Model MCSat::run(const Domain& d, URNG& rng) {
             splitSatisfiedRules(currModel, d, weightedForms.begin(), weightedForms.end(), std::back_inserter(formsSatisfied), std::back_inserter(formsNotSatisfied));
 
 
-            std::cout << "satisfied: ";
+            std::cout << "newly satisfied: ";
             std::copy(formsSatisfied.begin(), formsSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
             std::cout << std::endl;
-            std::cout << "unsatisfied: ";
+            std::cout << "newly unsatisfied: ";
             std::copy(formsNotSatisfied.begin(), formsNotSatisfied.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
             std::cout << std::endl;
 
             // first, check to see if we are done
-             if (formsNotSatisfied.empty()) return candidateModel;
+             if (formsNotSatisfied.empty()) {
+                 std::cout << "nothing left to satisfy!  returning our answer..." << std::endl;
+                 return candidateModel;
+             }
 
             // add all the forms already satisfied to our set
             currentFormSet.insert(currentFormSet.end(), formsSatisfied.begin(), formsSatisfied.end());
             // update weighted forms with our unsatisfied set
             weightedForms = formsNotSatisfied;
+            std::cout << "weightedForms now = ";
+            std::copy(weightedForms.begin(), weightedForms.end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+            std::cout << std::endl;
+
             // add the best looking rule and update
             std::list<ELSentence>::iterator bestRuleIt = std::max_element(weightedForms.begin(), weightedForms.end(), WeightComparator());
             currentFormSet.push_back(*bestRuleIt);
+            std::cout << "added constraint: " << *bestRuleIt << std::endl;
             weightedForms.erase(bestRuleIt);
             currModel = candidateModel;
-        } else {
+        } catch (unsatisfiable_exception& e) {
+            std::cout << "domain NOT fully satisfied, relaxing last rule and continuing...";
             // TODO: bug, assuming we can add or remove the entire rule, but what if its satisfied over some of the interval?
 
             // last rule added can't be satisfied (or at least we will assume it cannot).
@@ -168,13 +194,17 @@ Model MCSat::run(const Domain& d, URNG& rng) {
             currentFormSet.pop_back();
             notSatisfiable.push_back(lastAdded);
 
-            if (weightedForms.empty()) return currModel;
+            if (weightedForms.empty()) {
+                std::cout << "no other options to try, returning last model.";
+                return currModel;
+            }
             // try the next best
             std::list<ELSentence>::iterator bestRuleIt = std::max_element(weightedForms.begin(), weightedForms.end(), WeightComparator());
             currentFormSet.push_back(*bestRuleIt);
             weightedForms.erase(bestRuleIt);
         }
     }
+    std::cout << "ran out of iterations - returning last model.";
     return currModel;   // ran out of iterations
 
 
@@ -200,16 +230,22 @@ void MCSat::splitSatisfiedRules(const Model& m,
         SISet unsatisfiedAt = formula.dNotSatisfied(m, d);
 
         if (!satisfiedAt.empty()) {
-            ELSentence newForm = formula;
-            newForm.setQuantification(satisfiedAt);
-            *satIt = newForm;
-            satIt++;
+            // split into single spanning intervals
+            for (SISet::const_iterator it2 = satisfiedAt.begin(); it2 != satisfiedAt.end(); it2++) {
+                ELSentence newForm = formula;
+                newForm.setQuantification(SISet(*it2, false, d.maxInterval()));
+                *satIt = newForm;
+                satIt++;
+            }
         }
         if (!unsatisfiedAt.empty()) {
-            ELSentence newForm = formula;
-            newForm.setQuantification(unsatisfiedAt);
-            *unsatIt = newForm;
-            unsatIt++;
+            // split into single spanning intervals
+            for (SISet::const_iterator it2 = unsatisfiedAt.begin(); it2 != unsatisfiedAt.end(); it2++) {
+                ELSentence newForm = formula;
+                newForm.setQuantification(SISet(*it2, false, d.maxInterval()));
+                *unsatIt = newForm;
+                unsatIt++;
+            }
         }
     }
 }
@@ -261,11 +297,15 @@ Model MCSat::solveSATProblemWithFormulas(const Model& initModel, const Domain& d
         s.setWeight(1); // hard coded to 1
         newDomain.addFormula(s);
     }
+    std::cout << "solving sat problem with rules: ";
+    std::copy(newDomain.formulas_begin(), newDomain.formulas_end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+    std::cout << std::endl;
 
     Model m = maxWalkSat(newDomain, walksatIterations_, walksatRandomMoveProb_, &initModel);
-    std::cout << "model after sat = " << m.toString() << std::endl;
+    //std::cout << "model after sat = " << m.toString() << std::endl;
     if (!newDomain.isFullySatisfied(m)) {
         std::cout << "warning, domain NOT fully satisfied" << std::endl;
+        throw unsatisfiable_exception(m);
     }
     return m;
 }
