@@ -58,7 +58,6 @@ void LRUCache<K,V,C>::insert(ValuePair pair) {
     if (maxCapacity_ == 0) return;
     // check to see if we have something already, if so overwrite
     K key = pair.first;
-    V value = pair.second;
     if (map_.count(key) == 1) {
         typename ValueMap::iterator oldPairIt = map_.find(key);
         typename ValueList::iterator oldVal = oldPairIt->second;
