@@ -53,7 +53,8 @@ public:
     unsigned int size() const;
     unsigned int liqSize() const;
     bool isLiquid() const;
-    SpanInterval toLiquid() const;
+    SpanInterval toLiquidInc() const;
+    SpanInterval toLiquidExc() const;
     boost::optional<SpanInterval> normalize() const;
 
 
@@ -203,12 +204,17 @@ inline bool SpanInterval::isLiquid() const {
 }
 
 // TODO: is this correct?
-inline SpanInterval SpanInterval::toLiquid() const {
+inline SpanInterval SpanInterval::toLiquidInc() const {
     unsigned int i = std::min(start().start(), finish().start());
     unsigned int j = std::max(start().finish(), finish().finish());
     return SpanInterval(i, j, i, j);
 }
 
+inline SpanInterval SpanInterval::toLiquidExc() const {
+    unsigned int i = std::max(start().start(), finish().start());
+    unsigned int j = std::min(start().finish(), finish().finish());
+    return SpanInterval(i, j, i, j);
+}
 
 inline boost::optional<SpanInterval> SpanInterval::normalize() const {
     if (isEmpty()) {

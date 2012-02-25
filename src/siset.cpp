@@ -261,7 +261,7 @@ void SISet::setForceLiquid(bool forceLiquid) {
 
         std::list<SpanInterval> newSet;
         BOOST_FOREACH(SpanInterval sp, set_) {
-            sp = sp.toLiquid();
+            sp = sp.toLiquidExc();
             if (!sp.isEmpty()) {
                 sp.normalize();
                 newSet.push_back(sp);

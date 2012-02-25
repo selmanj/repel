@@ -1050,7 +1050,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
     }
     if (const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s)) {
         // if it's a liquid operator, just use the moves for liquid operators
-        SpanInterval liqSi = si.toLiquid();
+        SpanInterval liqSi = si.toLiquidInc();
         if (!liqSi.isEmpty()) {
             moves = findMovesForLiquid(d, m, *liq->sentence(), liqSi);
         }
