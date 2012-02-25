@@ -225,7 +225,6 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 
     // finally, ensure that our body exists in the disjunction items (and remove it)
     for (std::vector<const Sentence *>::iterator it = disItems.begin(); it != disItems.end();) {
-        // TODO: acquire summer grifter
         if (**it == *body->sentence()) {
             it = disItems.erase(it);
         } else {
@@ -913,14 +912,15 @@ std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sent
 }
 
 
-std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s) {
+std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence &el) {
     std::vector<Move> moves;
+    const Sentence& s = *el.sentence();
     if (dynamic_cast<const LiquidOp*>(&s)) {
         // pick an si to satisfy
-        SISet notSat = s.dSatisfied(m, d);
+        SISet sat = el.dSatisfied(m, d);
+        LOG(LOG_DEBUG) << "sentence " << el << " satisfied at " << sat.toString();
+        SISet notSat = el.dNotSatisfied(m, d);
         notSat.setForceLiquid(true);
-        LOG(LOG_DEBUG) << "sentence " << s.toString() << " satisfied at " << notSat.toString();
-        notSat = notSat.compliment();
         if (notSat.size() == 0) return moves;
 
         SpanInterval si = notSat.randomSI();
@@ -928,24 +928,23 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &
         const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s);
         moves = findMovesForLiquid(d, m, *liq->sentence(), si);
     } else if (isFormula1Type(s, d)) {
-        moves = findMovesForForm1(d, m, dynamic_cast<const Disjunction&>(s));
+        moves = findMovesForForm1(d, m, dynamic_cast<const Disjunction&>(s));   // TODO: fix so it uses ELSentence
     } else if (isFormula2Type(s, d)) {
-        moves = findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s));
+        moves = findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s));// TODO: fix so it uses ELSentence
     } else if (isFormula3Type(s, d)) {
-        moves = findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));
+        moves = findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));// TODO: fix so it uses ELSentence
     } else if (isPELCNFLiteral(s)) {
         // pick an si to satisfy
-        SISet notSat = s.dSatisfied(m, d);
-        notSat = notSat.compliment();
+        SISet notSat = el.dNotSatisfied(m, d);
         if (notSat.size() == 0) return moves;
 
         SpanInterval si = notSat.randomSI();
         moves = findMovesForPELCNFLiteral(d, m, s, si);
     } else if (isDisjunctionOfCNFLiterals(s)) {
         // instead of choosing just one si, we'll try them all
-        SISet notSat = s.dSatisfied(m, d);
-        LOG(LOG_DEBUG) << "sentence true at :" << notSat.toString();
-        notSat = notSat.compliment();
+        SISet sat = el.dSatisfied(m, d);
+        LOG(LOG_DEBUG) << "sentence true at :" << sat.toString();
+        SISet notSat = el.dNotSatisfied(m, d);
         LOG(LOG_DEBUG) << "sentence NOT true at :" << notSat.toString();
 
         if (notSat.size() == 0) return moves;

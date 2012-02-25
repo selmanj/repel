@@ -34,7 +34,7 @@ bool canFindMovesFor(const Sentence &s, const Domain &d);
 bool isFormula1Type(const Sentence &s, const Domain &d);
 bool isFormula2Type(const Sentence &s, const Domain &d);
 bool isFormula3Type(const Sentence &s, const Domain &d);
-std::vector<Move> findMovesFor(const Domain& d, const Model& m, const Sentence &s);
+std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence &s);
 std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis);
 std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis);
 std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis);
