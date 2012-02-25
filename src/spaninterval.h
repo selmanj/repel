@@ -26,6 +26,7 @@ class SpanIntervalIterator;
 
 class SpanInterval {
 public:
+    SpanInterval();
     explicit SpanInterval(const Interval& liq);
     explicit SpanInterval(const Interval& start, const Interval& end);
     explicit SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
@@ -134,6 +135,8 @@ private:
 };
 
 // IMPLEMENTATION
+inline SpanInterval::SpanInterval()
+: start_(0, 0), finish_(0, 0) {}
 inline SpanInterval::SpanInterval(const Interval& liq)
 : start_(liq), finish_(liq) {}
 
@@ -199,9 +202,10 @@ inline bool SpanInterval::isLiquid() const {
     return (start().start() == finish().start() && start().finish() == finish().finish());
 }
 
+// TODO: is this correct?
 inline SpanInterval SpanInterval::toLiquid() const {
-    unsigned int i = std::max(start().start(), finish().start());
-    unsigned int j = std::min(start().finish(), finish().finish());
+    unsigned int i = std::min(start().start(), finish().start());
+    unsigned int j = std::max(start().finish(), finish().finish());
     return SpanInterval(i, j, i, j);
 }
 
