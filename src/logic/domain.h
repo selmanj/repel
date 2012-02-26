@@ -67,6 +67,8 @@ public:
     Model randomModel() const;
     Interval maxInterval() const;
     SpanInterval maxSpanInterval() const;
+    SISet Domain::maxSISet() const;
+
     void setMaxInterval(const Interval& maxInterval);
 
     bool isLiquid(const std::string& predicate) const;
@@ -250,14 +252,13 @@ inline void Domain::addFormula(const ELSentence& e) {
     ELSentence toAdd = e;
     if (toAdd.isQuantified()) {
         SISet set = toAdd.quantification();
-        Interval toAddMaxInt = set.maxInterval();
-        if (toAddMaxInt.start() < maxInterval_.start()
-                || toAddMaxInt.finish() > maxInterval_.finish()) {
+        Interval spans = set.spanOf();
+        if (spans.start() < maxInterval_.start()
+                || spans.finish() > maxInterval_.finish()) {
             // need to resize
-            setMaxInterval(toAddMaxInt);
-        } else if (toAddMaxInt != maxInterval_) {
-            set.setMaxInterval(maxInterval_);
-            toAdd.setQuantification(set);
+            Interval maxInt(std::min(spans.start(), maxInterval_.start()),
+                    std::max(spans.finish(), maxInterval_.finish()));
+            setMaxInterval(maxInt);
         }
     }
     // update our list of unobs preds
@@ -278,6 +279,7 @@ inline SpanInterval Domain::maxSpanInterval() const {
     return SpanInterval(maxInterval_.start(), maxInterval_.finish(),
             maxInterval_.start(), maxInterval_.finish());
 };
+inline SISet Domain::maxSISet() const { return SISet(maxSpanInterval(), false);}
 
 inline bool Domain::dontModifyObsPreds() const {return dontModifyObsPreds_;};
 inline bool Domain::assumeClosedWorld() const {return assumeClosedWorld_;};

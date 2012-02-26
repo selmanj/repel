@@ -36,8 +36,8 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 
-    Interval const& start() const;
-    Interval const& finish() const;
+    Interval start() const;
+    Interval finish() const;
     void setStart(const Interval& start);
     void setFinish(const Interval& end);
 
@@ -57,6 +57,7 @@ public:
     SpanInterval toLiquidExc() const;
     boost::optional<SpanInterval> normalize() const;
 
+    Interval spanOf() const;
 
     template<class OutputIterator>
     void compliment(const SpanInterval& universe, OutputIterator out) const;
@@ -150,8 +151,8 @@ inline SpanInterval::SpanInterval(unsigned int startFrom, unsigned int startTo, 
 inline SpanInterval::const_iterator SpanInterval::begin() const {return SpanIntervalIterator(*this);}
 inline SpanInterval::const_iterator SpanInterval::end() const {return SpanIntervalIterator();}
 
-inline Interval const& SpanInterval::start() const {return start_;};
-inline Interval const& SpanInterval::finish() const {return finish_;};
+inline Interval SpanInterval::start() const {return start_;};
+inline Interval SpanInterval::finish() const {return finish_;};
 inline void SpanInterval::setStart(const Interval& start) {start_ = start;};
 inline void SpanInterval::setFinish(const Interval& end) {finish_ = end;};
 
@@ -226,6 +227,7 @@ inline boost::optional<SpanInterval> SpanInterval::normalize() const {
     return boost::optional<SpanInterval>(SpanInterval(start_.start(), j, k, finish_.finish()));
 }
 
+inline Interval SpanInterval::spanOf() const { return Interval(start_.start(), finish_.finish());}
 
 inline unsigned int SpanInterval::size() const {
     if (isEmpty()) return 0;

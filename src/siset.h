@@ -63,6 +63,7 @@ public:
      * @return true if s is in this, false otherwise
      */
     bool includes(const SISet& s) const;
+    Interval spanOf() const;
 
     const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel, const Interval& universe) const;
 
@@ -113,6 +114,16 @@ inline bool SISet::includes(const SISet& s) const {
     SISet copy = s;
     copy.subtract(*this);
     return copy.empty();
+}
+
+inline Interval SISet::spanOf() const {
+    Interval result;
+    for (SISet::const_iterator it = begin(); it != end(); it++) {
+        Interval spanned = it->spanOf();
+        result.setStart(std::min(result.start(), spanned.start()));
+        result.setFinish(std::max(result.finish(), spanned.finish()));
+    }
+    return result;
 }
 
 inline bool operator==(const SISet& l, const SISet& r) {return l.includes(r) && r.includes(l);}    //TODO: is this the right thing to do???

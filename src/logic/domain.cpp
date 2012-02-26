@@ -10,14 +10,14 @@
 
 void Domain::addObservedPredicate(const Atom& a) {
     if (observations_.hasAtom(a)) return;
-    SISet newSet(true, maxInterval_);
+    SISet newSet(true);     // TODO: force atoms to be liquid!
     obsPredsFixedAt_.insert(std::pair<std::string, SISet>(a.name(), newSet));
     observations_.setAtom(a, newSet);
 }
 
 SISet Domain::getModifiableSISet(const std::string& name) const {
-    SISet everywhere(isLiquid(name), maxInterval_);
-    everywhere = everywhere.compliment();
+    SISet everywhere(isLiquid(name));
+    everywhere = everywhere.compliment(maxSISet());
     return getModifiableSISet(name, everywhere);
 }
 
@@ -27,7 +27,7 @@ SISet Domain::getModifiableSISet(const std::string& name, const SISet& where) co
         return where;
     }
 
-    SISet modifiable(where.forceLiquid(), where.maxInterval());
+    SISet modifiable(where.forceLiquid());
     if (assumeClosedWorld()) return modifiable; // if its a closed world, can't change any obs predicates
     modifiable = where;
 
@@ -60,7 +60,7 @@ Model Domain::randomModel() const {
         random = intersection(random, unsetAt);
         // add in the set parts
 
-        SISet setAt = unsetAt.compliment();
+        SISet setAt = unsetAt.compliment(maxSISet());
         SISet trueVals = intersection(setAt, observations_.getAtom(atom));
         random.add(trueVals);
 
@@ -84,7 +84,7 @@ bool Domain::isLiquid(const std::string& predicate) const {
 }
 
 unsigned long Domain::score(const ELSentence& w, const Model& m) const {
-    SISet quantification = SISet(maxSpanInterval(), false, maxInterval());
+    SISet quantification = SISet(maxSpanInterval(), false);
     if (w.isQuantified()) quantification = w.quantification();
 
     SISet sat = w.sentence()->dSatisfied(m, *this, quantification);

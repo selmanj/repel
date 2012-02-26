@@ -420,10 +420,10 @@ bool equalByInterval(const SISet& a, const SISet& b) {
     return false;
 }
 
-unsigned long hammingDistance(const SISet& a, const SISet& b) {
+unsigned long hammingDistance(const SISet& a, const SISet& b, const SISet& universe) {
     // (a ^ !b) v (!a ^ b)
-    SISet aComp = a.compliment();
-    SISet bComp = b.compliment();
+    SISet aComp = a.compliment(universe);
+    SISet bComp = b.compliment(universe);
 
     SISet abC = intersection(a, bComp);
     SISet aCb = intersection(aComp, b);
