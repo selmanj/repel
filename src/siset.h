@@ -17,7 +17,7 @@ class SISet {
 public:
     SISet(bool forceLiquid=false,
             const Interval& maxInterval=Interval(0, UINT_MAX))
-    : set_(), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
+    : set_(), forceLiquid_(forceLiquid) {}
 
     explicit SISet(const SpanInterval& si, bool forceLiquid=false,
           const Interval& maxInterval=Interval(0, UINT_MAX));
@@ -26,7 +26,7 @@ public:
     SISet(InputIterator begin, InputIterator end,
             bool forceLiquid=false,
             const Interval& maxInterval=Interval(0, UINT_MAX))
-    : set_(begin, end), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
+    : set_(begin, end), forceLiquid_(forceLiquid) {}
 
     typedef std::list<SpanInterval>::const_iterator const_iterator;
 
@@ -82,8 +82,8 @@ public:
 private:
     std::list<SpanInterval> set_;
     bool forceLiquid_;
-    Interval maxInterval_;
 };
+
 SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInterval);
 SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION, const SpanInterval& universe);
 bool equalByInterval(const SISet& a, const SISet& b);
@@ -107,7 +107,7 @@ inline bool operator!=(const SISet& l, const SISet& r) {return !operator==(l,r);
 inline std::size_t hash_value(const SISet& si) {
     std::size_t seed = 0;
     // make a copy of our set as a liquid set (inclusive)
-    SISet liqSet(true, si.maxInterval_);
+    SISet liqSet(true);
     for (SISet::const_iterator it = si.begin(); it != si.end(); it++) {
         liqSet.add(it->toLiquidInc());
     }
