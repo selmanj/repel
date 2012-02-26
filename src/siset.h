@@ -39,7 +39,6 @@ public:
     // TODO make some of these friend functions
     bool isDisjoint() const;
     SISet compliment(const SISet& universe) const;
-    Interval maxInterval() const;
     unsigned int size() const;
     unsigned int liqSize() const;
     bool empty() const;
@@ -65,7 +64,7 @@ public:
      */
     bool includes(const SISet& s) const;
 
-    const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const;
+    const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel, const Interval& universe) const;
 
     static SISet randomSISet(bool forceLiquid, const Interval& maxInterval);
     SpanInterval randomSI() const;
@@ -92,11 +91,16 @@ bool equalByInterval(const SISet& a, const SISet& b);
 unsigned long hammingDistance(const SISet& a, const SISet& b);
 
 // IMPLEMENTATION
+inline SISet::SISet(const SpanInterval& si, bool forceLiquid)
+    : set_() {set_.push_back(si);}
+
+
 template <class InputIterator>
-static SISet SISet::fromRange(InputIterator begin, InputIterator end, bool forceLiquid=false) {
+inline static SISet SISet::fromRange(InputIterator begin, InputIterator end, bool forceLiquid=false) {
     SISet set(forceLiquid);
     for (InputIterator it = begin; it != end; it++) {
-        set.add(*it);
+        boost::optional<SpanInterval> itNorm = it->normalize();
+        if (itNorm) set.add(*itNorm);
     }
     return set;
 }

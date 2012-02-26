@@ -17,68 +17,15 @@
 #include "log.h"
 #include "infix_ostream_iterator.h"
 
-
-SISet::SISet(const SpanInterval& si, bool forceLiquid,
-            const Interval& maxInterval)
-    : set_(), forceLiquid_(forceLiquid) {
-    set_.push_back(si);
-}
-
-
 std::set<SpanInterval> SISet::asSet() const {
     return std::set<SpanInterval>(set_.begin(), set_.end());
 }
 
 
 SISet SISet::compliment(const SISet& universe) const {
-    /*
-    if (size() == 0) {
-        return universe;
-    }
-
-    // {A U B U C U.. }^c = A^c I B^c I ...
-    // {A U B U ..} intersect {C U D U } .. intersect D
-    // expensive operation!  faster way to do this?
-    std::list<std::list<SpanInterval> > intersections;
-    for (std::list<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
-        std::list<SpanInterval> compliment;
-        if (forceLiquid_) {
-            it->liqCompliment(SpanInterval(maxInterval_), std::inserter(compliment, compliment.end()));
-        } else {
-            it->compliment(SpanInterval(maxInterval_), std::inserter(compliment, compliment.end()));
-        }
-        intersections.push_back(compliment);
-    }
-
-    // now we have a list of set unions that we need to intersect; perform pairwise intersection
-    while (intersections.size() > 1) {
-        // merge the first two sets
-        std::list<SpanInterval> first = intersections.front();
-        intersections.pop_front();
-        std::list<SpanInterval> second = intersections.front();
-        intersections.pop_front();
-        std::list<SpanInterval> intersected;
-        for (std::list<SpanInterval>::const_iterator lIt = first.begin(); lIt != first.end(); lIt++) {
-            for (std::list<SpanInterval>::const_iterator sIt = second.begin(); sIt != second.end(); sIt++) {
-                boost::optional<SpanInterval> intersect = intersection(*lIt, *sIt);
-                if (intersect) {
-                    intersected.push_back(*intersect);
-                }
-            }
-        }
-        if (!intersected.empty()) {
-            intersections.push_front(intersected);
-        }
-    }
-    if (intersections.empty()) {
-        return SISet(forceLiquid_, maxInterval_);
-    }
-    return SISet(intersections.front().begin(), intersections.front().end(), forceLiquid_, maxInterval_);
-*/
-}
-
-Interval SISet::maxInterval() const {
-    return maxInterval_;
+    SISet copy = universe;
+    copy.subtract(*this);
+    return copy;
 }
 
 unsigned int SISet::size() const {
@@ -120,23 +67,8 @@ bool SISet::isDisjoint() const {
     return true;
 }
 
-void SISet::setMaxInterval(const Interval& maxInterval) {
-    maxInterval_ = maxInterval;
-    std::list<SpanInterval> resized;
-    for (std::list<SpanInterval>::iterator it = set_.begin(); it != set_.end(); it++) {
-        SpanInterval si = *it;
-        boost::optional<SpanInterval> siOpt = intersection(si, SpanInterval(maxInterval, maxInterval));
-        if (siOpt) {
-            resized.push_back(siOpt.get());
-        }
-    }
-    set_.swap(resized);
-}
-
 void SISet::add(const SpanInterval &s) {
-    boost::optional<SpanInterval> sCopy = intersection(s, SpanInterval(maxInterval_));
-    if (!sCopy) return;
-    SpanInterval sp = *sCopy;
+    SpanInterval sp = s;
     if (forceLiquid_ && !sp.isLiquid()) {
         std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
         throw e;
@@ -184,30 +116,12 @@ void SISet::add(const SISet &b) {
 
 void SISet::makeDisjoint() {
     if (forceLiquid_) {
-        // we are already disjoint
         return;
-        /*
-        // all our intervals are liquid so we can make them disjoint by
-        // merging them
-        for (std::list<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
-            std::list<SpanInterval>::const_iterator sIt = fIt;
-            sIt++;
-            if (sIt != set_.end() && !intersection(*fIt, *sIt).isEmpty()) {
-                // merge the two
-                unsigned int start = fIt->start().start();
-                unsigned int end = sIt->finish().finish();
-                SpanInterval merged(start, end, start, end, maxInterval_);
-                set_.erase(sIt);    // invalidates sIt
-                set_.erase(fIt);    // invalidates fIt
-                fIt = set_.insert(merged).first;
-            }
-        }
-        */
     } else {
         std::list<SpanInterval> setCopy;
 
         BOOST_FOREACH(SpanInterval siToAdd, set_) {
-            SISet sisetToAdd(false, maxInterval_);
+            SISet sisetToAdd(false);
             sisetToAdd.add(siToAdd);
             // subtract whats already stored and only add if there is some left over
             BOOST_FOREACH(SpanInterval siAlreadyIn, setCopy) {
@@ -216,40 +130,6 @@ void SISet::makeDisjoint() {
             setCopy.insert(setCopy.end(), sisetToAdd.set_.begin(), sisetToAdd.set_.end());
         }
         set_ = setCopy;
-
-        /*
-        // scan over all pairs, looking for intersections
-        for (std::set<SpanInterval>::const_iterator fIt = set_.begin(); fIt != set_.end(); fIt++) {
-            for (std::set<SpanInterval>::const_iterator sIt = fIt; sIt != set_.end(); sIt++) {
-                // don't compare to yourself
-                if (sIt == fIt) {
-                    continue;
-                }
-                SpanInterval intersect = intersection(*fIt, *sIt);
-                if (!intersect.isEmpty()) {
-
-                    // remove it from the second set
-                    std::set<SpanInterval> leftover;
-                    sIt->subtract(intersect, leftover);
-
-                    std::set<SpanInterval>::const_iterator toRemove = sIt;
-                    sIt--;
-                    set_.erase(toRemove);
-
-                    BOOST_FOREACH(SpanInterval sp, leftover) {
-                        if (!sp.isEmpty()) sp = sp.normalize().get();
-                        if (!sp.isEmpty()) set_.insert(sp);
-                    }
-                }
-            }
-        }
-        */
-    }
-    // don't trust myself - remove this later as an optimization step
-    if (!isDisjoint()) {
-        LOG_PRINT(LOG_ERROR) << "set is supposed to be disjoint, but isnt!  set: " << this->toString() << ", forceliquid: " << forceLiquid_;
-        std::runtime_error error("inside SISet::makeDisjoint() - set was attempted to make disjoint but isn't!");
-        throw error;
     }
 }
 
@@ -344,12 +224,11 @@ void SISet::subtract(const SISet& sis) {
     */
 }
 
-const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const {
-    SISet newSet(false, maxInterval_);
-    newSet.clear();
+const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel, const Interval& universe) const {
+    SISet newSet(false);
 
     for (std::list<SpanInterval>::const_iterator it = set_.begin(); it != set_.end(); it++) {
-        boost::optional<SpanInterval> siOpt = it->satisfiesRelation(rel, SpanInterval(maxInterval_));
+        boost::optional<SpanInterval> siOpt = it->satisfiesRelation(rel, SpanInterval(universe));
         if (siOpt) newSet.add(siOpt.get());
     }
 
@@ -358,7 +237,7 @@ const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel) con
 
 
 SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
-    SISet start(forceLiquid, maxInterval);
+    SISet start(forceLiquid);
     if (!forceLiquid) {
         LOG_PRINT(LOG_ERROR) << "generating random SISets for non-liquid events is not yet implemented!";
         return start;
@@ -431,13 +310,12 @@ std::ostream& operator<<(std::ostream& o, const SISet& s) {
 
 SISet intersection(const SISet& a, const SISet& b) {
     SISet result;
-    result.setMaxInterval(a.maxInterval_);  // TODO: better way?
     if (a.forceLiquid() && b.forceLiquid()) {
         result.setForceLiquid(true);
     } else {
         result.setForceLiquid(false);
     }
-    // pairwise intersection - ugh
+    // pairwise intersection - ugh.  O(n^2) again
     BOOST_FOREACH(SpanInterval siA, a.set_) {
         BOOST_FOREACH(SpanInterval siB, b.set_) {
             boost::optional<SpanInterval> intersect = intersection(siA, siB);
@@ -451,7 +329,7 @@ SISet intersection(const SISet& a, const SISet& b) {
 
 SISet intersection(const SISet& a, const SpanInterval& si) {
     // cheat for now
-    SISet copy(false, a.maxInterval_);
+    SISet copy(false);
     copy.add(si);
     return intersection(a, copy);
 }
@@ -460,7 +338,7 @@ SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInte
     unsigned int j = std::min(a.start().finish(), b.start().finish());
     unsigned int k = std::max(a.finish().start(), b.finish().start());
 
-    SISet set(false, maxInterval);
+    SISet set(false);
 
     set.add(SpanInterval(a.start().start(), j, k, a.finish().finish()));
     set.add(SpanInterval(a.start().start(), j, k, b.finish().finish()));
@@ -472,11 +350,11 @@ SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInte
 
 SISet composedOf(const SpanInterval& i, const SpanInterval& j, Interval::INTERVAL_RELATION rel, const SpanInterval& universe) {
     if (!universe.isLiquid()) throw std::invalid_argument("composedOf() requires universe to be liquid; could be supported in future");
-    SISet empty(false, universe.start());
+    SISet empty(false);
 
     if (rel == Interval::EQUALS) {
         boost::optional<SpanInterval> intersect = intersection(i, j);
-        SISet result(false, universe.start());
+        SISet result(false);
         if (intersect) result.add(*intersect);
         return result;
     }
