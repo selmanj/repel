@@ -15,20 +15,21 @@
 
 class SISet {
 public:
-    SISet(bool forceLiquid=false,
-            const Interval& maxInterval=Interval(0, UINT_MAX))
+    typedef std::list<SpanInterval>::const_iterator const_iterator;
+
+    SISet(bool forceLiquid=false)
     : set_(), forceLiquid_(forceLiquid) {}
 
-    explicit SISet(const SpanInterval& si, bool forceLiquid=false,
-          const Interval& maxInterval=Interval(0, UINT_MAX));
+    explicit SISet(const SpanInterval& si, bool forceLiquid=false);
 
     template <class InputIterator>
-    SISet(InputIterator begin, InputIterator end,
-            bool forceLiquid=false,
-            const Interval& maxInterval=Interval(0, UINT_MAX))
-    : set_(begin, end), forceLiquid_(forceLiquid) {}
+    static SISet fromRange(InputIterator begin, InputIterator end, bool forceLiquid=false);
+    //template <class InputIterator>
+    //SISet(InputIterator begin, InputIterator end,
+    //        bool forceLiquid=false,
+    //        const Interval& maxInterval=Interval(0, UINT_MAX))
+    //: set_(begin, end), forceLiquid_(forceLiquid) {}
 
-    typedef std::list<SpanInterval>::const_iterator const_iterator;
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -37,7 +38,7 @@ public:
     bool forceLiquid() const {return forceLiquid_;};
     // TODO make some of these friend functions
     bool isDisjoint() const;
-    SISet compliment() const;
+    SISet compliment(const SISet& universe) const;
     Interval maxInterval() const;
     unsigned int size() const;
     unsigned int liqSize() const;
@@ -91,6 +92,15 @@ bool equalByInterval(const SISet& a, const SISet& b);
 unsigned long hammingDistance(const SISet& a, const SISet& b);
 
 // IMPLEMENTATION
+template <class InputIterator>
+static SISet SISet::fromRange(InputIterator begin, InputIterator end, bool forceLiquid=false) {
+    SISet set(forceLiquid);
+    for (InputIterator it = begin; it != end; it++) {
+        set.add(*it);
+    }
+    return set;
+}
+
 inline SISet::const_iterator SISet::begin() const {return set_.begin();}
 inline SISet::const_iterator SISet::end() const {return set_.end();}
 inline bool SISet::empty() const { return size() == 0;}

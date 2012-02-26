@@ -20,7 +20,7 @@
 
 SISet::SISet(const SpanInterval& si, bool forceLiquid,
             const Interval& maxInterval)
-    : set_(), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {
+    : set_(), forceLiquid_(forceLiquid) {
     set_.push_back(si);
 }
 
@@ -30,12 +30,10 @@ std::set<SpanInterval> SISet::asSet() const {
 }
 
 
-SISet SISet::compliment() const {
+SISet SISet::compliment(const SISet& universe) const {
+    /*
     if (size() == 0) {
-        // compliment is max interval
-        SISet max(forceLiquid_, maxInterval_);
-        max.add(SpanInterval(maxInterval_));
-        return max;
+        return universe;
     }
 
     // {A U B U C U.. }^c = A^c I B^c I ...
@@ -76,6 +74,7 @@ SISet SISet::compliment() const {
         return SISet(forceLiquid_, maxInterval_);
     }
     return SISet(intersections.front().begin(), intersections.front().end(), forceLiquid_, maxInterval_);
+*/
 }
 
 Interval SISet::maxInterval() const {
@@ -290,7 +289,26 @@ void SISet::subtract(const SpanInterval& si) {
 }
 
 void SISet::subtract(const SISet& sis) {
-    // TODO why not just subtract each item individually??
+    // O(n^2).  Probably could speed this up by sorting the elements.
+    std::list<SpanInterval> result(this->begin(), this->end());
+
+    for (SISet::const_iterator it = sis.begin(); it != sis.end(); it++) {
+        std::list<SpanInterval> nextResult;
+        SpanInterval toSub = *it;
+        if (forceLiquid_ && !sis.forceLiquid_) {    // convert each spaninterval into a liquid one (inclusive)
+            boost::optional<SpanInterval> si = toSub.toLiquidInc().normalize();
+            if (!si) continue;
+            toSub = *si;
+        }
+        for (std::list<SpanInterval>::iterator it2 = result.begin(); it2 != result.end(); it2++ ) {
+            it2->subtract(toSub, std::inserter(nextResult, nextResult.end()));
+        }
+        result = nextResult;
+    }
+
+    *this = SISet::fromRange(result.begin(), result.end(), forceLiquid_);       // TODO make this return a SISet
+
+    /*
 
     //LOG_PRINT(LOG_DEBUG) << "called SISet::subtract with *this=" << this->toString() << " and sis=" << sis.toString();
     std::list<SISet> toIntersect;
@@ -323,6 +341,7 @@ void SISet::subtract(const SISet& sis) {
     }
     set_ = toIntersect.front().set_;
     //LOG_PRINT(LOG_DEBUG) << "final value: " << this->toString();
+    */
 }
 
 const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const {
