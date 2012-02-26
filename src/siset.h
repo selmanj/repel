@@ -11,6 +11,7 @@
 #include <list>
 #include <iostream>
 #include "spaninterval.h"
+#include <boost/functional/hash.hpp>
 
 class SISet {
 public:
@@ -77,6 +78,7 @@ public:
     friend SISet intersection(const SISet& a, const SpanInterval& si);
     friend SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInterval);
     friend bool equalByInterval(const SISet& a, const SISet& b);
+    friend std::size_t hash_value(const SISet& si);
 private:
     std::list<SpanInterval> set_;
     bool forceLiquid_;
@@ -102,5 +104,15 @@ inline bool SISet::includes(const SISet& s) const {
 inline bool operator==(const SISet& l, const SISet& r) {return l.includes(r) && r.includes(l);}    //TODO: is this the right thing to do???
 inline bool operator!=(const SISet& l, const SISet& r) {return !operator==(l,r);}
 
+inline std::size_t hash_value(const SISet& si) {
+    std::size_t seed = 0;
+    // make a copy of our set as a liquid set (inclusive)
+    SISet liqSet(true, si.maxInterval_);
+    for (SISet::const_iterator it = si.begin(); it != si.end(); it++) {
+        liqSet.add(it->toLiquidInc());
+    }
+    boost::hash_range(seed, liqSet.begin(), liqSet.end());
+    return seed;
+}
 
 #endif /* SISET_H_ */
