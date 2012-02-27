@@ -18,10 +18,17 @@ std::string TQConstraints::toString() const {
 
     return str.str();
 }
-/*
-SISet Sentence::satisfied(const Model& m, const Domain& d, bool forceLiquid, const SISet* where) const {
-    SISet set = doSatisfied(m, d, forceLiquid);
-    if (where) return intersection(set, *where);
+
+SISet Sentence::dNotSatisfied(const Model& m, const Domain& d) const {
+    SISet set = satisfied(m, d, false);
+    set = set.compliment(d.maxSISet());
+    set.makeDisjoint();
     return set;
 }
-*/
+
+SISet Sentence::dNotSatisfied(const Model& m, const Domain& d, const SISet& where) const {
+    SISet set = satisfied(m, d, false);
+    set = intersection(set.compliment(d.maxSISet()), where);
+    set.makeDisjoint();
+    return set;
+}

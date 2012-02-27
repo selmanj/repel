@@ -178,19 +178,6 @@ inline SISet Sentence::dSatisfied(const Model& m, const Domain& d, const SISet &
     return set;
 }
 
-inline SISet Sentence::dNotSatisfied(const Model& m, const Domain& d) const {
-    SISet set = satisfied(m, d, false);
-    set = set.compliment();
-    set.makeDisjoint();
-    return set;
-}
-
-inline SISet Sentence::dNotSatisfied(const Model& m, const Domain& d, const SISet& where) const {
-    SISet set = satisfied(m, d, false);
-    set = intersection(set.compliment(), where);
-    set.makeDisjoint();
-    return set;
-}
 inline bool TQConstraints::operator==(const TQConstraints& b) const {
     return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);
 }

@@ -24,6 +24,7 @@ public:
 
     template <class InputIterator>
     static SISet fromRange(InputIterator begin, InputIterator end, bool forceLiquid=false);
+    static SISet filledAt(const Interval& i, bool forceLiquid=false);
     //template <class InputIterator>
     //SISet(InputIterator begin, InputIterator end,
     //        bool forceLiquid=false,
@@ -97,7 +98,7 @@ inline SISet::SISet(const SpanInterval& si, bool forceLiquid)
 
 
 template <class InputIterator>
-inline static SISet SISet::fromRange(InputIterator begin, InputIterator end, bool forceLiquid=false) {
+inline SISet SISet::fromRange(InputIterator begin, InputIterator end, bool forceLiquid) {
     SISet set(forceLiquid);
     for (InputIterator it = begin; it != end; it++) {
         boost::optional<SpanInterval> itNorm = it->normalize();
@@ -105,6 +106,7 @@ inline static SISet SISet::fromRange(InputIterator begin, InputIterator end, boo
     }
     return set;
 }
+inline SISet SISet::filledAt(const Interval& i, bool forceLiquid) {return SISet(SpanInterval(i), forceLiquid);}
 
 inline SISet::const_iterator SISet::begin() const {return set_.begin();}
 inline SISet::const_iterator SISet::end() const {return set_.end();}

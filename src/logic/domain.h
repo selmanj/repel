@@ -67,7 +67,7 @@ public:
     Model randomModel() const;
     Interval maxInterval() const;
     SpanInterval maxSpanInterval() const;
-    SISet Domain::maxSISet() const;
+    SISet maxSISet() const;
 
     void setMaxInterval(const Interval& maxInterval);
 

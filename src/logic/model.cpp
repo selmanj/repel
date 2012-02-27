@@ -15,6 +15,7 @@ Model::Model()
 
 Model::Model(const std::vector<FOL::Event>& pairs)
     : amap_() {
+    /*
     unsigned int smallest=UINT_MAX, largest=0;
     // find the max interval
     for (std::vector<FOL::Event>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
@@ -29,8 +30,7 @@ Model::Model(const std::vector<FOL::Event>& pairs)
         smallest = (std::min)(interval.start().start(), smallest);
         largest = (std::max)(interval.finish().finish(), largest);
     }
-
-    Interval maxInterval = Interval(smallest, largest);
+    */
 
     // initialize observations
     for (std::vector<FOL::Event>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
@@ -38,7 +38,7 @@ Model::Model(const std::vector<FOL::Event>& pairs)
         SpanInterval interval = it->where();
         bool truthVal = it->truthVal();
 
-        SISet set(true, maxInterval);
+        SISet set(true);
 
         if (truthVal) set.add(interval);
         if (amap_.count(*atom) == 1) {
@@ -147,6 +147,7 @@ void Model::intersect(const Model& b) {
     }
 }
 
+// TODO: this working right below?  what if the atom isn't liquid?
 void Model::compliment(const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval) {
     Model newModel;
 
@@ -154,11 +155,11 @@ void Model::compliment(const std::set<Atom, atomcmp>& allAtoms, const Interval& 
         if (amap_.count(atom) == 1) {
             Model::const_iterator it = amap_.find(atom);
             SISet set = it->second;
-            if (set.compliment().size() != 0) {
-                newModel.amap_.insert(std::pair<Atom, SISet>(atom, set.compliment()));
+            if (set.compliment(SISet::filledAt(maxInterval, false)).size() != 0) {
+                newModel.amap_.insert(std::pair<Atom, SISet>(atom, set.compliment(SISet::filledAt(maxInterval, false))));
             }
         } else {
-            SISet set(true, maxInterval);
+            SISet set(true);
             set.add(SpanInterval(maxInterval, maxInterval));
             newModel.amap_.insert(std::pair<Atom, SISet>(atom, set));
         }
