@@ -2,9 +2,9 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <boost/optional.hpp>
-#include "spaninterval.h"
-#include "interval.h"
-#include "siset.h"
+#include "../src/spaninterval.h"
+#include "../src/interval.h"
+#include "../src/siset.h"
 
 #include <boost/foreach.hpp>
 #include <iostream>
@@ -55,6 +55,7 @@ BOOST_AUTO_TEST_CASE( basic_test )
 BOOST_AUTO_TEST_CASE( siset_test ) {
     SpanInterval sp1(1,10,1,10);
     SpanInterval sp2(8,11,8,11);
+    SISet universe(SpanInterval(1,11, 1,11));
     SISet set;
     BOOST_CHECK(set.isDisjoint());
     set.add(sp1);
@@ -68,31 +69,31 @@ BOOST_AUTO_TEST_CASE( siset_test ) {
     // TODO turn this part into a test
     //std::cout << "compliment of " << set.toString() << " is " << set.compliment().toString() << std::endl;
 
-    SISet dcompliment = set.compliment().compliment();
+    SISet dcompliment = set.compliment(universe).compliment(universe);
     dcompliment.makeDisjoint(); //
     //std::cout << "double compliment is " << dcompliment.toString() << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( hammingliq_dist_test) {
     Interval maxInterval(0,50);
-    SISet a(true, maxInterval);
-    SISet b(true, maxInterval);
+    SISet a(true);
+    SISet b(true);
 
     a.add(SpanInterval(1,5,1,5));
     b.add(SpanInterval(2,5,2,5));
 
-    BOOST_CHECK_EQUAL(hammingDistance(a,b), 1);
+    BOOST_CHECK_EQUAL(hammingDistance(a,b, SISet::filledAt(maxInterval)), 1);
 }
 
 BOOST_AUTO_TEST_CASE( hamming_dist_test) {
     Interval maxInterval(0,50);
-    SISet a(false, maxInterval);
-    SISet b(false, maxInterval);
+    SISet a(false);
+    SISet b(false);
 
     a.add(SpanInterval(1,5,1,5));
     b.add(SpanInterval(2,5,2,5));
 
-    BOOST_CHECK_EQUAL(hammingDistance(a,b), 5);
+    BOOST_CHECK_EQUAL(hammingDistance(a,b, SISet::filledAt(maxInterval)), 5);
 }
 
 BOOST_AUTO_TEST_CASE( rand_siset_test ) {
@@ -214,7 +215,7 @@ BOOST_AUTO_TEST_CASE( siSetComplimentTest) {
     SpanInterval sp2(1,18,20,20);
     SpanInterval sp3(10,10,10,19);
     SpanInterval sp4(11,20,11,20);
-    SISet set(false, maxInt);
+    SISet set(false);
 
     set.add(sp1);
     set.add(sp2);
@@ -222,7 +223,7 @@ BOOST_AUTO_TEST_CASE( siSetComplimentTest) {
     set.add(sp4);
     set.makeDisjoint();
     BOOST_CHECK_EQUAL(set.toString(), "{[(1, 9), (1, 20)], [(10, 10), (10, 19)], [(10, 18), (20, 20)], [(11, 18), (11, 19)], [19:20]}");
-    SISet compliment = set.compliment();
+    SISet compliment = set.compliment(SISet::filledAt(maxInt, false));
     BOOST_CHECK_EQUAL(compliment.toString(), "{}");
 }
 

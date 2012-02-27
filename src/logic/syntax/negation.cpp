@@ -6,6 +6,7 @@
  */
 
 #include "negation.h"
+#include "../domain.h"
 
 void Negation::doToString(std::stringstream& str) const {
     str << "!";
@@ -24,7 +25,7 @@ SISet Negation::satisfied(const Model& m, const Domain& d, bool forceLiquid) con
     // return the compliment of the set inside the negation
     SISet sat = s_->satisfied(m, d, forceLiquid);
     sat.setForceLiquid(forceLiquid);
-    return sat.compliment();
+    return sat.compliment(d.maxSISet());
 }
 
 

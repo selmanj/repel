@@ -56,7 +56,7 @@ SISet DiamondOp::satisfied(const Model& m, const Domain& d, bool forceLiquid) co
     SISet sat = s_->satisfied(m, d, false);
     sat.setForceLiquid(false);
 
-    SISet newsat(false, sat.maxInterval());
+    SISet newsat(false);
     for(SISet::const_iterator sIt = sat.begin(); sIt != sat.end(); sIt++) {
         for(std::set<Interval::INTERVAL_RELATION>::const_iterator relIt = rels_.begin();
                 relIt != rels_.end();

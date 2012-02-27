@@ -1,4 +1,5 @@
 #include "sentence.h"
+#include "../domain.h"
 #include <sstream>
 
 std::string TQConstraints::toString() const {

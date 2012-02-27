@@ -43,7 +43,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d);
  * @param sentences a list of quantified clauses in CNF form
  * @return a pairing of unit clauses and formulas after propagation
  */
-QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences);
+QUnitsFormulasPair performUnitPropagation(const Domain& d, const QCNFClauseList& sentences);
 
 /**
  * Propagate a single literal into a clause.
@@ -52,7 +52,7 @@ QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences);
  * @param c the clause to propagate lit into
  * @return a list of resulting sentences after lit is propagated into c
  */
-QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c);
+QCNFClauseList propagateLiteral(const Domain& d, const QCNFLiteral& lit, const QCNFClause& c);
 
 /**
  * Convert a sentence that is already in CNF form into a CNFClause.
@@ -136,7 +136,7 @@ namespace {
 
     bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
     bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
-    bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
+    bool propagateSimpleLitToDiamond(const Domain& d, const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
     bool propagateSimpleLitToLiquidLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
 
     // anonymous struct for providing a sorting order for QCNFClauseList iterators

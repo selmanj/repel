@@ -76,7 +76,7 @@ namespace {
 
         void operator()(ELSentence& s) const {
             if (s.hasInfWeight()) {
-                s.setQuantification(SISet(d.maxSpanInterval(), false, d.maxInterval()));
+                s.setQuantification(SISet(d.maxSpanInterval(), false));
             }
         }
 
@@ -220,7 +220,7 @@ void MCSat::splitSatisfiedRules(const Model& m,
     for (InputIterator it = begin; it != end; it++) {
         ELSentence formula = *it;
         if (!formula.isQuantified()) {
-            formula.setQuantification(SISet(d.maxSpanInterval(), false, d.maxInterval()));
+            formula.setQuantification(SISet(d.maxSpanInterval(), false));
         }
         SISet quantification = formula.quantification();
         if (quantification.empty()) {
@@ -233,7 +233,7 @@ void MCSat::splitSatisfiedRules(const Model& m,
             // split into single spanning intervals
             for (SISet::const_iterator it2 = satisfiedAt.begin(); it2 != satisfiedAt.end(); it2++) {
                 ELSentence newForm = formula;
-                newForm.setQuantification(SISet(*it2, false, d.maxInterval()));
+                newForm.setQuantification(SISet(*it2, false));
                 *satIt = newForm;
                 satIt++;
             }
@@ -242,7 +242,7 @@ void MCSat::splitSatisfiedRules(const Model& m,
             // split into single spanning intervals
             for (SISet::const_iterator it2 = unsatisfiedAt.begin(); it2 != unsatisfiedAt.end(); it2++) {
                 ELSentence newForm = formula;
-                newForm.setQuantification(SISet(*it2, false, d.maxInterval()));
+                newForm.setQuantification(SISet(*it2, false));
                 *unsatIt = newForm;
                 unsatIt++;
             }

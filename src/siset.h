@@ -90,11 +90,11 @@ SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInte
 SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION, const SpanInterval& universe);
 bool equalByInterval(const SISet& a, const SISet& b);
 
-unsigned long hammingDistance(const SISet& a, const SISet& b);
+unsigned long hammingDistance(const SISet& a, const SISet& b, const SISet& universe);
 
 // IMPLEMENTATION
 inline SISet::SISet(const SpanInterval& si, bool forceLiquid)
-    : set_() {set_.push_back(si);}
+    : set_(), forceLiquid_(forceLiquid) {set_.push_back(si);}
 
 
 template <class InputIterator>

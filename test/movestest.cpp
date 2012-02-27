@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondConjTest) {
     ELSentence form1 = *d.formulas_begin();
     SISet sat = form1.sentence()->dSatisfied(d.defaultModel(), d);
     std::cout << "sat = " << sat.toString() << std::endl;
-    std::cout << "sat compliment is = " << sat.compliment().toString() << std::endl;
+    std::cout << "sat compliment is = " << sat.compliment(d.maxSISet()).toString() << std::endl;
 
     srand(0);
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);

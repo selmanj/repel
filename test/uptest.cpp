@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( simple_lit ) {
     std::vector<ELSentence> flist(d.formulas_begin(), d.formulas_end());
     QCNFClauseList clauseList = convertToQCNFClauseList(flist);
 
-    QUnitsFormulasPair result = performUnitPropagation(clauseList);
+    QUnitsFormulasPair result = performUnitPropagation(d, clauseList);
 
     for(QCNFLiteralList::const_iterator it = result.first.begin(); it != result.first.end(); it++) {
         QCNFLiteral lit = *it;
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( dia_lit ) {
     std::vector<ELSentence> flist(d.formulas_begin(), d.formulas_end());
     QCNFClauseList clauseList = convertToQCNFClauseList(flist);
 
-    QUnitsFormulasPair result = performUnitPropagation(clauseList);
+    QUnitsFormulasPair result = performUnitPropagation(d, clauseList);
 
     for(QCNFLiteralList::const_iterator it = result.first.begin(); it != result.first.end(); it++) {
         QCNFLiteral lit = *it;
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( simple_lit_directly ) {
     l1.first = qs1.first.front();
     l1.second = qs1.second;
 
-    QCNFClauseList list = propagateLiteral(l1, qs3);
+    QCNFClauseList list = propagateLiteral(d, l1, qs3);
     BOOST_REQUIRE_EQUAL(list.size(), 1);
     BOOST_CHECK_EQUAL(list.front().second.toString(), "{[(1, 10), (11, 20)], [11:20]}");
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE( simple_lit_directly ) {
     boost::shared_ptr<Sentence> negl1(new Negation(l1.first));
     l1.first = negl1;
 
-    list = propagateLiteral(l1, qs3);
+    list = propagateLiteral(d, l1, qs3);
     BOOST_REQUIRE_EQUAL(list.size(), 2);
     QCNFClauseList::const_iterator it = list.begin();
     ELSentence first = convertFromQCNFClause(*it);

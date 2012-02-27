@@ -23,7 +23,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     // add quantification to any formulas that may be missing them
     for (std::vector<ELSentence>::iterator it = formulas.begin(); it != formulas.end(); it++) {
         if (!it->isQuantified()) {
-            SISet everywhere(d.maxSpanInterval(), false, d.maxInterval());
+            SISet everywhere(d.maxSpanInterval(), false);
             it->setQuantification(everywhere);
         }
     }
@@ -39,7 +39,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
 
     for (std::set<Atom, atomcmp>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
         SISet trueAt = obs.getAtom(*it);
-        SISet falseAt = trueAt.compliment();
+        SISet falseAt = trueAt.compliment(d.maxSISet());
 
         // TODO: why make a copy?  we should have the original shared_ptr
         boost::shared_ptr<Sentence> atomTrue(new Atom(*it));
@@ -61,7 +61,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
         std::cout << "clause: " << *it << std::endl;
     }
 
-    QUnitsFormulasPair reducedList = performUnitPropagation(clauses);
+    QUnitsFormulasPair reducedList = performUnitPropagation(d, clauses);
     std::cout << "unit prop performed, now we have " << reducedList.first.size() << " unit clauses and " << reducedList.second.size() << " formulas:" << std::endl;
 
     for (QCNFLiteralList::const_iterator it = reducedList.first.begin(); it != reducedList.first.end(); it++) {
@@ -73,7 +73,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     return reducedList;
 }
 
-QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {
+QUnitsFormulasPair performUnitPropagation(const Domain& d, const QCNFClauseList& sentences) {
     QCNFClauseList formulas = sentences;
 
     // first, do a scan over the sentences, collecting unit clauses and collecting which atoms occur in each sentence
@@ -91,7 +91,7 @@ QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {
 
         QCNFClauseList processedFormulas;
         for (QCNFClauseList::iterator it = formulas.begin(); it != formulas.end(); it++) {
-            QCNFClauseList newFormulas = propagateLiteral(unitClause, *it);
+            QCNFClauseList newFormulas = propagateLiteral(d, unitClause, *it);
             processedFormulas.insert(processedFormulas.end(), newFormulas.begin(), newFormulas.end());
         }
         splitUnitClauses(processedFormulas, unitClauses);
@@ -121,7 +121,8 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 }
 */
 
-QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
+// TODO: make Domain part of the state of unit_prop
+QCNFClauseList propagateLiteral(const Domain& d, const QCNFLiteral& lit, const QCNFClause& c) {
     LOG_PRINT(LOG_DEBUG) << "propagate_literal called with lit=" << lit;
     boost::shared_ptr<Sentence> cnfLit = lit.first;
     // first figure out what kind of literal we have here.
@@ -154,7 +155,7 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                     addCurrentClause = propagateSimpleLitToLiquidLit(lit, qClause, it, toProcess);
                 } else if (boost::dynamic_pointer_cast<DiamondOp>(currentLit) != 0
                         && currentLit->contains(*baseProp)) {
-                    addCurrentClause = propagateSimpleLitToDiamond(lit, qClause, it, toProcess);
+                    addCurrentClause = propagateSimpleLitToDiamond(d, lit, qClause, it, toProcess);
                 }
                 if (!addCurrentClause) break;
                 it++;
@@ -267,7 +268,7 @@ namespace {
         return true;
     }
 
-    bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
+    bool propagateSimpleLitToDiamond(const Domain& d, const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences) {
         boost::shared_ptr<DiamondOp> diamondLit = boost::dynamic_pointer_cast<DiamondOp>(*lit);
 
         // double check that there is only one relation for now
@@ -277,7 +278,7 @@ namespace {
         }
 
         Interval::INTERVAL_RELATION rel = *(diamondLit->relations().begin());
-        SISet satisfiesRel = unit.second.satisfiesRelation(rel);
+        SISet satisfiesRel = unit.second.satisfiesRelation(rel, d.maxInterval());
         std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", clause.second = " << clause.second.toString() << std::endl;
         SISet intersect = intersection(satisfiesRel, clause.second);
         std::cout << "intersect = " << intersect.toString() << std::endl;

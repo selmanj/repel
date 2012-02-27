@@ -169,7 +169,7 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         SpanInterval si = it->where();
 
         if (obsPredsFixedAt_.find(a->name()) == obsPredsFixedAt_.end()) {
-            SISet newSet(true, maxInterval_);       // TODO: assumes all unobs are liquid!!!
+            SISet newSet(true);       // TODO: assumes all unobs are liquid!!!
             newSet.add(si);
             obsPredsFixedAt_.insert(std::pair<std::string, SISet>(a->name(), newSet));
 
@@ -211,19 +211,11 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         // TODO: we are hardwired for liquidity, come back and fix this later
 
         if (it->truthVal()) {
-            SISet set(true, maxInterval_);
+            SISet set(true);
 
             set.add(interval);
             observations_.setAtom(*atom, set);
         }
-    }
-
-    // enforce maxInterval on our formulas
-    for(std::vector<ELSentence>::iterator it = formulas_.begin(); it != formulas_.end(); it++) {
-        if (!it->isQuantified()) continue;
-        SISet set = it->quantification();
-        set.setMaxInterval(maxInterval_);
-        it->setQuantification(set);
     }
 };
 

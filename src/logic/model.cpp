@@ -9,6 +9,7 @@
 #include <sstream>
 #include "model.h"
 #include "el_syntax.h"
+#include "../siset.h"
 
 Model::Model()
     : amap_() {}
@@ -110,11 +111,13 @@ void Model::clearAtom(const Atom& a) {
 
 void Model::setMaxInterval(const Interval& maxInterval) {
     atom_map resized;
+    SISet universe = SISet::filledAt(maxInterval);
+
     for (atom_map::iterator it = amap_.begin(); it != amap_.end(); it++) {
         const Atom a = it->first;
         SISet b = it->second;
 
-        b.setMaxInterval(maxInterval);
+        b = intersection(b, universe);
         resized.insert(std::pair<const Atom, SISet>(a,b));
     }
 

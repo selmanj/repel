@@ -56,7 +56,7 @@ SISet Atom::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
             set.setForceLiquid(forceLiquid);
             return set;
         } else {
-            return SISet(forceLiquid, d.maxInterval());
+            return SISet(forceLiquid);
         }
     }
     // grounding out of atoms currently not implemented yet!

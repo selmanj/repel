@@ -10,7 +10,7 @@ add_executable(mcsattest mcsattest.cpp)
 add_executable(modeltest modeltest.cpp)
 add_executable(movestest movestest.cpp)
 add_executable(si_histogramtest si_histogramtest.cpp ${PROJECT_SOURCE_DIR}/src/si_histogram.cpp)
-add_executable(spanintervaltest spanintervaltest.cpp)
+add_executable(spanintervaltest spanintervaltest.cpp ${PROJECT_SOURCE_DIR}/src/siset.cpp)
 add_executable(uptest uptest.cpp)
 
 target_link_libraries(atomtest ${test_LIBRARIES})

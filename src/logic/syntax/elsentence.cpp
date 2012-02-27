@@ -49,7 +49,7 @@ bool ELSentence::fullySatisfied(const Model& m, const Domain& d) const {
     if (isQuantified_) {
         toSatisfyAt = quantification_;
     } else {
-        toSatisfyAt = SISet(d.maxSpanInterval(), false, d.maxInterval());
+        toSatisfyAt = SISet(d.maxSpanInterval(), false);
     }
 
     toSatisfyAt.subtract(satisfiedAt);

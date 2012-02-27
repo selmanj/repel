@@ -18,7 +18,7 @@ SIHistogram::SIHistogram(bool forceLiquid, const Interval& maxInterval)
 }
 
 void SIHistogram::add(const SpanInterval& si) {
-    SISet set(forceLiquid_, maxInterval_);
+    SISet set(forceLiquid_);
     set.add(si);
     add(set);
 }
@@ -33,7 +33,7 @@ void SIHistogram::add(const SISet& siset) {
         SISet inter = intersection(leftToAdd, *it);
         if (inter.size() > 0) {
             // BREAK IT UP YOU TWO
-            SISet before(forceLiquid_, maxInterval_);
+            SISet before(forceLiquid_);
             before.add(*it);
             before.subtract(inter);
             BOOST_FOREACH(SpanInterval beforesi, before.intervals()) {

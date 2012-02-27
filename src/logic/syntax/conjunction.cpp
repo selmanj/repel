@@ -88,7 +88,7 @@ SISet Conjunction::satisfied(const Model& m, const Domain& d, bool forceLiquid) 
         rightSat.setForceLiquid(false);
     }
 
-    SISet result(false, d.maxInterval());
+    SISet result(false);
     for(SISet::const_iterator lIt = leftSat.begin(); lIt != leftSat.end(); lIt++ ) {
         for (SISet::const_iterator rIt = rightSat.begin(); rIt != rightSat.end(); rIt++) {
             for(std::set<Interval::INTERVAL_RELATION>::const_iterator relIt = rels_.begin();
