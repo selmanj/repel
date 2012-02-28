@@ -68,7 +68,9 @@ bool SISet::isDisjoint() const {
 }
 
 void SISet::add(const SpanInterval &s) {
-    SpanInterval sp = s;
+    boost::optional<SpanInterval> spPtr = s.normalize();
+    if (!spPtr) return;
+    SpanInterval sp = *spPtr;
     if (forceLiquid_ && !sp.isLiquid()) {
         std::runtime_error e("tried to add a non-liquid SI to a liquid SI");
         throw e;
@@ -430,6 +432,7 @@ unsigned long hammingDistance(const SISet& a, const SISet& b, const SISet& unive
     SISet result(abC);
     result.add(aCb);
     if (a.forceLiquid() && b.forceLiquid()) {
+        result.setForceLiquid(true);
         return result.liqSize();
     }
     return result.size();

@@ -24,8 +24,10 @@ void Negation::doToString(std::stringstream& str) const {
 SISet Negation::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     // return the compliment of the set inside the negation
     SISet sat = s_->satisfied(m, d, forceLiquid);
+    sat = sat.compliment(d.maxSISet());
+    // ensure its liquid/nonliquid
     sat.setForceLiquid(forceLiquid);
-    return sat.compliment(d.maxSISet());
+    return sat;
 }
 
 
