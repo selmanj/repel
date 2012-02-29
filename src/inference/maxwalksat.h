@@ -21,29 +21,53 @@
 #include "../logic/model.h"
 #include "../logic/domain.h"
 
-Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model& initialModel);
+Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model& initialModel, std::ostream* dataout=0);
 
 namespace {
 
-typedef std::set<int> FormSet;
-typedef std::map<Atom, FormSet, atomcmp> AtomOccurences;
+    typedef std::set<int> FormSet;
+    typedef std::map<Atom, FormSet, atomcmp> AtomOccurences;
 
-struct score_pair {
-    unsigned long totalScore;
-    std::vector<unsigned long> formScores;
-};
+    struct score_pair {
+        unsigned long totalScore;
+        std::vector<unsigned long> formScores;
+    };
 
-AtomOccurences findAtomOccurences(const std::vector<ELSentence>& sentences);
-// note, model m is assumed to have had move applied already!
-score_pair computeScoresForMove(const Domain& d,
-        const Model& m,
-        const Move& move,
-        unsigned long currentScore,
-        const std::vector<unsigned long>& curFormScores,
-        const AtomOccurences& occurs);
+
+    AtomOccurences findAtomOccurences(const std::vector<ELSentence>& sentences);
+    // note, model m is assumed to have had move applied already!
+    score_pair computeScoresForMove(const Domain& d,
+            const Model& m,
+            const Move& move,
+            unsigned long currentScore,
+            const std::vector<unsigned long>& curFormScores,
+            const AtomOccurences& occurs);
+
+    struct row_out {
+        row_out() : out(0), first(true) {}
+        row_out(std::ostream* o) : out(o), first(true) {}
+        ~row_out() {if (out) *out << std::endl;}
+
+        template <typename T>
+        row_out& operator<<(T a) {
+            if (!out) return *this;
+            if (!first) {
+                *out << ", ";
+            } else {
+                first = false;
+            }
+            *out << a;
+            return *this;
+        }
+
+        std::ostream* out;
+        bool first;
+    };
+
 }
 
-Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel) {
+Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel, std::ostream* dataout=0) {
+    row_out datalog(dataout);
 
     Model currentModel;
     if (initialModel==0) currentModel = d.defaultModel();
@@ -84,6 +108,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
     unsigned long bestScore = currentScore;
     Model bestModel = currentModel;
 
+
     unsigned int showPeriodMod = (numIterations < 20 ? 1 : numIterations/20);
 
     for (int iteration=1; iteration <= numIterations; iteration++) {
@@ -93,6 +118,9 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
         }
         LOG(LOG_DEBUG) << "currentModel: " << currentModel.toString();
         LOG(LOG_DEBUG) << "current score: " << currentScore;
+
+        datalog << currentScore;
+
         // make a list of the current unsatisfied formulas we can calc moves for
         std::vector<int> notFullySatisfied = validForms;
         std::vector<ELSentence> curFormulas = formulas;

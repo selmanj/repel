@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
         ("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
         ("output,o", po::value<std::string>(), "output model file")
         ("unitProp,u", "perform unit propagation only and exit")
+        ("datafile,d", po::value<std::string>(), "log scores from maxwalksat to this file (csv form)")
     ;
 
     po::options_description hidden("Hidden options");
@@ -130,7 +131,23 @@ int main(int argc, char* argv[]) {
 
         LOG(LOG_INFO) << "searching for a maximum-weight model, with p=" << p << " and iterations=" << iterations;
         Model defModel = d->defaultModel();
-        Model maxModel = maxWalkSat(*d, iterations, p, &defModel);
+
+        std::fstream datastream;
+        if(vm.count("datafile")) {
+            datastream.open(vm["datafile"].as<std::string>().c_str(), std::fstream::out);
+            if (datastream.fail()) {
+                LOG_PRINT(LOG_ERROR) << "unable to open file \"" << vm["datafile"].as<std::string>() << "\" for data file storage.";
+            }
+        }
+        Model maxModel;
+        if (datastream.is_open() && datastream.good()) {
+            maxModel = maxWalkSat(*d, iterations, p, &defModel, &datastream);
+        } else {
+            maxModel = maxWalkSat(*d, iterations, p, &defModel, 0);
+        }
+
+        if (datastream.is_open()) datastream.close();
+
         LOG_PRINT(LOG_INFO) << "Best model found: " << std::endl;
         LOG_PRINT(LOG_INFO) << maxModel.toString();
         if (vm.count("output")) {
@@ -148,7 +165,7 @@ int main(int argc, char* argv[]) {
             }
             fprintf(outputFile, "# generated on %s\n", timeStr.c_str());
             fprintf(outputFile, "# run with %d iterations and %g chance of choosing a random move\n",
-                    iterations,
+                     iterations,
                     p);
             fputs(maxModel.toString().c_str(), outputFile);
         }
