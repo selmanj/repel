@@ -79,8 +79,12 @@ QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {
     // first, do a scan over the sentences, collecting unit clauses and collecting which atoms occur in each sentence
     QCNFLiteralList unitClauses;
     splitUnitClauses(formulas, unitClauses);
-
     LOG(LOG_DEBUG) << "found " << unitClauses.size() << " unit clauses.";
+
+    // maintain our map of where each unit must be true/false so we can
+    // detect inconsistencies
+    boost::unordered_map<Proposition, SISet> partialModel;
+    enforceUnitProps(unitClauses, partialModel);
 
     QCNFLiteralList propagatedUnitClauses;
 
@@ -192,6 +196,10 @@ namespace {
             }
         }
     }
+    void enforceUnitProps(QCNFLiteralList& unitClauses, boost::unordered_map<Proposition, SISet>& partialModel) {
+
+    }
+
 
     bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit) {
         if (boost::dynamic_pointer_cast<Atom>(lit) != 0) return true;

@@ -130,6 +130,11 @@ namespace {
     * sentences and placed in unitClauses.
     */
     void splitUnitClauses(QCNFClauseList& sentences, QCNFLiteralList& unitClauses);
+    /*
+     * Enforce unit clauses in a partial model (throws exception if a
+     * contradiction is detected - also meant to be called incrementally).
+     */
+    void enforceUnitProps(QCNFLiteralList& unitClauses, boost::unordered_map<Proposition, SISet>& partialModel);
 
     bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
     bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);

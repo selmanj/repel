@@ -68,6 +68,16 @@ struct atomcmp {
     }
 };
 
+/**
+ * Simple container class for propositions (literals).
+ */
+struct Proposition {
+    Proposition(const Atom& a, bool s)
+        : atom(a), sign(s) {}
+
+    Atom atom;
+    bool sign;  // if positive, true, if negative, false
+};
 // IMPLEMENTATION
 
 inline Atom::Atom(std::string name)
