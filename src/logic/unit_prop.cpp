@@ -57,19 +57,7 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
         if (d.second.size() != 0) clauses.push_back(d);
     }
 
-    for (QCNFClauseList::iterator it = clauses.begin(); it != clauses.end(); it++) {
-        std::cout << "clause: " << *it << std::endl;
-    }
-
     QUnitsFormulasPair reducedList = performUnitPropagation(clauses);
-    std::cout << "unit prop performed, now we have " << reducedList.first.size() << " unit clauses and " << reducedList.second.size() << " formulas:" << std::endl;
-
-    for (QCNFLiteralList::const_iterator it = reducedList.first.begin(); it != reducedList.first.end(); it++) {
-        std::cout << *it << std::endl;
-    }
-
-    std::cout << std::endl << "formulas:" << std::endl;
-    std::copy(reducedList.second.begin(), reducedList.second.end(), std::ostream_iterator<QCNFClause>(std::cout, "\n"));
     return reducedList;
 }
 
@@ -84,6 +72,7 @@ QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {
     // maintain our map of where each unit must be true/false so we can
     // detect inconsistencies
     boost::unordered_map<Proposition, SISet> partialModel;
+    // ensure we have no contradictions at this point
     enforceUnitProps(unitClauses, partialModel);
 
     QCNFLiteralList propagatedUnitClauses;
@@ -98,7 +87,10 @@ QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {
             QCNFClauseList newFormulas = propagateLiteral(unitClause, *it);
             processedFormulas.insert(processedFormulas.end(), newFormulas.begin(), newFormulas.end());
         }
-        splitUnitClauses(processedFormulas, unitClauses);
+        QCNFLiteralList newUnitClauses;
+        splitUnitClauses(processedFormulas, newUnitClauses);
+        enforceUnitProps(newUnitClauses, partialModel); // double check that we got no contradictions
+        unitClauses.insert(unitClauses.end(), newUnitClauses.begin(), newUnitClauses.end());
         formulas = processedFormulas;
 
         propagatedUnitClauses.push_back(unitClause);    // finished propagating
@@ -164,8 +156,9 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
                 it++;
             }
         }
-        if (addCurrentClause) processed.push_back(qClause);
-
+        if (addCurrentClause) {
+            processed.push_back(qClause);
+        }
     }
     return processed;
 }
@@ -179,7 +172,7 @@ namespace {
                 boost::shared_ptr<LiquidOp> asLiq = boost::dynamic_pointer_cast<LiquidOp>(lit);
                 if (asLiq) {
                    CNFClause innerDisj = convertToCNFClause(asLiq->sentence());
-                   if (innerDisj.size() != 0) {
+                   if (innerDisj.size() != 1) {
                        it++; // bail out
                        continue;
                    }
@@ -196,7 +189,55 @@ namespace {
             }
         }
     }
-    void enforceUnitProps(QCNFLiteralList& unitClauses, boost::unordered_map<Proposition, SISet>& partialModel) {
+    void enforceUnitProps(const QCNFLiteralList& unitClauses, boost::unordered_map<Proposition, SISet>& partialModel) {
+        for (QCNFLiteralList::const_iterator it = unitClauses.begin(); it != unitClauses.end(); it++) {
+            Proposition unitProp = convertToProposition(*it);
+            Proposition iUnitProp = unitProp.inverse();
+            SISet where = it->second;
+
+            // check to see if its negated form is in partial model
+            if (partialModel.count(iUnitProp) == 0) {
+                // add it in, woo!
+                if (partialModel.count(unitProp) == 0) {
+                    partialModel[unitProp] = where; // do this so max interval is preserved
+                } else {
+                    partialModel[unitProp].add(where);
+                }
+            } else {
+                // if there's an intersection, throw an exception
+                SISet iTrueAt = partialModel[iUnitProp];
+                SISet intersect = intersection(iTrueAt, where);
+                if (!intersect.empty()) {
+                    throw contradiction();
+                } else {
+                    // safe to add
+                    if (partialModel.count(unitProp) == 0) {
+                        partialModel[unitProp] = where; // do this so max interval is preserved
+                    } else {
+                        partialModel[unitProp].add(where);
+                    }
+                }
+            }
+        }
+    }
+
+    Proposition convertToProposition(const QCNFLiteral& lit) {
+        if (       lit.first->getTypeCode() == Atom::TypeCode) {   // we compare this way rather than a dynamic cast (should be faster)
+            // perfect, this is easy
+            Atom atom = *(boost::shared_static_cast<Atom>(lit.first));
+            return Proposition(atom, true);
+        } else if (lit.first->getTypeCode() == Negation::TypeCode) {
+             // TODO: safe to assume it must be an atom inside?
+            Atom innerAtom = *(boost::shared_static_cast<Atom>(     // double cast!  its so bright and VIVID
+                    boost::shared_static_cast<Negation>(lit.first)->sentence()));
+            return Proposition(innerAtom, false);
+        } else if (lit.first->getTypeCode() == LiquidOp::TypeCode) {
+            // just step on through
+            QCNFLiteral innerLit = lit;
+            innerLit.first = boost::shared_static_cast<LiquidOp>(lit.first)->sentence();
+            return convertToProposition(innerLit);
+        }
+        throw std::runtime_error("convertToProposition(): got passed a lit that we don't know how to handle!");
 
     }
 
@@ -214,11 +255,11 @@ namespace {
 
     bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right) {
         // one of them must be a negation
-        if (boost::dynamic_pointer_cast<Negation>(left).get() != 0) {
-            boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(left);
+        if (left->getTypeCode() == Negation::TypeCode) {
+            boost::shared_ptr<Negation> neg = boost::static_pointer_cast<Negation>(left);
             if (*neg->sentence() == *right) return true;
         }
-        if (boost::dynamic_pointer_cast<Negation>(right).get() != 0) {
+        if (right->getTypeCode() == Negation::TypeCode) {
             boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(right);
             if (*neg->sentence() == *left) {
                 return true;
@@ -286,9 +327,7 @@ namespace {
 
         Interval::INTERVAL_RELATION rel = *(diamondLit->relations().begin());
         SISet satisfiesRel = unit.second.satisfiesRelation(rel);
-        std::cout << "satisfiesRel = " << satisfiesRel.toString() << ", clause.second = " << clause.second.toString() << std::endl;
         SISet intersect = intersection(satisfiesRel, clause.second);
-        std::cout << "intersect = " << intersect.toString() << std::endl;
         // if they don't intersect, nothing to propagate
         if (intersect.size() == 0) {
            return true;
@@ -326,7 +365,7 @@ namespace {
         if (intersect.empty()) return true;
 
         // this should be a lot simpler since we are now dealing with disjunctions
-        boost::shared_ptr<LiquidOp> liqLiteral = boost::dynamic_pointer_cast<LiquidOp>(*lit);
+        boost::shared_ptr<LiquidOp> liqLiteral = boost::static_pointer_cast<LiquidOp>(*lit);
         CNFClause innerDisj = convertToCNFClause(liqLiteral->sentence());
 
         for(CNFClause::iterator it = innerDisj.begin(); it != innerDisj.end(); it++) {
@@ -354,7 +393,6 @@ namespace {
                 newSentences.push(copy);
                 */
             } else if (isNegatedLiteral(*it, unit.first)) {
-                std::cout << "herp" << std::endl;
                 // two clauses, one for the intersection and one for the leftover
 
                 // make a copy of the clause, replacing the liquid literal with a new one

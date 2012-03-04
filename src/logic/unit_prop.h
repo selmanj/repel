@@ -124,6 +124,18 @@ std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os
 template <class traits>
 std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os, const QCNFLiteral& c );
 
+/**
+ * Exception representing a contradiction.
+ */
+class contradiction : public std::exception {
+public:
+    contradiction() throw() {};
+    contradiction(const contradiction& o) throw() {}
+    contradiction& operator=(const contradiction& o) throw() {return *this;}
+    virtual const char* what() const throw() { return "Contradiction found in constraints.";}
+    //friend std::ostream& operator<<(std::ostream& o, const contradiction& c) { o << "contradiction: " << c.what(); return o;}
+};
+
 namespace {
     /**
     * After this function is called, unit clauses will be removed from
@@ -134,8 +146,11 @@ namespace {
      * Enforce unit clauses in a partial model (throws exception if a
      * contradiction is detected - also meant to be called incrementally).
      */
-    void enforceUnitProps(QCNFLiteralList& unitClauses, boost::unordered_map<Proposition, SISet>& partialModel);
-
+    void enforceUnitProps(const QCNFLiteralList& unitClauses, boost::unordered_map<Proposition, SISet>& partialModel);
+    /**
+     * Convert a literal into a proposition.
+     */
+    Proposition convertToProposition(const QCNFLiteral& lit);
     bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
     bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);
 

@@ -158,7 +158,14 @@ BOOST_AUTO_TEST_CASE( cnfConvertBasic ) {
     BOOST_CHECK(std::find(c.begin(), c.end(), nra) != c.end());
     BOOST_CHECK(std::find(c.begin(), c.end(), sa) != c.end());
      */
+}
 
+BOOST_AUTO_TEST_CASE( contradictionTest ) {
+    std::string facts = "P(a) @ [1:20]\n"
+                        "Q(a) @ [20:30]\n";
+    std::string formulas = "inf: [!P(a) v !Q(a)] @ [1:30]\n";
+    Domain d = loadDomainWithStreams(facts, formulas);
+    BOOST_CHECK_THROW(performUnitPropagation(d), contradiction);
 
 
 }
