@@ -118,7 +118,7 @@ QCNFClauseList propagate_literal(const QCNFLiteral& lit, const QCNFClause& c) {
 */
 
 QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
-    LOG_PRINT(LOG_DEBUG) << "propagate_literal called with lit=" << lit;
+    LOG(LOG_DEBUG) << "propagate_literal called with lit=" << lit;
     boost::shared_ptr<Sentence> cnfLit = lit.first;
     // first figure out what kind of literal we have here.
     std::queue<QCNFClause> toProcess;
@@ -127,7 +127,7 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
     toProcess.push(c);
     while (!toProcess.empty()) {
         QCNFClause qClause = toProcess.front();
-        LOG_PRINT(LOG_DEBUG) << "working on " << convertFromQCNFClause(qClause).toString();
+        LOG(LOG_DEBUG) << "working on " << convertFromQCNFClause(qClause).toString();
         CNFClause *cClause = &qClause.first;
         toProcess.pop();
         bool addCurrentClause = true;
@@ -275,7 +275,7 @@ namespace {
         SISet intersect = intersection(litSet, currentSet);
 
         if (intersect.size() != 0) {
-            LOG_PRINT(LOG_DEBUG) << "propagating " << unit.first->toString() << " into " << (*lit)->toString() << std::endl;
+            LOG(LOG_DEBUG) << "propagating " << unit.first->toString() << " into " << (*lit)->toString() << std::endl;
 
             // if there is still a timepoint that the clause applies to, rewrite and continue
             SISet leftover = currentSet;
@@ -299,7 +299,7 @@ namespace {
         SISet intersect = intersection(litSet, currentSet);
 
         if (intersect.size() != 0) {
-            LOG_PRINT(LOG_DEBUG) << "propagating " << unit.first->toString() << " into " << (*lit)->toString() << std::endl;
+            LOG(LOG_DEBUG) << "propagating " << unit.first->toString() << " into " << (*lit)->toString() << std::endl;
 
             SISet leftover = currentSet;
             leftover.subtract(intersect);
@@ -349,7 +349,7 @@ namespace {
             LOG(LOG_ERROR) << "propagating simple lit into diamond op containing negative currently not implemented! ignoring";
             return true;
         }
-        LOG_PRINT(LOG_ERROR) << "warning, propagateSimpleLitTODiamond() called but lit propgated is neither negative or positive";
+        LOG(LOG_ERROR) << "warning, propagateSimpleLitTODiamond() called but lit propgated is neither negative or positive";
         return true;
     }
 
