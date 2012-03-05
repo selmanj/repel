@@ -151,9 +151,22 @@ namespace {
      * Convert a literal into a proposition.
      */
     Proposition convertToProposition(const QCNFLiteral& lit);
+
+    /**
+     * Check to see if we are given a simple literal.
+     */
     bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
+    /**
+     * Check to see if left or right is the negated version of the opposite (e.g. P(a) is negated of !P(a)).
+     */
     bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);
 
+    /**
+     * Propagate a simple literal (e.g. P(a) or its negation)   clause is the
+     * clause we are working on, lit is the actual lit we want to propagate
+     * into (in the clause) and newSentences is for any new sentences we
+     * create.
+     */
     bool propagateSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
     bool propagateNegSimpleLitToSimpleLit(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
     bool propagateSimpleLitToDiamond(const QCNFLiteral& unit, QCNFClause& clause, CNFClause::iterator& lit, std::queue<QCNFClause>& newSentences);
