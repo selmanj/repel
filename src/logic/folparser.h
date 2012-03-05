@@ -659,7 +659,7 @@ void parseFormulas(const ForwardIterator &first,
     doParseFormulas(store, its);
 }
 
-boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
+Domain loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
     std::vector<FOL::Event> events;
     //std::vector<WSentence> formulas;
     std::vector<ELSentence> formSet;
@@ -669,9 +669,7 @@ boost::shared_ptr<Domain> loadDomainFromFiles(const std::string &eventfile, cons
     parseFormulaFile(formulafile, formSet);
     std::cout << "Read " << formSet.size() << " formulas from file." << std::endl;
 
-    boost::shared_ptr<Domain> d(new Domain(events.begin(), events.end(), formSet));
-
-    return d;
+    return Domain(events.begin(), events.end(), formSet);
 };
 
 template <class ForwardIterator>

@@ -91,20 +91,20 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        boost::shared_ptr<Domain> d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
+        Domain d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
         if (vm.count("max") || vm.count("min")) {
-            Interval maxInt = d->maxInterval();
+            Interval maxInt = d.maxInterval();
             if (vm.count("max")) maxInt.setFinish(vm["max"].as<unsigned int>());
             if (vm.count("min")) maxInt.setStart(vm["min"].as<unsigned int>());
-            d->setMaxInterval(maxInt);
+            d.setMaxInterval(maxInt);
         }
 
-        Model model = d->defaultModel();
+        Model model = d.defaultModel();
 
         LOG_PRINT(LOG_INFO) << "model size: " << model.size();
         LOG(LOG_DEBUG) << "observation predicates: ";
-        for(std::map<std::string, SISet>::const_iterator it = d->observedPredicates().begin();
-                it != d->observedPredicates().end();
+        for(std::map<std::string, SISet>::const_iterator it = d.observedPredicates().begin();
+                it != d.observedPredicates().end();
                 it++) {
             LOG(LOG_DEBUG) << "\t" << it->first;
         }
@@ -113,25 +113,29 @@ int main(int argc, char* argv[]) {
             LOG(LOG_INFO) << "evaluating model...";
             unsigned long sum = 0;
             // evaluate the weight of each formula in the domain
-            for(Domain::formula_const_iterator it = d->formulas_begin(); it != d->formulas_end(); it++) {
+            for(Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
                 ELSentence formula = *it;
                 //SISet satisfied = d->satisfied(*(formula.sentence()), model);
-                SISet satisfied = formula.sentence()->dSatisfied(model, *d);
-                unsigned long weight = d->score(formula, model);
+                SISet satisfied = formula.sentence()->dSatisfied(model, d);
+                unsigned long weight = d.score(formula, model);
                 sum += weight;
                 LOG_PRINT(LOG_INFO) << "formula: (" << formula.sentence()->toString() << ")";
                 LOG_PRINT(LOG_INFO) << "\tsatisfied @ " << satisfied.toString();
                 LOG_PRINT(LOG_INFO) << "\tscore contributed: " << weight;
             }
             LOG_PRINT(LOG_INFO) << "total score of model: " << sum;
-        } else if (vm.count("unitProp")) {
-            performUnitPropagation(*d);
         } else {
+            if (vm.count("unitProp")) {
+                QUnitsFormulasPair reducedforms = performUnitPropagation(d);
+                // TODO: enforce the unit props better.  for now we are just adding
+                // them to the formula set.
+
+            }
             double p = vm["prob"].as<double>();
             unsigned int iterations = vm["iterations"].as<unsigned int>();
 
             LOG(LOG_INFO) << "searching for a maximum-weight model, with p=" << p << " and iterations=" << iterations;
-            Model defModel = d->defaultModel();
+            Model defModel = d.defaultModel();
 
             std::fstream datastream;
             if(vm.count("datafile")) {
@@ -142,9 +146,9 @@ int main(int argc, char* argv[]) {
             }
             Model maxModel;
             if (datastream.is_open() && datastream.good()) {
-                maxModel = maxWalkSat(*d, iterations, p, &defModel, &datastream);
+                maxModel = maxWalkSat(d, iterations, p, &defModel, &datastream);
             } else {
-                maxModel = maxWalkSat(*d, iterations, p, &defModel, 0);
+                maxModel = maxWalkSat(d, iterations, p, &defModel, 0);
             }
 
             if (datastream.is_open()) datastream.close();
