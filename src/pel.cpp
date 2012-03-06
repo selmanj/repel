@@ -126,9 +126,19 @@ int main(int argc, char* argv[]) {
             LOG_PRINT(LOG_INFO) << "total score of model: " << sum;
         } else {
             if (vm.count("unitProp")) {
+                LOG_PRINT(LOG_INFO) << "running unit propagation...";
                 QUnitsFormulasPair reducedforms = performUnitPropagation(d);
                 // TODO: enforce the unit props better.  for now we are just adding
                 // them to the formula set.
+                d.clearFormulas();
+                for (QCNFLiteralList::iterator it = reducedforms.first.begin(); it != reducedforms.first.end(); it++) {
+                    ELSentence newS = convertFromQCNFClause(*it);
+                    d.addFormula(newS);
+                }
+                for (QCNFClauseList::const_iterator it = reducedforms.second.begin(); it != reducedforms.second.end(); it++) {
+                    ELSentence newS = convertFromQCNFClause(*it);
+                    d.addFormula(newS);
+                }
 
             }
             double p = vm["prob"].as<double>();
