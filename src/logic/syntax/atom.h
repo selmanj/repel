@@ -73,7 +73,9 @@ struct atomcmp {
  */
 struct Proposition {
     Proposition(const Atom& a, bool s)
-        : atom(a), sign(s) {}
+        : atom(a), sign(s) {
+        if (!atom.isGrounded()) throw std::invalid_argument("Cannot initialize a Proposition with an atom containing variables.")
+    }
 
     Proposition inverse() const { return Proposition(atom, !sign);}
     friend std::size_t hash_value(const Proposition& p) {
@@ -84,6 +86,7 @@ struct Proposition {
     }
     friend bool operator==(const Proposition& l, const Proposition& r) { return l.sign == r.sign && l.atom == r.atom; }
     friend bool operator!=(const Proposition& l, const Proposition& r) { return !operator==(l,r);}
+
     Atom atom;
     bool sign;  // if positive, true, if negative, false
 };
