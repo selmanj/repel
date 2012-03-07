@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 
+/*
 void Domain::addObservedPredicate(const Atom& a) {
     if (observations_.hasAtom(a)) return;
     SISet newSet(true, maxInterval_);
@@ -45,7 +46,7 @@ void Domain::unsetAtomAt(const std::string& name, const SISet& where) {
 
 
 }
-
+*/
 
 Model Domain::randomModel() const {
     Model newModel;

@@ -33,35 +33,44 @@ std::string modelToString(const Model& m);
 class Domain {
 public:
     typedef std::vector<ELSentence>::const_iterator formula_const_iterator;
-    typedef boost::unordered_set<Atom>::const_iterator obsAtoms_const_iterator;
-    typedef boost::unordered_set<Atom>::const_iterator unobsAtoms_const_iterator;
-    typedef MergedIterator<obsAtoms_const_iterator, unobsAtoms_const_iterator, const Atom> atoms_const_iterator;
+    typedef boost::unordered_map<Proposition, SISet>::const_iterator fact_const_iterator;
+    //typedef boost::unordered_set<Atom>::const_iterator obsAtoms_const_iterator;
+    //typedef boost::unordered_set<Atom>::const_iterator unobsAtoms_const_iterator;
+    //typedef MergedIterator<obsAtoms_const_iterator, unobsAtoms_const_iterator, const Atom> atoms_const_iterator;
 
     Domain();
+    /*
     template <class FactsForwardIterator>
     Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
             const std::vector<ELSentence>& formSet,
             bool assumeClosedWorld=true);
     virtual ~Domain();
     //const FormulaList& formulas() const;
+     */
 
     formula_const_iterator formulas_begin() const;
     formula_const_iterator formulas_end() const;
-    obsAtoms_const_iterator obsAtoms_begin() const;
-    obsAtoms_const_iterator obsAtoms_end() const;
-    unobsAtoms_const_iterator unobsAtoms_begin() const;
-    unobsAtoms_const_iterator unobsAtoms_end() const;
-    atoms_const_iterator atoms_begin() const;
-    atoms_const_iterator atoms_end() const;
+    fact_const_iterator facts_begin() const;
+    fact_const_iterator facts_end() const;
+    //obsAtoms_const_iterator obsAtoms_begin() const;
+    //obsAtoms_const_iterator obsAtoms_end() const;
+    //unobsAtoms_const_iterator unobsAtoms_begin() const;
+    //unobsAtoms_const_iterator unobsAtoms_end() const;
+    //atoms_const_iterator atoms_begin() const;
+    //atoms_const_iterator atoms_end() const;
 
     void clearFormulas();
+    void clearFacts();
     void addFormula(const ELSentence& e);
+    void addFact(const ELSentence& e);
+    void addFact(const Proposition& p, const SISet& where);
 
-    void addObservedPredicate(const Atom& a);
-    const std::map<std::string, SISet>& observedPredicates() const; // TODO RENAME
-    SISet getModifiableSISet(const std::string& name) const;
-    SISet getModifiableSISet(const std::string& name, const SISet& where) const;
-    void unsetAtomAt(const std::string& name, const SISet& where);
+    //void addObservedPredicate(const Atom& a);
+    //const std::map<std::string, SISet>& observedPredicates() const; // TODO RENAME
+    //SISet getModifiableSISet(const std::string& name) const;
+    //SISet getModifiableSISet(const std::string& name, const SISet& where) const;
+    //void unsetAtomAt(const std::string& name, const SISet& where);
+
     NameGenerator& nameGenerator();
     Model defaultModel() const;
     Model randomModel() const;
@@ -70,31 +79,36 @@ public:
     void setMaxInterval(const Interval& maxInterval);
 
     bool isLiquid(const std::string& predicate) const;
-    bool dontModifyObsPreds() const;
-    bool assumeClosedWorld() const;
-    void setDontModifyObsPreds(bool b);
-    void setAssumeClosedWorld(bool b);
+    //bool dontModifyObsPreds() const;
+    //bool assumeClosedWorld() const;
+    //void setDontModifyObsPreds(bool b);
+    //void setAssumeClosedWorld(bool b);
 
     unsigned long score(const ELSentence& s, const Model& m) const;
     unsigned long score(const Model& m) const;
 
     bool isFullySatisfied(const Model& m) const;
 private:
-    typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
 
-    bool assumeClosedWorld_;
-    bool dontModifyObsPreds_;
+    void growMaxInterval(const Interval& maxInterval);
 
-    std::map<std::string, SISet> obsPredsFixedAt_;
-    boost::unordered_set<Atom> obsPreds_;
-    boost::unordered_set<Atom> unobsPreds_;
+    //typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
+
+   // bool assumeClosedWorld_;
+   // bool dontModifyObsPreds_;
+
+    //std::map<std::string, SISet> obsPredsFixedAt_;
+    //boost::unordered_set<Atom> obsPreds_;
+    //boost::unordered_set<Atom> unobsPreds_;
+
     Interval maxInterval_;
-
     std::vector<ELSentence> formulas_;
-    Model observations_;
+    boost::unordered_map<Proposition, SISet> partialModel_;
+    //Model observations_;
 
     NameGenerator generator_;
 
+    /*
     struct ModelSentencePair_cmp : public std::binary_function<ModelSentencePair, ModelSentencePair, bool> {
         bool operator() (const ModelSentencePair& a, const ModelSentencePair& b) const {
             if (a.first < b.first) return true;
@@ -103,22 +117,17 @@ private:
             return false;
         }
     };
+    */
 
     //mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
 };
 
 // IMPLEMENTATION
 inline Domain::Domain()
-    : assumeClosedWorld_(true),
-      dontModifyObsPreds_(true),
-      obsPredsFixedAt_(),
-      obsPreds_(),
-      unobsPreds_(),
-      maxInterval_(0,0),
+    : maxInterval_(0,0),
       formulas_(),
-      observations_(),
       generator_(){};
-
+/*
 template <class FactsForwardIterator>
 Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         const std::vector<ELSentence>& formSet,
@@ -187,14 +196,6 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         it->sentence()->visit(predCollector);
     }
 
-    // remove the predicates we know are observed
-    /*
-    std::set<std::string> obsJustPreds;
-    for (std::map<std::string, SISet>::const_iterator it = obsPredsFixedAt_.begin();
-            it != obsPredsFixedAt_.end();
-            it++) {
-        obsJustPreds.insert(it->first);
-    }*/
     for (std::set<Atom, atomcmp>::const_iterator it = predCollector.preds.begin(); it != predCollector.preds.end(); it++) {
         if (obsPreds_.find(*it) == obsPreds_.end()) {
             unobsPreds_.insert(*it);
@@ -224,54 +225,67 @@ Domain::Domain(FactsForwardIterator factsBegin, FactsForwardIterator factsEnd,
         it->setQuantification(set);
     }
 };
-
-inline Domain::~Domain() {};
+*/
 
 inline Domain::formula_const_iterator Domain::formulas_begin() const {return formulas_.begin();}
 inline Domain::formula_const_iterator Domain::formulas_end() const {return formulas_.end();}
-inline Domain::obsAtoms_const_iterator Domain::obsAtoms_begin() const {return obsPreds_.begin();}
-inline Domain::obsAtoms_const_iterator Domain::obsAtoms_end() const {return obsPreds_.end();}
-inline Domain::unobsAtoms_const_iterator Domain::unobsAtoms_begin() const {return unobsPreds_.begin();}
-inline Domain::unobsAtoms_const_iterator Domain::unobsAtoms_end() const {return unobsPreds_.end();}
-inline Domain::atoms_const_iterator Domain::atoms_begin() const {
-    return atoms_const_iterator(obsPreds_.begin(), obsPreds_.end(), unobsPreds_.begin(), unobsPreds_.end());
-}
-inline Domain::atoms_const_iterator Domain::atoms_end() const {
-    return atoms_const_iterator(obsPreds_.end(), obsPreds_.end(), unobsPreds_.end(), unobsPreds_.end());
-}
+inline Domain::fact_const_iterator Domain::facts_begin() const {return partialModel_.begin();}
+inline Domain::fact_const_iterator Domain::facts_end() const {return partialModel_.end();}
 
 inline void Domain::clearFormulas() {
     formulas_.clear();
-    unobsPreds_.clear();
-    // TODO: nothing to do for default model, right?
 }
+
+inline void Domain::clearFacts() {
+    partialModel_.clear();
+}
+
+inline void Domain::addFact(const ELSentence& e) {
+    if (!e.hasInfWeight()) throw std::invalid_argument("Cannot enforce facts that have finite weight");
+    if (e.sentence()->getTypeCode() == Atom::TypeCode) {
+        addFact(Proposition(*(boost::static_pointer_cast<Atom>(e.sentence())), true), e.quantification());
+    } else if (e.sentence()->getTypeCode() == Negation::TypeCode
+            && (boost::static_pointer_cast<Negation>(e.sentence())->sentence()->getTypeCode() == Atom::TypeCode)) {
+        boost::shared_ptr<Negation> neg = boost::static_pointer_cast<Negation>(e.sentence());
+        addFact(Proposition(*(boost::static_pointer_cast<Atom>(neg->sentence())), false), e.quantification());
+    } else {
+        throw std::invalid_argument("unable to add fact because it's not a simple atom or its negation: "+ e.toString());
+    }
+}
+
+inline void Domain::addFact(const Proposition& p, const SISet& where) {
+    if (partialModel_.count(p) == 0) {
+        partialModel_.insert(std::make_pair(p, where));
+    } else {
+        partialModel_[p].add(where);
+    }
+}
+
 
 inline void Domain::addFormula(const ELSentence& e) {
     ELSentence toAdd = e;
     if (toAdd.isQuantified()) {
         SISet set = toAdd.quantification();
         Interval toAddMaxInt = set.maxInterval();
-        if (toAddMaxInt.start() < maxInterval_.start()
-                || toAddMaxInt.finish() > maxInterval_.finish()) {
-            // need to resize
-            setMaxInterval(toAddMaxInt);
-        } else if (toAddMaxInt != maxInterval_) {
+        growMaxInterval(toAddMaxInt);
+        if (toAddMaxInt != maxInterval_) {
             set.setMaxInterval(maxInterval_);
             toAdd.setQuantification(set);
         }
     }
     // update our list of unobs preds
+    /*
     PredCollector collect;
     toAdd.sentence()->visit(collect);
     for (std::set<Atom, atomcmp>::const_iterator it = collect.preds.begin(); it != collect.preds.end(); it++) {
         if (obsPreds_.count(*it) == 0) unobsPreds_.insert(*it);
     }
+    */
     formulas_.push_back(e);
 }
 
-inline const std::map<std::string, SISet>& Domain::observedPredicates() const {return obsPredsFixedAt_;};
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
-inline Model Domain::defaultModel() const {return observations_;};
+inline Model Domain::defaultModel() const {return Model(partialModel_);};
 
 inline Interval Domain::maxInterval() const {return maxInterval_;};
 inline SpanInterval Domain::maxSpanInterval() const {
@@ -279,10 +293,12 @@ inline SpanInterval Domain::maxSpanInterval() const {
             maxInterval_.start(), maxInterval_.finish());
 };
 
-inline bool Domain::dontModifyObsPreds() const {return dontModifyObsPreds_;};
-inline bool Domain::assumeClosedWorld() const {return assumeClosedWorld_;};
-inline void Domain::setDontModifyObsPreds(bool b) {dontModifyObsPreds_ = b;};
-inline void Domain::setAssumeClosedWorld(bool b) {assumeClosedWorld_ = b;};
+void Domain::growMaxInterval(const Interval& maxInterval) {
+    if (maxInterval.start() < maxInterval_.start()
+            || maxInterval.finish() > maxInterval_.finish()) {
+        setMaxInterval(span(maxInterval, maxInterval_));
+    }
+}
 
 
 #endif /* DOMAIN_H_ */

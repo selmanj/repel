@@ -9,6 +9,7 @@
 #define MODEL_H_
 
 #include <boost/unordered_map.hpp>
+#include <utility>
 //#include "el_syntax.h"
 #include "../siset.h"
 #include "syntax/atom.h"
@@ -21,6 +22,7 @@ public:
 
     Model();
     Model(const std::vector<FOL::Event>& pairs);
+    Model(const boost::unordered_map<Proposition, SISet>& partialModel);
    // Model(const Model& m);
   //  virtual ~Model();
 
@@ -64,6 +66,21 @@ Model intersectModel(const Model& a, const Model& b);
 Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval);
 
 // IMPLEMENTATION
+inline Model::Model(const boost::unordered_map<Proposition, SISet>& partialModel) {
+    for(boost::unordered_map<Proposition, SISet>::const_iterator it = partialModel.begin();
+            it != partialModel.end(); it++) {
+        if (amap_.count(it->first.atom) == 0) {
+            SISet empty(it->second.forceLiquid(), it->second.maxInterval());
+            amap_.insert(std::pair<const Atom, SISet>(it->first.atom, empty));
+        }
+        if (it->first.sign) {
+            amap_[it->first.atom].add(it->second);
+        } else {
+            amap_[it->first.atom].subtract(it->second);
+        }
+    }
+}
+
 inline bool operator==(const Model& l, const Model& r) {return l.amap_ == r.amap_;}
 inline bool operator!=(const Model& l, const Model& r) {return !operator==(l, r);}
 
