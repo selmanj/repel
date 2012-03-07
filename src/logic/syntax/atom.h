@@ -74,7 +74,7 @@ struct atomcmp {
 struct Proposition {
     Proposition(const Atom& a, bool s)
         : atom(a), sign(s) {
-        if (!atom.isGrounded()) throw std::invalid_argument("Cannot initialize a Proposition with an atom containing variables.")
+        if (!atom.isGrounded()) throw std::invalid_argument("Cannot initialize a Proposition with an atom containing variables.");
     }
 
     Proposition inverse() const { return Proposition(atom, !sign);}
