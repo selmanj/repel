@@ -168,6 +168,7 @@ namespace {
         for (QCNFClauseList::iterator it = sentences.begin(); it != sentences.end(); ) {
             if (it->first.size() == 1) {
                 CNFLiteral lit = it->first.front();
+                SISet where = it->second;
                 // double check that if we have a liquid op, there's only one literal in it
                 boost::shared_ptr<LiquidOp> asLiq = boost::dynamic_pointer_cast<LiquidOp>(lit);
                 if (asLiq) {
@@ -175,12 +176,20 @@ namespace {
                    if (innerDisj.size() != 1) {
                        it++; // bail out
                        continue;
+                   } else {
+                       lit = innerDisj.front();
+                       // convert to liquid
+                       SISet newWhere(true, it->second.maxInterval());
+                       for (SISet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                           newWhere.add(it2->toLiquidInc());
+                       }
+                       where = newWhere;
                    }
                 }
 
                 QCNFLiteral qlit;
                 qlit.first = lit;
-                qlit.second = it->second;
+                qlit.second = where;
 
                 unitClauses.push_back(qlit);
                 it = sentences.erase(it);
@@ -191,33 +200,37 @@ namespace {
     }
     void enforceUnitProps(const QCNFLiteralList& unitClauses, boost::unordered_map<Proposition, SISet>& partialModel) {
         for (QCNFLiteralList::const_iterator it = unitClauses.begin(); it != unitClauses.end(); it++) {
-            Proposition unitProp = convertToProposition(*it);
-            Proposition iUnitProp = unitProp.inverse();
-            SISet where = it->second;
+            try {
+                Proposition unitProp = convertToProposition(*it);
+                Proposition iUnitProp = unitProp.inverse();
+                SISet where = it->second;
 
-            // check to see if its negated form is in partial model
-            if (partialModel.count(iUnitProp) == 0) {
-                // add it in, woo!
-                if (partialModel.count(unitProp) == 0) {
-                    partialModel[unitProp] = where; // do this so max interval is preserved
-                } else {
-                    partialModel[unitProp].add(where);
-                }
-            } else {
-                // if there's an intersection, throw an exception
-                SISet iTrueAt = partialModel[iUnitProp];
-                SISet intersect = intersection(iTrueAt, where);
-                if (!intersect.empty()) {
-                    throw contradiction();
-                } else {
-                    // safe to add
+                // check to see if its negated form is in partial model
+                if (partialModel.count(iUnitProp) == 0) {
+                    // add it in, woo!
                     if (partialModel.count(unitProp) == 0) {
                         partialModel[unitProp] = where; // do this so max interval is preserved
                     } else {
                         partialModel[unitProp].add(where);
                     }
+                } else {
+                    // if there's an intersection, throw an exception
+                    SISet iTrueAt = partialModel[iUnitProp];
+                    SISet intersect = intersection(iTrueAt, where);
+                    if (!intersect.empty()) {
+                        throw contradiction();
+                    } else {
+                        // safe to add
+                        if (partialModel.count(unitProp) == 0) {
+                            partialModel[unitProp] = where; // do this so max interval is preserved
+                        } else {
+                            partialModel[unitProp].add(where);
+                        }
+                    }
                 }
-            }
+             } catch (std::invalid_argument& e) {
+                continue;   // skip this guy for now
+             }
         }
     }
 
@@ -237,7 +250,7 @@ namespace {
             innerLit.first = boost::shared_static_cast<LiquidOp>(lit.first)->sentence();
             return convertToProposition(innerLit);
         }
-        throw std::runtime_error("convertToProposition(): got passed a lit that we don't know how to handle!");
+        throw std::invalid_argument("convertToProposition(): got passed a lit that we don't know how to handle!");
 
     }
 

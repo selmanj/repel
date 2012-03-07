@@ -131,14 +131,22 @@ int main(int argc, char* argv[]) {
                 // TODO: enforce the unit props better.  for now we are just adding
                 // them to the formula set.
                 d.clearFormulas();
+                std::stringstream newForms;
+                newForms << "Unit Clauses:\n";
                 for (QCNFLiteralList::iterator it = reducedforms.first.begin(); it != reducedforms.first.end(); it++) {
                     ELSentence newS = convertFromQCNFClause(*it);
+                    if (newS.hasInfWeight()) newS.setWeight(100);   // high enough for now?
+                    newForms << "\t" << newS << "\n";
                     d.addFormula(newS);
                 }
+                newForms << "formulas:\n";
                 for (QCNFClauseList::const_iterator it = reducedforms.second.begin(); it != reducedforms.second.end(); it++) {
                     ELSentence newS = convertFromQCNFClause(*it);
+                    if (newS.hasInfWeight()) newS.setWeight(100);   // high enough for now?
+                    newForms << "\t" << newS << "\n";
                     d.addFormula(newS);
                 }
+                LOG(LOG_INFO) << "unit prop completed.\n" << newForms.str();
 
             }
             double p = vm["prob"].as<double>();
