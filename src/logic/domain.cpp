@@ -15,27 +15,23 @@ void Domain::addObservedPredicate(const Atom& a) {
     obsPredsFixedAt_.insert(std::pair<std::string, SISet>(a.name(), newSet));
     observations_.setAtom(a, newSet);
 }
+*/
 
-SISet Domain::getModifiableSISet(const std::string& name) const {
-    SISet everywhere(isLiquid(name), maxInterval_);
-    everywhere = everywhere.compliment();
-    return getModifiableSISet(name, everywhere);
+SISet Domain::getModifiableSISet(const Atom& a) const {
+    return getModifiableSISet(a, SISet(maxSpanInterval(), false, maxInterval_));
 }
 
-SISet Domain::getModifiableSISet(const std::string& name, const SISet& where) const {
+SISet Domain::getModifiableSISet(const Atom& a, const SISet& where) const {
     // check to see if its an obs predicate
-    if (obsPredsFixedAt_.find(name) == obsPredsFixedAt_.end() || !dontModifyObsPreds()) {
-        return where;
-    }
+    SISet modifiable = where;
+    Proposition trueAt(a, true);
+    Proposition falseAt(a, false);
+    if (partialModel_.count(trueAt) != 0) modifiable.subtract(partialModel_.at(trueAt));
+    if (partialModel_.count(falseAt) != 0) modifiable.subtract(partialModel_.at(falseAt));
 
-    SISet modifiable(where.forceLiquid(), where.maxInterval());
-    if (assumeClosedWorld()) return modifiable; // if its a closed world, can't change any obs predicates
-    modifiable = where;
-
-    modifiable.subtract(obsPredsFixedAt_.find(name)->second);
     return modifiable;
 }
-
+/*
 void Domain::unsetAtomAt(const std::string& name, const SISet& where) {
     SISet newSet = obsPredsFixedAt_.at(name);
     newSet.subtract(where);
