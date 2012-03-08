@@ -79,11 +79,13 @@ void Domain::addFormula(const ELSentence& e) {
 Model Domain::randomModel() const {
     Model newModel;
     //std::set<Atom, atomcmp> atoms = observations_.atoms();
-    for (boost::unordered_set<Atom>::const_iterator it = predTypes_.begin(); it != predTypes_.end(); it++) {
+    for (boost::unordered_set<Atom>::const_iterator it = allAtoms_.begin(); it != allAtoms_.end(); it++) {
         SISet random = SISet::randomSISet(isLiquid(it->name()), maxInterval_);
         // enforce our partial model
-        random.add(     partialModel_[Proposition(*it, true)]);
-        random.subtract(partialModel_[Proposition(*it, false)]);
+        Proposition trueProp(*it, true);
+        Proposition falseProp(*it, false);
+        if (partialModel_.count(trueProp) != 0) random.add(     partialModel_.at(trueProp));
+        if (partialModel_.count(falseProp) != 0) random.subtract(partialModel_.at(falseProp));
         random.makeDisjoint();
         //newModel.clearAtom(obsPair->first);
         newModel.setAtom(*it, random);

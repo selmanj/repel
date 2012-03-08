@@ -15,6 +15,8 @@
 
 class Domain;
 class Model;
+struct Proposition;
+struct PredicateType;
 
 class Atom : public Sentence {
 public:
@@ -102,8 +104,8 @@ struct PredicateType {
 
     friend std::size_t hash_value(const PredicateType& t) {
         std::size_t seed = 0;
-        boost::hash_combine(seed, name);
-        boost::hash_combine(seed, arity);
+        boost::hash_combine(seed, t.name);
+        boost::hash_combine(seed, t.arity);
         return seed;
     }
 

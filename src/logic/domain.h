@@ -247,11 +247,12 @@ inline void Domain::clearFacts() {
 inline void Domain::addFact(const ELSentence& e) {
     if (!e.hasInfWeight()) throw std::invalid_argument("Cannot enforce facts that have finite weight");
     if (e.sentence()->getTypeCode() == Atom::TypeCode) {
-        addFact(Proposition(*(boost::static_pointer_cast<Atom>(e.sentence())), true), e.quantification());
+        boost::shared_ptr<const Atom> atom = boost::static_pointer_cast<const Atom>(e.sentence());
+        addFact(Proposition(*atom, true), e.quantification());
     } else if (e.sentence()->getTypeCode() == Negation::TypeCode
-            && (boost::static_pointer_cast<Negation>(e.sentence())->sentence()->getTypeCode() == Atom::TypeCode)) {
-        boost::shared_ptr<Negation> neg = boost::static_pointer_cast<Negation>(e.sentence());
-        addFact(Proposition(*(boost::static_pointer_cast<Atom>(neg->sentence())), false), e.quantification());
+            && (boost::static_pointer_cast<const Negation>(e.sentence())->sentence()->getTypeCode() == Atom::TypeCode)) {
+        boost::shared_ptr<const Negation> neg = boost::static_pointer_cast<const Negation>(e.sentence());
+        addFact(Proposition(*(boost::static_pointer_cast<const Atom>(neg->sentence())), false), e.quantification());
     } else {
         throw std::invalid_argument("unable to add fact because it's not a simple atom or its negation: "+ e.toString());
     }
