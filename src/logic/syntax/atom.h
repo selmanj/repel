@@ -32,7 +32,7 @@ public:
 
     int arity() const;
     std::string name() const;
-    std::string& name();
+    PredicateType predicateType() const;
 
     Atom& operator=(const Atom& b);
 
@@ -132,7 +132,9 @@ inline Atom::Atom(const Atom& a)
 
 inline int Atom::arity() const {return terms.size();};
 inline std::string Atom::name() const {return pred;};
-inline std::string& Atom::name() {return pred;};
+
+inline PredicateType Atom::predicateType() const {return PredicateType(name(), arity());}
+
 
 inline Atom& Atom::operator=(const Atom& b) {
     if (this != &b) {
