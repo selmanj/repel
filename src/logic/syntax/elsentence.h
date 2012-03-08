@@ -20,9 +20,10 @@
 class Model;
 class Domain;
 
+typedef uint64_t score_t;   // TODO: remove all occurences of score values and replace it with this
+
 class ELSentence {
 public:
-    typedef uint64_t score_t;   // TODO: remove all occurences of score values and replace it with this
 
     ELSentence(const boost::shared_ptr<Sentence>& s);
     ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w);
