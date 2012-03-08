@@ -1,14 +1,11 @@
-#ifndef PREDCOLLECTOR_H
-#define PREDCOLLECTOR_H
+#ifndef COLLECTORS_H
+#define COLLECTORS_H
 
 #include <boost/unordered_set.hpp>
 #include "syntax/sentencevisitor.h"
 #include "syntax/atom.h"
 
-class AtomCollector : public SentenceVisitor {
-public:
-    AtomCollector() {};
-    virtual ~AtomCollector() {};
+struct AtomCollector : public SentenceVisitor {
     virtual void accept(const Sentence& s) {
         // only care about predicates
         if (s.getTypeCode() == Atom::TypeCode) {
@@ -30,4 +27,6 @@ struct PredicateTypeCollector : public SentenceVisitor {
 
     boost::unordered_set<PredicateType> types;
 };
+
+//struct
 #endif
