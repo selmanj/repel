@@ -12,7 +12,6 @@ class Sentence;
 
 class SentenceVisitor {
 public:
-    SentenceVisitor() {};
     virtual void accept(const Sentence& s) = 0;
     virtual ~SentenceVisitor() {};
 };

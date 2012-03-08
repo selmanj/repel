@@ -217,7 +217,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 namespace {
     AtomOccurences findAtomOccurences(const std::vector<ELSentence>& sentences) {
         // set up a mapping from atom to formula index.  this represents formulas where the atom occurs
-        PredCollector collector;
+        AtomCollector collector;
         AtomOccurences occurs;
         for (std::vector<ELSentence>::size_type i = 0; i < sentences.size(); i++) {
             ELSentence formula = sentences.at(i);

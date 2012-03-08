@@ -5,19 +5,29 @@
 #include "syntax/sentencevisitor.h"
 #include "syntax/atom.h"
 
-class PredCollector : public SentenceVisitor {
+class AtomCollector : public SentenceVisitor {
 public:
-    PredCollector() {};
-    virtual ~PredCollector() {};
+    AtomCollector() {};
+    virtual ~AtomCollector() {};
     virtual void accept(const Sentence& s) {
         // only care about predicates
-        // TODO: this should collect types, not atoms
         if (s.getTypeCode() == Atom::TypeCode) {
-            preds.insert(static_cast<const Atom>(s));
+            atoms.insert(static_cast<const Atom&>(s));
         }
     }
 
-    boost::unordered_set<Atom> preds;
+    boost::unordered_set<Atom> atoms;
 };
 
+
+struct PredicateTypeCollector : public SentenceVisitor {
+    virtual void accept(const Sentence& s) {
+        if (s.getTypeCode() == Atom::TypeCode) {
+            const Atom& a = static_cast<const Atom&>(s);
+            types.insert(a.predicateType());
+        }
+    }
+
+    boost::unordered_set<PredicateType> types;
+};
 #endif

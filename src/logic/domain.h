@@ -104,6 +104,7 @@ private:
     Interval maxInterval_;
     std::vector<ELSentence> formulas_;
     boost::unordered_map<Proposition, SISet> partialModel_;
+    boost::unordered_set<PredicateType> predTypes_;
     //Model observations_;
 
     NameGenerator generator_;
@@ -259,6 +260,7 @@ inline void Domain::addFact(const Proposition& p, const SISet& where) {
     } else {
         partialModel_[p].add(where);
     }
+    predTypes_.insert(p.atom.predicateType());
 }
 
 
@@ -273,6 +275,10 @@ inline void Domain::addFormula(const ELSentence& e) {
             toAdd.setQuantification(set);
         }
     }
+    PredicateTypeCollector collect;
+    toAdd.sentence()->visit(collect);
+
+    predTypes_.insert(collect.types.begin(), collect.types.end());
     // update our list of unobs preds
     /*
     PredCollector collect;
