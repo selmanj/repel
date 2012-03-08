@@ -814,7 +814,7 @@ Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &
         }
         SISet original(true, d.maxInterval());
         original.add(si);
-        SISet toModify = d.getModifiableSISet(a->name(), original);
+        SISet toModify = d.getModifiableSISet(*a, original);
         if (toModify.size() == 0) {
             // this predicate can't be changed.  return an empty move
             return move;
@@ -957,7 +957,33 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
     } else {
         LOG_PRINT(LOG_ERROR) << "given sentence \"" << s.toString() << "\" but it doesn't match any moves function we know about!";
     }
-    // ensure that if we aren't allowed to modify observation predicates, we don't!
+    // ensure that if we aren't allowed to modify predicates, we don't!
+    // TODO: remove this later as an optimization step
+    for (std::vector<Move>::iterator it = moves.begin(); it != moves.end(); ) {
+        bool removeIt = false;
+        std::vector<Move::change> allMoves = it->toAdd;
+        std::copy(it->toDel.begin(), it->toDel.end(), std::back_inserter(allMoves));
+
+        for (std::vector<Move::change>::iterator it2 = allMoves.begin(); it2 != allMoves.end(); it2++) {
+            Atom a = it2->get<0>();
+            SpanInterval where = it2->get<1>();
+            SISet asSet(where, false, d.maxInterval());
+            SISet mod = d.getModifiableSISet(a, asSet);
+            if (asSet != mod) {
+                removeIt = true;
+                break;
+            }
+        }
+
+        if (removeIt) {
+            LOG_PRINT(LOG_ERROR) << "tried to modify an observed atom with move: " + it->toString() << " .  Removing it.";
+            it = moves.erase(it);
+        } else {
+            it++;
+        }
+    }
+
+    /*
     if (d.dontModifyObsPreds()) {
         for (std::vector<Move>::iterator it = moves.begin(); it != moves.end();) {
             if (moveContainsObservationPreds(d, *it)) {
@@ -968,6 +994,8 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
             }
         }
     }
+    */
+
 
     return moves;
 }
@@ -1514,7 +1542,7 @@ bool moveContainsObservationPreds(const Domain& d, const Move &m) {
         //}
         SISet original(d.isLiquid(it->get<0>().name()), d.maxInterval());
         original.add(it->get<1>());
-        SISet modifiable = d.getModifiableSISet(it->get<0>().name(), original);
+        SISet modifiable = d.getModifiableSISet(it->get<0>(), original);
         if (modifiable.size() != original.size()) return true;
 
        // if (it->get<0>().name().find("D-") == 0) return true;
@@ -1531,7 +1559,7 @@ bool moveContainsObservationPreds(const Domain& d, const Move &m) {
         */
         SISet original(d.isLiquid(it->get<0>().name()), d.maxInterval());
         original.add(it->get<1>());
-        SISet modifiable = d.getModifiableSISet(it->get<0>().name(), original);
+        SISet modifiable = d.getModifiableSISet(it->get<0>(), original);
         if (modifiable.size() != original.size()) return true;
     }
 

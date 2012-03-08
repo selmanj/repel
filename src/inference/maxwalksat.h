@@ -222,10 +222,10 @@ namespace {
         for (std::vector<ELSentence>::size_type i = 0; i < sentences.size(); i++) {
             ELSentence formula = sentences.at(i);
 
-            collector.preds.clear();
+            collector.atoms.clear();
             formula.sentence()->visit(collector);
             // add this index to all occurrences of our atom
-            BOOST_FOREACH(Atom a, collector.preds) {
+            BOOST_FOREACH(Atom a, collector.atoms) {
                 FormSet set = occurs[a];
                 if (set.count(i) == 0) {
                     set.insert(i);

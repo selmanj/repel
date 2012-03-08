@@ -69,8 +69,8 @@ public:
 
     //void addObservedPredicate(const Atom& a);
     //const std::map<std::string, SISet>& observedPredicates() const; // TODO RENAME
-    //SISet getModifiableSISet(const std::string& name) const;
-    //SISet getModifiableSISet(const std::string& name, const SISet& where) const;
+    SISet getModifiableSISet(const Atom& a) const;
+    SISet getModifiableSISet(const Atom& a, const SISet& where) const;
     //void unsetAtomAt(const std::string& name, const SISet& where);
 
     NameGenerator& nameGenerator();

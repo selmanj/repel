@@ -670,21 +670,22 @@ Domain loadDomainFromFiles(const std::string &eventfile, const std::string &form
     std::cout << "Read " << formSet.size() << " formulas from file." << std::endl;
 
     return Domain(events.begin(), events.end(), formSet);
-};
+
+}
 
 template <class ForwardIterator>
 void parseEvents(const ForwardIterator &first,
         const ForwardIterator &last, std::vector<FOL::Event>& store) {
     iters<ForwardIterator> its(first, last);
     doParseEvents(store, its);
-};
+}
 
 template <class ForwardIterator>
 std::vector<FOL::Event> parseEvent(const ForwardIterator &first,
         const ForwardIterator &last) {
     iters<ForwardIterator> its(first, last);
     return doParseEvent(its);
-};
+}
 
 template <class ForwardIterator>
 SpanInterval parseInterval(const ForwardIterator &first,

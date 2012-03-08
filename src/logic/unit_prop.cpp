@@ -13,7 +13,7 @@
 #include <algorithm>
 #include "unit_prop.h"
 #include "logic/domain.h"
-#include "logic/predcollector.h"
+#include "logic/collectors.h"
 #include "log.h"
 
 QUnitsFormulasPair performUnitPropagation(const Domain& d) {
@@ -29,10 +29,6 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     }
     QCNFClauseList clauses = convertToQCNFClauseList(formulas);
 
-    if (!d.assumeClosedWorld()) {
-        LOG(LOG_ERROR) << "doUnitProp(): cannot be called on a domain that is not a closed world - this code needs to be rewritten!";
-        throw std::runtime_error("doUnitProp(): cannot be called on a domain that is not a closed world - this code needs to be rewritten!");
-    }
     // convert all the facts into unit clauses
     Model obs = d.defaultModel();
     std::set<Atom, atomcmp> atoms = obs.atoms();

@@ -102,12 +102,7 @@ int main(int argc, char* argv[]) {
         Model model = d.defaultModel();
 
         LOG_PRINT(LOG_INFO) << "model size: " << model.size();
-        LOG(LOG_DEBUG) << "observation predicates: ";
-        for(std::map<std::string, SISet>::const_iterator it = d.observedPredicates().begin();
-                it != d.observedPredicates().end();
-                it++) {
-            LOG(LOG_DEBUG) << "\t" << it->first;
-        }
+
 
         if (vm.count("evalModel")) {
             LOG(LOG_INFO) << "evaluating model...";
