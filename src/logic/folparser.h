@@ -624,6 +624,7 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
 namespace FOLParse 
 {
 
+// TODO: change this from parsing FOL::Events to Proposition/SISet pairs
 void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store) {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
@@ -669,7 +670,18 @@ Domain loadDomainFromFiles(const std::string &eventfile, const std::string &form
     parseFormulaFile(formulafile, formSet);
     std::cout << "Read " << formSet.size() << " formulas from file." << std::endl;
 
-    return Domain(events.begin(), events.end(), formSet);
+    Domain d;
+    for (std::vector<FOL::Event>::const_iterator it = events.begin(); it != events.end(); it++) {
+        // convert to proposition
+        Proposition prop(*it->atom(), it->truthVal());
+        Interval maxInt(it->where().start().start(), it->where().finish().finish());
+        SISet where(it->where(), true, maxInt);     // Locking all facts from the events file as liquid - need a better way to do this
+        // TODO: type system!
+    }
+
+    d.addFormulas(formSet.begin(), formSet.end());
+
+    return d;
 
 }
 

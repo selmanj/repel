@@ -15,13 +15,13 @@ BOOST_AUTO_TEST_CASE( sat_test )
     facts << "P(a,b) @ [1:10]";
     facts << "Q(a,b) @ [5:15]";
 
+
     std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    //    std::vector<ELSentence> formulas;
 
-    std::vector<ELSentence> formulas;
-
-    Domain d(factvec.begin(), factvec.end(), formulas);
+    Domain d = loadDomainWithStreams(facts.str(), "");
     d.setMaxInterval(Interval(0,1000));
     boost::shared_ptr<Sentence> query = boost::dynamic_pointer_cast<Sentence>(factvec.front().atom());
     SISet trueAt = query->dSatisfied(d.defaultModel(), d);
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( sat_where ) {
 
     std::vector<ELSentence> formulas;
 
-    Domain d(factvec.begin(), factvec.end(), formulas);
+    Domain d = loadDomainWithStreams(facts.str(), "");
     //d.setMaxInterval(Interval(0,1000));
 
     boost::shared_ptr<Sentence> query = getAsSentence("[Q(a,b) -> P(a,b)]");
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
-    Domain d(factvec.begin(), factvec.end(), formulas);
+    Domain d = loadDomainWithStreams(facts.str(), "");
 
     boost::shared_ptr<Sentence> query = getAsSentence("<>{mi} A(a)");
     SISet trueAt = query->dSatisfied(d.defaultModel(), d);
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( conjunctionMeetsTest ) {
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
-    Domain d(factvec.begin(), factvec.end(), formulas);
+    Domain d = loadDomainWithStreams(facts.str(), "");
 
     boost::shared_ptr<Sentence> query = getAsSentence("Q(a) ; R(a)");
     SISet trueAt = query->dSatisfied(d.defaultModel(), d);
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
-    Domain d(factvec.begin(), factvec.end(), formulas);
+    Domain d = loadDomainWithStreams(facts.str(), "");
 
     boost::shared_ptr<Sentence> query = getAsSentence("R(a) ^{o} R(a)");
     SISet trueAt = query->dSatisfied(d.defaultModel(), d);
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
-    Domain d(factvec.begin(), factvec.end(), formulas);
+    Domain d = loadDomainWithStreams(facts.str(), "");
 
     boost::shared_ptr<Sentence> query;
     SISet trueAt;
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
-    Domain d(factvec.begin(), factvec.end(), formulas, false);
+    Domain d = loadDomainWithStreams(facts.str(), "");
 
     Model randomModel = d.randomModel();
 
@@ -243,17 +243,6 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
     //std::cout << "random model: " << randomModel.toString() << std::endl;
 }
 
-BOOST_AUTO_TEST_CASE( atomIteratorTest) {
-    std::string facts("P(a) @ [1:10]\n"
-            "Q(a) @ [11:20]\n");
-    std::string formulas("inf: [ P(a) -> S(a) ]");
-    Domain d = loadDomainWithStreams(facts, formulas);
 
-    std::set<Atom, atomcmp> atoms(d.atoms_begin(), d.atoms_end());
-    std::stringstream str;
-    std::copy(atoms.begin(), atoms.end(), std::ostream_iterator<Atom>(str, ", "));
-    BOOST_REQUIRE_EQUAL(atoms.size(), 3);
-    BOOST_CHECK_EQUAL(str.str(), "P(a), Q(a), S(a), ");
-}
 
 

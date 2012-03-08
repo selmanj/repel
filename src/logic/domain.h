@@ -64,6 +64,8 @@ public:
     void clearFormulas();
     void clearFacts();
     void addFormula(const ELSentence& e);
+    template <class InputIterator>
+    void addFormulas(InputIterator begin, InputIterator end);
     void addFact(const ELSentence& e);
     void addFact(const Proposition& p, const SISet& where);
 
@@ -130,6 +132,9 @@ private:
 inline Domain::Domain()
     : maxInterval_(0,0),
       formulas_(),
+      partialModel_(),
+      predTypes_(),
+      allAtoms_(),
       generator_(){};
 /*
 template <class FactsForwardIterator>
@@ -258,6 +263,13 @@ inline void Domain::addFact(const ELSentence& e) {
     }
 }
 
+template <class InputIterator>
+inline void Domain::addFormulas(InputIterator begin, InputIterator end) {
+    for (InputIterator it = begin; it != end; it++) {
+        addFormula(*it);
+    }
+}
+
 inline void Domain::addFact(const Proposition& p, const SISet& where) {
     if (partialModel_.count(p) == 0) {
         partialModel_.insert(std::make_pair(p, where));
@@ -279,7 +291,7 @@ inline SpanInterval Domain::maxSpanInterval() const {
             maxInterval_.start(), maxInterval_.finish());
 };
 
-void Domain::growMaxInterval(const Interval& maxInterval) {
+inline void Domain::growMaxInterval(const Interval& maxInterval) {
     if (maxInterval.start() < maxInterval_.start()
             || maxInterval.finish() > maxInterval_.finish()) {
         setMaxInterval(span(maxInterval, maxInterval_));

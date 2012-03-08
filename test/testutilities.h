@@ -25,7 +25,18 @@ Domain loadDomainWithStreams(const std::string& facts, const std::string& formul
 
     FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec);
     FOLParse::parseFormulas(formulaTokens.begin(), formulaTokens.end(), formulaSet);
-    return Domain(factvec.begin(), factvec.end(), formulaSet);
+
+    // convert to propositions
+    Domain d;
+    for (std::vector<FOL::Event>::const_iterator it = factvec.begin(); it != factvec.end(); it++) {
+        // convert to proposition
+        Proposition prop(*it->atom(), it->truthVal());
+        Interval maxInt(it->where().start().start(), it->where().finish().finish());
+        SISet where(it->where(), true, maxInt);     // Locking all facts from the events file as liquid - need a better way to do this
+    }
+
+    d.addFormulas(formulaSet.begin(), formulaSet.end());
+    return d;
 }
 
 #endif
