@@ -90,6 +90,34 @@ struct Proposition {
     Atom atom;
     bool sign;  // if positive, true, if negative, false
 };
+
+/**
+ * Class describing the type of an atom.  Right now its just the predicate name and
+ * number of arguments.
+ */
+struct PredicateType {
+    PredicateType() : name(), arity(0) {};
+    PredicateType(const std::string& predname, unsigned int numArgs)
+        : name(predname), arity(numArgs) {}
+
+    friend std::size_t hash_value(const PredicateType& t) {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, name);
+        boost::hash_combine(seed, arity);
+        return seed;
+    }
+
+    friend bool operator==(const PredicateType& l, const PredicateType& r) {
+        return (l.name == r.name) && (l.arity == r.arity);
+    }
+    friend bool operator!=(const PredicateType& l, const PredicateType& r) {
+        return !operator==(l, r);
+    }
+
+    std::string name;
+    unsigned int arity;
+};
+
 // IMPLEMENTATION
 
 inline Atom::Atom(std::string name)
