@@ -19,7 +19,7 @@
 #include <boost/optional.hpp>
 #include <boost/unordered_set.hpp>
 #include "el_syntax.h"
-#include "predcollector.h"
+#include "collectors.h"
 #include "model.h"
 #include "../siset.h"
 #include "namegenerator.h"
@@ -32,8 +32,10 @@ std::string modelToString(const Model& m);
 
 class Domain {
 public:
+    typedef boost::unordered_map<Proposition, SISet> PropMap;
+
     typedef std::vector<ELSentence>::const_iterator formula_const_iterator;
-    typedef boost::unordered_map<Proposition, SISet>::const_iterator fact_const_iterator;
+    typedef PropMap::const_iterator fact_const_iterator;
     //typedef boost::unordered_set<Atom>::const_iterator obsAtoms_const_iterator;
     //typedef boost::unordered_set<Atom>::const_iterator unobsAtoms_const_iterator;
     //typedef MergedIterator<obsAtoms_const_iterator, unobsAtoms_const_iterator, const Atom> atoms_const_iterator;
@@ -84,8 +86,8 @@ public:
     //void setDontModifyObsPreds(bool b);
     //void setAssumeClosedWorld(bool b);
 
-    unsigned long score(const ELSentence& s, const Model& m) const;
-    unsigned long score(const Model& m) const;
+    score_t score(const ELSentence& s, const Model& m) const;
+    score_t score(const Model& m) const;
 
     bool isFullySatisfied(const Model& m) const;
 private:
@@ -103,8 +105,9 @@ private:
 
     Interval maxInterval_;
     std::vector<ELSentence> formulas_;
-    boost::unordered_map<Proposition, SISet> partialModel_;
+    PropMap partialModel_;
     boost::unordered_set<PredicateType> predTypes_;
+    boost::unordered_set<Atom> allAtoms_;
     //Model observations_;
 
     NameGenerator generator_;
@@ -261,34 +264,10 @@ inline void Domain::addFact(const Proposition& p, const SISet& where) {
         partialModel_[p].add(where);
     }
     predTypes_.insert(p.atom.predicateType());
+    allAtoms_.insert(p.atom);
 }
 
 
-inline void Domain::addFormula(const ELSentence& e) {
-    ELSentence toAdd = e;
-    if (toAdd.isQuantified()) {
-        SISet set = toAdd.quantification();
-        Interval toAddMaxInt = set.maxInterval();
-        growMaxInterval(toAddMaxInt);
-        if (toAddMaxInt != maxInterval_) {
-            set.setMaxInterval(maxInterval_);
-            toAdd.setQuantification(set);
-        }
-    }
-    PredicateTypeCollector collect;
-    toAdd.sentence()->visit(collect);
-
-    predTypes_.insert(collect.types.begin(), collect.types.end());
-    // update our list of unobs preds
-    /*
-    PredCollector collect;
-    toAdd.sentence()->visit(collect);
-    for (std::set<Atom, atomcmp>::const_iterator it = collect.preds.begin(); it != collect.preds.end(); it++) {
-        if (obsPreds_.count(*it) == 0) unobsPreds_.insert(*it);
-    }
-    */
-    formulas_.push_back(e);
-}
 
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
 inline Model Domain::defaultModel() const {return Model(partialModel_);};

@@ -48,35 +48,63 @@ void Domain::unsetAtomAt(const std::string& name, const SISet& where) {
 }
 */
 
+void Domain::addFormula(const ELSentence& e) {
+    ELSentence toAdd = e;
+    if (toAdd.isQuantified()) {
+        SISet set = toAdd.quantification();
+        Interval toAddMaxInt = set.maxInterval();
+        growMaxInterval(toAddMaxInt);
+        //if (toAddMaxInt != maxInterval_) {
+         //   set.setMaxInterval(maxInterval_);
+        //    toAdd.setQuantification(set);
+       // }
+    }
+    PredicateTypeCollector pcollect;
+    toAdd.sentence()->visit(pcollect);
+    predTypes_.insert(pcollect.types.begin(), pcollect.types.end());
+    AtomCollector acollect;
+    toAdd.sentence()->visit(acollect);
+    allAtoms_.insert(acollect.atoms.begin(), acollect.atoms.end());
+    // update our list of unobs preds
+    /*
+    PredCollector collect;
+    toAdd.sentence()->visit(collect);
+    for (std::set<Atom, atomcmp>::const_iterator it = collect.preds.begin(); it != collect.preds.end(); it++) {
+        if (obsPreds_.count(*it) == 0) unobsPreds_.insert(*it);
+    }
+    */
+    formulas_.push_back(e);
+}
+
 Model Domain::randomModel() const {
     Model newModel;
     //std::set<Atom, atomcmp> atoms = observations_.atoms();
-    boost::unordered_set<Atom> atoms = obsPreds_;
-    std::copy(unobsPreds_.begin(), unobsPreds_.end(), std::inserter(atoms, atoms.end()));
-
-    BOOST_FOREACH(Atom atom, atoms) {
-        SISet random = SISet::randomSISet(isLiquid(atom.name()), maxInterval_);
-        // intersect it with the places that are currently unset
-        SISet unsetAt = getModifiableSISet(atom.name());
-        random = intersection(random, unsetAt);
-        // add in the set parts
-
-        SISet setAt = unsetAt.compliment();
-        SISet trueVals = intersection(setAt, observations_.getAtom(atom));
-        random.add(trueVals);
-
+    for (boost::unordered_set<Atom>::const_iterator it = predTypes_.begin(); it != predTypes_.end(); it++) {
+        SISet random = SISet::randomSISet(isLiquid(it->name()), maxInterval_);
+        // enforce our partial model
+        random.add(     partialModel_[Proposition(*it, true)]);
+        random.subtract(partialModel_[Proposition(*it, false)]);
+        random.makeDisjoint();
         //newModel.clearAtom(obsPair->first);
-        newModel.setAtom(atom, random);
+        newModel.setAtom(*it, random);
     }
     return newModel;
 }
 
 
 void Domain::setMaxInterval(const Interval& maxInterval) {
-    maxInterval_ = Interval(maxInterval);
-    Model resized;
-
-    observations_.setMaxInterval(maxInterval);
+    maxInterval_ = maxInterval;
+    // resize formulas
+    for (std::vector<ELSentence>::iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+        if (it->isQuantified()) {
+            SISet copy(it->quantification());
+            copy.setMaxInterval(maxInterval);
+            it->setQuantification(copy);
+        }
+    }
+    for (PropMap::iterator it = partialModel_.begin(); it != partialModel_.end(); it++) {
+        it->second.setMaxInterval(maxInterval);
+    }
 }
 
 bool Domain::isLiquid(const std::string& predicate) const {
@@ -84,19 +112,27 @@ bool Domain::isLiquid(const std::string& predicate) const {
     return true;
 }
 
-unsigned long Domain::score(const ELSentence& w, const Model& m) const {
+score_t Domain::score(const ELSentence& w, const Model& m) const {
     SISet quantification = SISet(maxSpanInterval(), false, maxInterval());
     if (w.isQuantified()) quantification = w.quantification();
 
     SISet sat = w.sentence()->dSatisfied(m, *this, quantification);
-    if (!sat.isDisjoint()) sat.makeDisjoint();
+
+    // check for overflow.
+    if (sat.size() > std::numeric_limits<score_t>::max() / w.weight()) {
+        throw std::runtime_error("integer overflow when scoring domain!");
+    }
     return sat.size() * w.weight();
 }
 
-unsigned long Domain::score(const Model& m) const {
-    unsigned long sum = 0;
+score_t Domain::score(const Model& m) const {
+    score_t sum = 0;
     for (std::vector<ELSentence>::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
-        sum += score(*it, m);
+        score_t x = score(*it, m);
+        if (std::numeric_limits<score_t>::max() - x < sum) {
+            throw std::runtime_error("integer overflow when scoring domain!");
+        }
+        sum += x;
     }
     return sum;
 }
