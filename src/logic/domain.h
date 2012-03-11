@@ -34,8 +34,9 @@ class Domain {
 public:
     typedef boost::unordered_map<Proposition, SISet> PropMap;
 
-    typedef std::vector<ELSentence>::const_iterator formula_const_iterator;
-    typedef PropMap::const_iterator fact_const_iterator;
+    typedef std::vector<ELSentence>::const_iterator     formula_const_iterator;
+    typedef PropMap::const_iterator                     fact_const_iterator;
+    typedef boost::unordered_set<Atom>::const_iterator  atom_const_iterator;
     //typedef boost::unordered_set<Atom>::const_iterator obsAtoms_const_iterator;
     //typedef boost::unordered_set<Atom>::const_iterator unobsAtoms_const_iterator;
     //typedef MergedIterator<obsAtoms_const_iterator, unobsAtoms_const_iterator, const Atom> atoms_const_iterator;
@@ -54,6 +55,11 @@ public:
     formula_const_iterator formulas_end() const;
     fact_const_iterator facts_begin() const;
     fact_const_iterator facts_end() const;
+    atom_const_iterator atoms_begin() const;
+    atom_const_iterator atoms_end() const;
+
+    std::size_t atoms_size() const;
+
     //obsAtoms_const_iterator obsAtoms_begin() const;
     //obsAtoms_const_iterator obsAtoms_end() const;
     //unobsAtoms_const_iterator unobsAtoms_begin() const;
@@ -130,7 +136,7 @@ private:
 
 // IMPLEMENTATION
 inline Domain::Domain()
-    : maxInterval_(0,0),
+    : maxInterval_(),
       formulas_(),
       partialModel_(),
       predTypes_(),
@@ -240,6 +246,10 @@ inline Domain::formula_const_iterator Domain::formulas_begin() const {return for
 inline Domain::formula_const_iterator Domain::formulas_end() const {return formulas_.end();}
 inline Domain::fact_const_iterator Domain::facts_begin() const {return partialModel_.begin();}
 inline Domain::fact_const_iterator Domain::facts_end() const {return partialModel_.end();}
+inline Domain::atom_const_iterator Domain::atoms_begin() const { return allAtoms_.begin();}
+inline Domain::atom_const_iterator Domain::atoms_end() const { return allAtoms_.end();}
+
+inline std::size_t Domain::atoms_size() const { return allAtoms_.size();}
 
 inline void Domain::clearFormulas() {
     formulas_.clear();
@@ -274,16 +284,17 @@ inline void Domain::addFact(const Proposition& p, const SISet& where) {
     if (partialModel_.count(p) == 0) {
         partialModel_.insert(std::make_pair(p, where));
     } else {
-        partialModel_[p].add(where);
+        partialModel_.at(p).add(where);
     }
     predTypes_.insert(p.atom.predicateType());
     allAtoms_.insert(p.atom);
+    growMaxInterval(where.maxInterval());
 }
 
 
 
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
-inline Model Domain::defaultModel() const {return Model(partialModel_);};
+inline Model Domain::defaultModel() const {return Model(partialModel_, maxInterval_);};
 
 inline Interval Domain::maxInterval() const {return maxInterval_;};
 inline SpanInterval Domain::maxSpanInterval() const {
@@ -292,6 +303,7 @@ inline SpanInterval Domain::maxSpanInterval() const {
 };
 
 inline void Domain::growMaxInterval(const Interval& maxInterval) {
+    if (maxInterval_.isNull()) setMaxInterval(maxInterval);
     if (maxInterval.start() < maxInterval_.start()
             || maxInterval.finish() > maxInterval_.finish()) {
         setMaxInterval(span(maxInterval, maxInterval_));

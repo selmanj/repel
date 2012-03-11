@@ -33,6 +33,7 @@ Domain loadDomainWithStreams(const std::string& facts, const std::string& formul
         Proposition prop(*it->atom(), it->truthVal());
         Interval maxInt(it->where().start().start(), it->where().finish().finish());
         SISet where(it->where(), true, maxInt);     // Locking all facts from the events file as liquid - need a better way to do this
+        d.addFact(prop, where);
     }
 
     d.addFormulas(formulaSet.begin(), formulaSet.end());

@@ -5,6 +5,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
 #include <iostream>
+#include <stdexcept>
 
 /**
  * Class Interval represents an interval and defines useful relations between
@@ -35,7 +36,7 @@ public:
     };
 
     /**
-     * Construct an empty interval (0,0).
+     * Construct an empty interval that spans no interval of time (null interval).
      */
     Interval();
 
@@ -84,6 +85,15 @@ public:
     void setFinish(unsigned int finish);
 
     /**
+     * Check to see if this interval is null.  A null (or empty) interval
+     * spans no amount of time and will throw exceptions when its
+     * start/endpoints are accessed.
+     *
+     * @returns true if the interval is null or empty, false otherwise
+     */
+    bool isNull() const;
+
+    /**
      * Check to see if this interval spans another interval.  An interval "A"
      * spans interval "B" if A.start <= A.start and A.finish >= B.finish.
      *
@@ -107,8 +117,19 @@ public:
     friend bool after (const Interval& lhs, const Interval& rhs);
     friend bool before(const Interval& lhs, const Interval& rhs);
 
+    friend std::size_t hash_value(const Interval& i);
+    friend std::ostream& operator<<(std::ostream& o, const Interval& i);
+    friend bool operator==(const Interval& l, const Interval& r);
+    friend bool operator!=(const Interval& l, const Interval& r);
+    friend bool operator< (const Interval& l, const Interval& r);
+    friend bool operator> (const Interval& l, const Interval& r);
+    friend bool operator<=(const Interval& l, const Interval& r);
+    friend bool operator>=(const Interval& l, const Interval& r);
+    friend Interval span(const Interval& a, const Interval& b);
+
 private:
     unsigned int s_, e_;
+    bool isNull_;
 };
 
 /**
@@ -260,95 +281,145 @@ Interval span(const Interval& a, const Interval& b);
 
 // IMPLEMENTATION FOLLOWS
 inline Interval::Interval()
-    : s_(0), e_(0) {}
+    : s_(0), e_(0), isNull_(true) {}
 inline Interval::Interval(unsigned int start, unsigned int end)
-    : s_(start), e_(end) {}
+    : s_(start), e_(end), isNull_(false) {}
 
-inline unsigned int Interval::start() const {return s_;};
-inline unsigned int Interval::finish() const {return e_;};
+inline unsigned int Interval::start() const {
+    if (isNull_) throw std::logic_error("cannot get starting point for a null interval");
+    return s_;
+};
+inline unsigned int Interval::finish() const {
+    if (isNull_) throw std::logic_error("cannot get finish point for a null interval");
+    return e_;
+};
 inline unsigned int Interval::size() const {
-    if (e_ < s_) return 0;
+    if (isNull_) return 0;
     return e_-s_+1;
 };
-inline void Interval::setStart(unsigned int start) {s_ = start;};
-inline void Interval::setFinish(unsigned int end) {e_ = end;};
+
+inline bool Interval::isNull() const { return isNull_; }
+inline void Interval::setStart(unsigned int start) {
+    if (isNull_) {
+        s_ = start;
+        e_ = start;
+        isNull_ = false;
+    } else if (start > e_) {
+        s_ = 0;
+        e_ = 0;
+        isNull_ = true;
+    } else {
+        s_ = start;
+    }
+};
+inline void Interval::setFinish(unsigned int end) {
+    if (isNull_) {
+        s_ = end;
+        e_ = end;
+    } else if (end < s_) {
+        s_ = 0;
+        e_ = 0;
+        isNull_ = true;
+    } else {
+        e_ = end;
+    }
+};
 
 inline bool Interval::spans(const Interval& i) const {
+    if (isNull_ || i.isNull_) return false;
     return (s_ <= i.s_ && e_ >= i.e_);
 }
 
 inline bool meets(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.e_+1 == rhs.s_;
 }
 
 inline bool meetsI(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return rhs.e_+1 == lhs.s_;
 }
 
 inline bool overlaps(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.s_ < rhs.s_ && lhs.e_ >= rhs.s_ && lhs.e_ < rhs.e_;
 }
 
 inline bool overlapsI(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.s_ > rhs.s_ && lhs.s_ <= rhs.e_ && lhs.e_ > rhs.e_;
 }
 
 inline bool starts(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.s_ == rhs.s_ && lhs.e_ < rhs.e_;
 }
 
 inline bool startsI(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.s_ == rhs.s_ && rhs.e_ < lhs.e_;
 }
 
 inline bool during(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.s_ > rhs.s_ && lhs.e_ < rhs.e_;
 }
 
 inline bool duringI(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return rhs.s_ > lhs.s_ && rhs.e_ < lhs.e_;
 }
 
 inline bool finishes(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.s_ > rhs.s_ && lhs.e_ == rhs.e_;
 }
 
 inline bool finishesI(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return rhs.s_ > lhs.s_ && rhs.e_ == lhs.e_;
 }
 
 inline bool equals(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     // in case == is ever defined more exactly, for now just define the
     // relation here as well
     return lhs.s_ == rhs.s_ && lhs.e_ == rhs.e_;
 }
 
 inline bool after(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.s_ > rhs.e_+1;
 }
 
 inline bool before(const Interval& lhs, const Interval& rhs) {
+    if (lhs.isNull_ || rhs.isNull_) return false;
     return lhs.e_+1 < rhs.s_;
 }
 
 inline std::size_t hash_value(const Interval& i) {
     std::size_t seed = 0;
-    boost::hash_combine(seed, i.start());
-    boost::hash_combine(seed, i.finish());
+    boost::hash_combine(seed, i.isNull_);
+    boost::hash_combine(seed, i.s_);
+    boost::hash_combine(seed, i.e_);
     return seed;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Interval& obj) {
-    os << "(" << obj.start() << ", " << obj.finish() << ")";
+    if (obj.isNull_) {
+        os << "(null)";
+    } else {
+        os << "(" << obj.s_ << ", " << obj.e_ << ")";
+    }
     return os;
 }
 
-inline bool operator==(const Interval& lhs, const Interval& rhs) {return (lhs.start() == rhs.start() && lhs.finish() == rhs.finish());}
+inline bool operator==(const Interval& lhs, const Interval& rhs) {return (lhs.isNull_ == rhs.isNull_ && lhs.start() == rhs.start() && lhs.finish() == rhs.finish());}
 inline bool operator!=(const Interval& lhs, const Interval& rhs) {return !operator==(lhs, rhs);}
 inline bool operator< (const Interval& lhs, const Interval& rhs) {
-    if (lhs.start() < rhs.start()
-            || (lhs.start() == rhs.start()
-                    && lhs.finish() < rhs.finish())) return true;
+    if (lhs.s_ < rhs.s_
+            || (lhs.s_ == rhs.s_
+                    && lhs.e_ < rhs.e_)) return true;
     return false;
 }
 inline bool operator<=(const Interval& lhs, const Interval& rhs) {return !operator> (lhs, rhs);}
@@ -356,6 +427,9 @@ inline bool operator>=(const Interval& lhs, const Interval& rhs) {return !operat
 inline bool operator> (const Interval& lhs, const Interval& rhs) {return  operator< (rhs, lhs);}
 
 inline Interval span(const Interval& a, const Interval& b) {
+    if (a.isNull_ || b.isNull_) {
+        throw std::logic_error("cannot calculate span for a null interval");
+    }
     return Interval((a.start() < b.start() ? a.start() : b.start()),
             (a.finish() > b.finish() ? a.finish() : b.finish()));
 }

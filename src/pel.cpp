@@ -157,7 +157,7 @@ int main(int argc, char* argv[]) {
                     LOG_PRINT(LOG_ERROR) << "unable to open file \"" << vm["datafile"].as<std::string>() << "\" for data file storage.";
                 }
             }
-            Model maxModel;
+            Model maxModel(d.maxInterval());
             if (datastream.is_open() && datastream.good()) {
                 maxModel = maxWalkSat(d, iterations, p, &defModel, &datastream);
             } else {

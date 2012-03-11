@@ -20,9 +20,9 @@ public:
     typedef boost::unordered_map<Atom, SISet>::const_iterator const_iterator;
     typedef boost::unordered_map<Atom, SISet>::value_type value_type;
 
-    Model();
-    Model(const std::vector<FOL::Event>& pairs);
-    Model(const boost::unordered_map<Proposition, SISet>& partialModel);
+    Model(const Interval& maxInterval_);
+    Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval_);
+    Model(const boost::unordered_map<Proposition, SISet>& partialModel, const Interval& maxInterval_);
    // Model(const Model& m);
   //  virtual ~Model();
 
@@ -35,6 +35,7 @@ public:
     void unsetAtom(const Atom& a, const SISet &set);
     void clearAtom(const Atom& a);
 
+    Interval maxInterval() const;
     void setMaxInterval(const Interval& maxInterval);
 
     void subtract(const Model& toSubtract);
@@ -59,6 +60,7 @@ public:
 private:
 
     atom_map amap_;
+    Interval maxInterval_;
 };
 
 Model subtractModel(const Model& from, const Model& toSubtract);
@@ -66,20 +68,25 @@ Model intersectModel(const Model& a, const Model& b);
 Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval);
 
 // IMPLEMENTATION
-inline Model::Model(const boost::unordered_map<Proposition, SISet>& partialModel) {
+inline Model::Model(const Interval& maxInterval)
+    : amap_(), maxInterval_(maxInterval) {}
+
+inline Model::Model(const boost::unordered_map<Proposition, SISet>& partialModel, const Interval& maxInterval)
+    : amap_(), maxInterval_(maxInterval) {
     for(boost::unordered_map<Proposition, SISet>::const_iterator it = partialModel.begin();
             it != partialModel.end(); it++) {
         if (amap_.count(it->first.atom) == 0) {
-            SISet empty(it->second.forceLiquid(), it->second.maxInterval());
+            SISet empty(it->second.forceLiquid(), maxInterval_);
             amap_.insert(std::pair<const Atom, SISet>(it->first.atom, empty));
         }
         if (it->first.sign) {
-            amap_[it->first.atom].add(it->second);
+            amap_.at(it->first.atom).add(it->second);
         } else {
-            amap_[it->first.atom].subtract(it->second);
+            amap_.at(it->first.atom).subtract(it->second);
         }
     }
 }
+inline Interval Model::maxInterval() const {return maxInterval_;}
 
 inline bool operator==(const Model& l, const Model& r) {return l.amap_ == r.amap_;}
 inline bool operator!=(const Model& l, const Model& r) {return !operator==(l, r);}

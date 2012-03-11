@@ -42,6 +42,7 @@ public:
     const Term& at(size_type n) const;
 
     void push_back(std::auto_ptr<Term> t);
+    void push_back(const Term& t);
     virtual void visit(SentenceVisitor& v) const;
 
     friend std::size_t hash_value(const Atom& a);
@@ -150,6 +151,8 @@ inline Term& Atom::at(size_type n) {return terms[n];};
 inline const Term& Atom::at(size_type n) const {return terms[n];};
 
 inline void Atom::push_back(std::auto_ptr<Term> t)  {terms.push_back(t);};
+inline void Atom::push_back(const Term& t)  {terms.push_back(t.clone());};
+
 
 inline std::size_t hash_value(const Atom& a) {
     std::size_t seed = Atom::TypeCode;

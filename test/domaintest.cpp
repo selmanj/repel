@@ -8,6 +8,26 @@
 #include "logic/el_syntax.h"
 #include "logic/folparser.h"
 
+BOOST_AUTO_TEST_CASE( addFactsFormulas ) {
+    Domain d;
+
+    // ensure that we can add facts
+    Atom pa = Atom("P");
+    pa.push_back(Constant("a"));
+    Proposition p(pa, true);
+    d.addFact(p, SISet(SpanInterval(1,10, 1, 10), true, Interval(1,10)));
+
+    Atom qa = Atom("Q");
+    qa.push_back(Constant("a"));
+    Proposition q(qa, false);
+    d.addFact(q, SISet(SpanInterval(9,11,13, 16), false, Interval(9,16)));
+
+    BOOST_REQUIRE_EQUAL(d.atoms_size(), 2);
+    BOOST_CHECK_EQUAL(d.maxInterval(), Interval(1,16));
+    Model m = d.defaultModel();
+    BOOST_CHECK_EQUAL(m.toString(), "P(a) @ {[1:10]}\n"
+                                    "Q(a) @ {}\n");
+}
 
 BOOST_AUTO_TEST_CASE( sat_test )
 {

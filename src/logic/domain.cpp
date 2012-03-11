@@ -45,9 +45,11 @@ void Domain::unsetAtomAt(const std::string& name, const SISet& where) {
 */
 
 void Domain::addFormula(const ELSentence& e) {
-    ELSentence toAdd = e;
-    if (toAdd.isQuantified()) {
-        SISet set = toAdd.quantification();
+    //ELSentence toAdd = e;
+    formulas_.push_back(e);
+
+    if (e.isQuantified()) {
+        SISet set = e.quantification();
         Interval toAddMaxInt = set.maxInterval();
         growMaxInterval(toAddMaxInt);
         //if (toAddMaxInt != maxInterval_) {
@@ -56,10 +58,10 @@ void Domain::addFormula(const ELSentence& e) {
        // }
     }
     PredicateTypeCollector pcollect;
-    toAdd.sentence()->visit(pcollect);
+    e.sentence()->visit(pcollect);
     predTypes_.insert(pcollect.types.begin(), pcollect.types.end());
     AtomCollector acollect;
-    toAdd.sentence()->visit(acollect);
+    e.sentence()->visit(acollect);
     allAtoms_.insert(acollect.atoms.begin(), acollect.atoms.end());
     // update our list of unobs preds
     /*
@@ -69,11 +71,10 @@ void Domain::addFormula(const ELSentence& e) {
         if (obsPreds_.count(*it) == 0) unobsPreds_.insert(*it);
     }
     */
-    formulas_.push_back(e);
 }
 
 Model Domain::randomModel() const {
-    Model newModel;
+    Model newModel(maxInterval_);
     //std::set<Atom, atomcmp> atoms = observations_.atoms();
     for (boost::unordered_set<Atom>::const_iterator it = allAtoms_.begin(); it != allAtoms_.end(); it++) {
         SISet random = SISet::randomSISet(isLiquid(it->name()), maxInterval_);

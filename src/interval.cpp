@@ -73,7 +73,9 @@ Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel) {
     }
 }
 
+// TODO: make this return a null interval instead
 boost::optional<Interval> intersection(const Interval& a, const Interval& b) {
+    if (a.isNull() || b.isNull()) return boost::optional<Interval>();
     if (a.finish() >= b.start() && a.start() <= b.finish())
         return Interval(b.start(), (a.finish() < b.finish() ? a.finish() : b.finish()));
     if (a.start() <= b.finish() && a.start() >= b.start())

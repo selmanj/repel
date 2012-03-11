@@ -28,12 +28,15 @@ public:
     ELSentence(const boost::shared_ptr<Sentence>& s);
     ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w);
     ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q);
+    ELSentence(const ELSentence& s);
     virtual ~ELSentence();
 
     friend bool operator==(const ELSentence& a, const ELSentence& b);
     friend bool operator!=(const ELSentence& a, const ELSentence& b);
 
     friend std::ostream& operator<<(std::ostream& out, const ELSentence& e);
+
+    ELSentence& operator=(ELSentence e);
 
     boost::shared_ptr<Sentence> sentence();
     boost::shared_ptr<const Sentence> sentence() const;
@@ -47,19 +50,21 @@ public:
     void setWeight(unsigned int w);
     void setQuantification(const SISet& s);
     void setHasInfWeight(bool b);
-    void setIsQuantified(bool b);
+    //void setIsQuantified(bool b);
 
     std::string toString() const;
 
     bool fullySatisfied(const Model& m, const Domain& d) const;
     SISet dSatisfied(const Model& m, const Domain& d) const;
     SISet dNotSatisfied(const Model& m, const Domain& d) const;
+
+    friend void swap(ELSentence& a, ELSentence& b);
 private:
     boost::shared_ptr<Sentence> s_;
     unsigned int w_;
     bool hasInfWeight_;
-    bool isQuantified_;
-    SISet quantification_;
+   // bool isQuantified_;
+    SISet* quantification_;
 
 };
 
@@ -70,15 +75,24 @@ private:
 // IMPLEMENTATION
 
 inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s)
-    : s_(s), w_(1), hasInfWeight_(true), isQuantified_(false), quantification_() {}
+    : s_(s), w_(1), hasInfWeight_(true), quantification_(0) {}
 
 inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w)
-    : s_(s), w_(w), hasInfWeight_(false), isQuantified_(false), quantification_() {}
+    : s_(s), w_(w), hasInfWeight_(false), quantification_(0) {}
 
 inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q)
-    : s_(s), w_(w), hasInfWeight_(false), isQuantified_(true), quantification_(q) {}
+    : s_(s), w_(w), hasInfWeight_(false), quantification_(new SISet(q)) {}
 
-inline ELSentence::~ELSentence() {}
+inline ELSentence::ELSentence(const ELSentence& s)
+    : s_(s.s_), w_(s.w_), hasInfWeight_(s.hasInfWeight_), quantification_(0) {
+    if (s.quantification_ != 0) quantification_ = new SISet(*s.quantification_);
+
+}
+
+inline ELSentence::~ELSentence() {
+    delete quantification_;
+    quantification_ = 0;
+}
 
 inline std::ostream& operator<<(std::ostream& out, const ELSentence& e) {
     if (e.hasInfWeight_) out << "inf: ";
@@ -86,10 +100,16 @@ inline std::ostream& operator<<(std::ostream& out, const ELSentence& e) {
 
     out << e.s_->toString() << " @ ";   // COME BACK AND REWRITE THIS
 
-    if (e.isQuantified_) out << e.quantification_;
+    if (e.quantification_ != 0) out << *e.quantification_;
     else                 out << "<everywhere>";
     return out;
 }
+
+inline ELSentence& ELSentence::operator=(ELSentence e) {
+    swap(*this, e);
+    return *this;
+}
+
 
 inline bool operator !=(const ELSentence& a, const ELSentence& b) {return !operator==(a,b);}
 
@@ -105,22 +125,37 @@ inline unsigned int ELSentence::weight() const {
 }
 
 inline SISet ELSentence::quantification() const {
-    if (!isQuantified_) {
+    if (quantification_ == 0) {
         throw std::logic_error("logic error: no quantification applied; check with isQuantified() first");
     }
-    return quantification_;
+    return *quantification_;
 }
 inline bool ELSentence::hasInfWeight() const {return hasInfWeight_;}
-inline bool ELSentence::isQuantified() const {return isQuantified_; }
+inline bool ELSentence::isQuantified() const {return (quantification_ != 0); }
 
 inline void ELSentence::setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
 inline void ELSentence::setWeight(unsigned int w) {
     w_ = w;
     hasInfWeight_ = false;
 };
-inline void ELSentence::setQuantification(const SISet& s) {quantification_ = s; isQuantified_ = true;};
+inline void ELSentence::setQuantification(const SISet& s) {
+    SISet *newQuant = new SISet(s);
+    if (quantification_ != 0) {
+        delete quantification_;
+    }
+    quantification_ = newQuant;
+    newQuant = 0;   // paranoid
+};
 inline void ELSentence::setHasInfWeight(bool b) { hasInfWeight_ = b;};
-inline void ELSentence::setIsQuantified(bool b) { isQuantified_ = b;};
+//inline void ELSentence::setIsQuantified(bool b) { isQuantified_ = b;};
 
+inline void swap(ELSentence& a, ELSentence& b) {
+    using std::swap;
+
+    swap(a.s_, b.s_);
+    swap(a.w_, b.w_);
+    swap(a.hasInfWeight_, b.hasInfWeight_);
+    swap(a.quantification_, b.quantification_);
+}
 
 #endif /* ELSENTENCE_H_ */

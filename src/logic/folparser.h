@@ -677,6 +677,7 @@ Domain loadDomainFromFiles(const std::string &eventfile, const std::string &form
         Interval maxInt(it->where().start().start(), it->where().finish().finish());
         SISet where(it->where(), true, maxInt);     // Locking all facts from the events file as liquid - need a better way to do this
         // TODO: type system!
+        d.addFact(prop, where);
     }
 
     d.addFormulas(formSet.begin(), formSet.end());

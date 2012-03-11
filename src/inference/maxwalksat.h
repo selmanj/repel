@@ -69,7 +69,7 @@ namespace {
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel, std::ostream* dataout=0) {
     row_out datalog(dataout);
 
-    Model currentModel;
+    Model currentModel(d.maxInterval());
     if (initialModel==0) currentModel = d.defaultModel();
     else currentModel = *initialModel;
 

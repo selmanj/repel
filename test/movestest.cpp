@@ -48,12 +48,12 @@ BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
     BOOST_CHECK_EQUAL(moves.size(), 0);
 
     moves = findMovesFor(d, d.defaultModel(), form3);
-    BOOST_CHECK_EQUAL(moves.size(), 1);
+    BOOST_REQUIRE_EQUAL(moves.size(), 1);
     move = moves[0];
     BOOST_CHECK_EQUAL(move.toString(), "toAdd: {}, toDel: {P(a, b) @ [1:5]}");
 
     moves = findMovesFor(d, d.defaultModel(), form4);
-    BOOST_CHECK_EQUAL(moves.size(), 1);
+    BOOST_REQUIRE_EQUAL(moves.size(), 1);
     move = moves[0];
     BOOST_CHECK_EQUAL(move.toString(), "toAdd: {S(a) @ [5:5]}, toDel: {}");
 }
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(liquidDisjMovesTest) {
     srand(0);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
-    BOOST_CHECK_EQUAL(moves.size(), 2);
+    BOOST_REQUIRE_EQUAL(moves.size(), 2);
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {P(a, b) @ [3:5]}" );
     BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {S(a) @ [3:5]}, toDel: {}" );
 

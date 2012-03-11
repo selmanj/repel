@@ -15,17 +15,17 @@
 
 class SISet {
 public:
-    SISet(bool forceLiquid=false,
-            const Interval& maxInterval=Interval(0, UINT_MAX))
+    SISet(bool forceLiquid,
+            const Interval& maxInterval)
     : set_(), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
 
-    explicit SISet(const SpanInterval& si, bool forceLiquid=false,
-          const Interval& maxInterval=Interval(0, UINT_MAX));
+    explicit SISet(const SpanInterval& si, bool forceLiquid,
+          const Interval& maxInterval);
 
     template <class InputIterator>
     SISet(InputIterator begin, InputIterator end,
-            bool forceLiquid=false,
-            const Interval& maxInterval=Interval(0, UINT_MAX))
+            bool forceLiquid,
+            const Interval& maxInterval)
     : set_(begin, end), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
 
     typedef std::list<SpanInterval>::const_iterator const_iterator;

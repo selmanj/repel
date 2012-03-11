@@ -137,6 +137,8 @@ public:
     SISet mustBeIn;
     SISet mustNotBeIn;
 
+    TQConstraints();
+
     bool operator==(const TQConstraints& b) const;
     bool operator!=(const TQConstraints& b) const;
     std::string toString() const;
@@ -191,6 +193,10 @@ inline SISet Sentence::dNotSatisfied(const Model& m, const Domain& d, const SISe
     set.makeDisjoint();
     return set;
 }
+
+inline TQConstraints::TQConstraints()
+    : mustBeIn(false, Interval(0,0)), mustNotBeIn(false, Interval(0,0)) {}
+
 inline bool TQConstraints::operator==(const TQConstraints& b) const {
     return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);
 }

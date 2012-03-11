@@ -10,11 +10,10 @@
 #include "model.h"
 #include "el_syntax.h"
 
-Model::Model()
-    : amap_() {}
 
-Model::Model(const std::vector<FOL::Event>& pairs)
-    : amap_() {
+Model::Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval)
+    : amap_(), maxInterval_(maxInterval) {
+    /*
     unsigned int smallest=UINT_MAX, largest=0;
     // find the max interval
     for (std::vector<FOL::Event>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
@@ -31,6 +30,7 @@ Model::Model(const std::vector<FOL::Event>& pairs)
     }
 
     Interval maxInterval = Interval(smallest, largest);
+    */
 
     // initialize observations
     for (std::vector<FOL::Event>::const_iterator it = pairs.begin(); it != pairs.end(); it++) {
@@ -38,7 +38,7 @@ Model::Model(const std::vector<FOL::Event>& pairs)
         SpanInterval interval = it->where();
         bool truthVal = it->truthVal();
 
-        SISet set(true, maxInterval);
+        SISet set(true, maxInterval_);
 
         if (truthVal) set.add(interval);
         if (amap_.count(*atom) == 1) {
@@ -73,7 +73,7 @@ bool Model::hasAtom(const Atom& a) const {
 
 SISet Model::getAtom(const Atom& a) const {
     if (!hasAtom(a)) {
-        return SISet();
+        return SISet(false, maxInterval_);
     }
 
     return amap_.at(a);
@@ -109,6 +109,7 @@ void Model::clearAtom(const Atom& a) {
 
 
 void Model::setMaxInterval(const Interval& maxInterval) {
+    maxInterval_ = maxInterval;
     atom_map resized;
     for (atom_map::iterator it = amap_.begin(); it != amap_.end(); it++) {
         const Atom a = it->first;
@@ -148,7 +149,7 @@ void Model::intersect(const Model& b) {
 }
 
 void Model::compliment(const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval) {
-    Model newModel;
+    Model newModel(maxInterval);
 
     BOOST_FOREACH(Atom atom, allAtoms) {
         if (amap_.count(atom) == 1) {
