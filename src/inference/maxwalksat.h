@@ -80,6 +80,9 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
     //std::vector<ELSentence> formulas = formSet.formulas();
     for (std::vector<ELSentence>::size_type i = 0; i < formulas.size(); i++) {
         ELSentence form = formulas[i];
+        if (form.hasInfWeight()) {
+            throw std::invalid_argument("maxWalkSat(): can't solve a problem with infinite weights - rewrite first");
+        }
         if (canFindMovesFor(*(form.sentence()), d)) {
             validForms.push_back(i);
         } else {
