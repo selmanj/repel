@@ -144,3 +144,31 @@ bool Domain::isFullySatisfied(const Model& m) const {
     }
     return true;
 }
+
+Domain Domain::replaceInfForms() const {
+    Domain d = *this;
+
+    // find the highest weighted rule in the domain
+    unsigned int maxWeight = 0;
+    for (std::vector<ELSentence>::const_iterator it = d.formulas_.begin(); it != d.formulas_.end(); it++) {
+       if (!it->hasInfWeight() && it->weight() > maxWeight) {
+           maxWeight = it->weight();
+       }
+    }
+    unsigned int hardWeight = 0;
+    if (maxWeight == 0) hardWeight = 1;  // if nothing is weighted, a weight of 1 is all that's needed.
+    else {
+        // check for overflow
+        if (maxWeight > std::numeric_limits<unsigned int>::max() / Domain::hardFormulaFactor) {
+            throw std::overflow_error("overflow exception in replaceInfForms()");
+        }
+        hardWeight = maxWeight * Domain::hardFormulaFactor;
+    }
+
+    // now set all the infinite forms to have this new weight
+    for (std::vector<ELSentence>::iterator it = d.formulas_.begin(); it != d.formulas_.end(); it++) {
+        if (it->hasInfWeight()) it->setWeight(hardWeight);
+    }
+
+    return d;
+}

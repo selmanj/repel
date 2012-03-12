@@ -58,6 +58,15 @@ public:
     SISet getModifiableSISet(const Atom& a) const;
     SISet getModifiableSISet(const Atom& a, const SISet& where) const;
 
+    /**
+     * Get a copy of this domain with all infinitely-weighted formulas
+     * expressed as high weights (i.e. make hard constraints pseudo-hard).
+     *
+     * @return a copy of the domain with infinite weights replaced with
+     *   finite ones.
+     */
+    Domain replaceInfForms() const;
+
     NameGenerator& nameGenerator();
     Model defaultModel() const;
     Model randomModel() const;
@@ -73,6 +82,8 @@ public:
     score_t score(const Model& m) const;
 
     bool isFullySatisfied(const Model& m) const;
+
+    static const unsigned int hardFormulaFactor = 10;
 private:
 
     void growMaxInterval(const Interval& maxInterval);
