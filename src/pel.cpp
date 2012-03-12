@@ -125,28 +125,40 @@ int main(int argc, char* argv[]) {
                 QUnitsFormulasPair reducedforms = performUnitPropagation(d);
                 // TODO: enforce the unit props better.  for now we are just adding
                 // them to the formula set.
-                d.clearFormulas();
+                Domain newD;
+
                 std::stringstream newForms;
                 newForms << "Unit Clauses:\n";
                 for (QCNFLiteralList::iterator it = reducedforms.first.begin(); it != reducedforms.first.end(); it++) {
                     ELSentence newS = convertFromQCNFClause(*it);
-                    if (newS.hasInfWeight()) newS.setWeight(100);   // high enough for now?
+                    newS.setHasInfWeight(true);
                     newForms << "\t" << newS << "\n";
-                    d.addFormula(newS);
+                    newD.addFact(newS);
                 }
                 newForms << "formulas:\n";
                 for (QCNFClauseList::const_iterator it = reducedforms.second.begin(); it != reducedforms.second.end(); it++) {
                     ELSentence newS = convertFromQCNFClause(*it);
-                    if (newS.hasInfWeight()) newS.setWeight(100);   // high enough for now?
+                    // should have inf weight
+                    newS.setHasInfWeight(true);
                     newForms << "\t" << newS << "\n";
-                    d.addFormula(newS);
+                    newD.addFormula(newS);
                 }
                 LOG(LOG_INFO) << "unit prop completed.\n" << newForms.str();
+
+                // copy in all the unweighted formulas from the original d
+                for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
+                    if (!it->hasInfWeight()) newD.addFormula(*it);
+                }
+                // replace the old form
+                d = newD;
 
             }
             double p = vm["prob"].as<double>();
             unsigned int iterations = vm["iterations"].as<unsigned int>();
 
+            // rewrite all our infinite weighted sentences
+            LOG(LOG_INFO) << "rewriting infinite weights as pseudo-weights using factor of " << Domain::hardFormulaFactor;
+            d = d.replaceInfForms();
             LOG(LOG_INFO) << "searching for a maximum-weight model, with p=" << p << " and iterations=" << iterations;
             Model defModel = d.defaultModel();
 
