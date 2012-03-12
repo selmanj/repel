@@ -147,7 +147,9 @@ public:
     bool empty() const;
 };
 
-bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence);
+bool isDisjunctionOfCNFLiterals(const Sentence& sentence);
+bool isPELCNFLiteral(const Sentence& sentence);
+bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence);
 
 // IMPLEMENTATION
 inline Sentence::~Sentence() {};

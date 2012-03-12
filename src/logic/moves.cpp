@@ -1004,56 +1004,6 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
     return moves;
 }
 
-bool isDisjunctionOfCNFLiterals(const Sentence& s) {
-    // TODO: rewrite this!  stupid and slow!
-    boost::shared_ptr<Sentence> copy(s.clone());
-    return isDisjunctionOfCNFLiterals(copy);
-}
-
-bool isPELCNFLiteral(const Sentence& sentence) {    // TODO: this is stupid and slow!  rewrite this!
-    boost::shared_ptr<Sentence> copy(sentence.clone());
-    return isPELCNFLiteral(copy);
-}
-
-bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence) {
-    if (boost::dynamic_pointer_cast<const Atom>(sentence)
-            || boost::dynamic_pointer_cast<const BoolLit>(sentence)) {
-        return true;
-    }
-    if (boost::dynamic_pointer_cast<const Negation>(sentence)) {
-        boost::shared_ptr<const Negation> neg = boost::dynamic_pointer_cast<const Negation>(sentence);
-        // TODO: necessary?
-        if (boost::dynamic_pointer_cast<const Negation>(neg->sentence())) {
-            return false;
-        }
-        return isPELCNFLiteral(neg->sentence());
-    }
-    if (boost::dynamic_pointer_cast<const DiamondOp>(sentence)) {
-        boost::shared_ptr<const DiamondOp> dia = boost::dynamic_pointer_cast<const DiamondOp>(sentence);
-        if (boost::dynamic_pointer_cast<const Atom>(dia->sentence())
-                || boost::dynamic_pointer_cast<const BoolLit>(dia->sentence())
-                || boost::dynamic_pointer_cast<const LiquidOp>(dia->sentence())) {  // TODO add liquidop
-            return true;
-        }
-        return false;
-    }
-    if (boost::dynamic_pointer_cast<const Conjunction>(sentence)) {
-        boost::shared_ptr<const Conjunction> con = boost::dynamic_pointer_cast<const Conjunction>(sentence);
-        if ((boost::dynamic_pointer_cast<const Atom>(con->left())
-             || boost::dynamic_pointer_cast<const BoolLit>(con->left()))
-            && (boost::dynamic_pointer_cast<const Atom>(con->right())
-             || boost::dynamic_pointer_cast<const BoolLit>(con->right()))) {
-            return true;
-        }
-        return false;
-    }
-    if (boost::dynamic_pointer_cast<const LiquidOp>(sentence)) {
-        return true;
-    }
-
-    return false;
-}
-
 std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si) {
     std::vector<Move> moves;
     // check for simple literal - either an atom or a negation applied to an atom
@@ -1567,7 +1517,7 @@ namespace {
             // if curSentence is a literal, we're good!
             return curSentence;
         } else if (boost::dynamic_pointer_cast<Disjunction>(curSentence)) {
-            if (isDisjunctionOfCNFLiterals(curSentence)) {
+            if (isDisjunctionOfCNFLiterals(*curSentence)) {
                 return curSentence;
             }
             boost::shared_ptr<Disjunction> dis = boost::dynamic_pointer_cast<Disjunction>(curSentence);
@@ -1575,7 +1525,7 @@ namespace {
             dis->setLeft(convertToPELCNF_(dis->left(), additionalSentences, d));
             dis->setRight(convertToPELCNF_(dis->right(), additionalSentences, d));
 
-            if (!isDisjunctionOfCNFLiterals(dis)) {
+            if (!isDisjunctionOfCNFLiterals(*dis)) {
                 // if we made it here, something must have gone wrong!
                 LOG_PRINT(LOG_ERROR) << "got a disjunction but it wasn't a disjunction of lits! :" << dis->toString();
                 return dis;
@@ -1585,7 +1535,7 @@ namespace {
         // OK, it needs to be fixed.  find the element immediately below this operation
         if (boost::dynamic_pointer_cast<Negation>(curSentence)) {
             boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(curSentence);
-            assert(isPELCNFLiteral(neg->sentence()) || isDisjunctionOfCNFLiterals(neg->sentence()));
+            assert(isPELCNFLiteral(neg->sentence()) || isDisjunctionOfCNFLiterals(*neg->sentence()));
 
             boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(neg->sentence(), additionalSentences, d);
             neg->setSentence(newLit);
@@ -1633,7 +1583,7 @@ namespace {
         additionalSentences.push_back(newDisj1);
 
         // make the opposing sentence, one for each literal in the disjunction
-        if (isDisjunctionOfCNFLiterals(sentence)) {
+        if (isDisjunctionOfCNFLiterals(*sentence)) {
             const Disjunction* dis = dynamic_cast<const Disjunction*>(&*sentence);
             std::vector<const Sentence*> args = getDisjunctionArgs(*dis);
             BOOST_FOREACH(const Sentence* sPtr, args) {
