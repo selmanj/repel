@@ -253,7 +253,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
 
     // TODO:  factor these out!  sheesh
     if (headDia->relations().find(Interval::MEETSI) != headDia->relations().end()) {
-        SISet falseAt;
+        SISet falseAt(false, d.maxInterval());
         {
             boost::shared_ptr<Sentence> insideDiamondSentence(headDia->sentence()->clone());
             boost::shared_ptr<DiamondOp> headDiaSingle(new DiamondOp(insideDiamondSentence, Interval::MEETSI));
@@ -320,7 +320,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
     }
     // now do meets (similar)
     if (headDia->relations().find(Interval::MEETS) != headDia->relations().end()) {
-        SISet falseAt;
+        SISet falseAt(false, d.maxInterval());
         {
             boost::shared_ptr<Sentence> insideDiamondSentence(headDia->sentence()->clone());
             boost::shared_ptr<DiamondOp> headDiaSingle(new DiamondOp(insideDiamondSentence, Interval::MEETS));
@@ -385,7 +385,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
         }
     }
     if (headDia->relations().find(Interval::FINISHES) != headDia->relations().end()) {
-        SISet falseAt;
+        SISet falseAt(false, d.maxInterval());
         {
             boost::shared_ptr<Sentence> insideDiamondSentence(headDia->sentence()->clone());
             boost::shared_ptr<DiamondOp> headDiaSingle(new DiamondOp(insideDiamondSentence, Interval::FINISHES));
@@ -450,7 +450,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
     if (headDia->relations().find(Interval::FINISHESI) != headDia->relations().end()) {
             // TODO:  COME BACK TO THIS< IT BROKEN
         LOG_PRINT(LOG_WARN) << "Interval::FINISHESI is not correctly working yet!  Moves likely wrong...";
-            SISet falseAt;
+            SISet falseAt(false, d.maxInterval());
             {
                 boost::shared_ptr<Sentence> insideDiamondSentence(headDia->sentence()->clone());
                 boost::shared_ptr<DiamondOp> headDiaSingle(new DiamondOp(insideDiamondSentence, Interval::FINISHESI));
@@ -918,9 +918,11 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
     if (dynamic_cast<const LiquidOp*>(&s)) {
         // pick an si to satisfy
         SISet sat = el.dSatisfied(m, d);
+        sat.setForceLiquid(true);
         LOG(LOG_DEBUG) << "sentence " << el << " satisfied at " << sat.toString();
-        SISet notSat = el.dNotSatisfied(m, d);
-        notSat.setForceLiquid(true);
+        //SISet notSat = el.dNotSatisfied(m, d);
+        //notSat.setForceLiquid(true);
+        SISet notSat = sat.compliment();
         if (notSat.size() == 0) return moves;
 
         SpanInterval si = notSat.randomSI();

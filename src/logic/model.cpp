@@ -83,7 +83,7 @@ SISet Model::getAtom(const Atom& a) const {
 void Model::setAtom(const Atom& a, const SISet &set) {
     // check to see if atom is in the map
     if (hasAtom(a)) {
-        SISet current = amap_[a];
+        SISet current = amap_.at(a);
         current.add(set);
         // replace the previous element
         amap_.erase(a);
@@ -95,7 +95,7 @@ void Model::setAtom(const Atom& a, const SISet &set) {
 
 void Model::unsetAtom(const Atom& a, const SISet &set) {
     if (!hasAtom(a)) return;
-    SISet current = amap_[a];
+    SISet current = amap_.at(a);
     current.subtract(set);
     amap_.erase(a);
     if (current.size() != 0) {

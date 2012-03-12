@@ -138,6 +138,7 @@ public:
     SISet mustNotBeIn;
 
     TQConstraints();
+    TQConstraints(const Interval& maxInterval);
 
     bool operator==(const TQConstraints& b) const;
     bool operator!=(const TQConstraints& b) const;
@@ -196,6 +197,9 @@ inline SISet Sentence::dNotSatisfied(const Model& m, const Domain& d, const SISe
 
 inline TQConstraints::TQConstraints()
     : mustBeIn(false, Interval(0,0)), mustNotBeIn(false, Interval(0,0)) {}
+
+inline TQConstraints::TQConstraints(const Interval& maxInterval)
+    : mustBeIn(false, maxInterval), mustNotBeIn(false, maxInterval) {}
 
 inline bool TQConstraints::operator==(const TQConstraints& b) const {
     return (mustBeIn == b.mustBeIn && mustNotBeIn == b.mustNotBeIn);

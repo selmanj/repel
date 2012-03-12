@@ -89,9 +89,9 @@ public:
     void setMaxInterval(const Interval& maxInterval);
 
     bool isLiquid(const std::string& predicate) const;
-    //bool dontModifyObsPreds() const;
+    bool dontModifyObsPreds() const;
     //bool assumeClosedWorld() const;
-    //void setDontModifyObsPreds(bool b);
+    void setDontModifyObsPreds(bool b);
     //void setAssumeClosedWorld(bool b);
 
     score_t score(const ELSentence& s, const Model& m) const;
@@ -105,7 +105,7 @@ private:
     //typedef std::pair<const Model*, const Sentence*> ModelSentencePair;
 
    // bool assumeClosedWorld_;
-   // bool dontModifyObsPreds_;
+    bool dontModifyObsPreds_;
 
     //std::map<std::string, SISet> obsPredsFixedAt_;
     //boost::unordered_set<Atom> obsPreds_;
@@ -136,7 +136,8 @@ private:
 
 // IMPLEMENTATION
 inline Domain::Domain()
-    : maxInterval_(),
+    : dontModifyObsPreds_(true),
+      maxInterval_(),
       formulas_(),
       partialModel_(),
       predTypes_(),
@@ -281,10 +282,15 @@ inline void Domain::addFormulas(InputIterator begin, InputIterator end) {
 }
 
 inline void Domain::addFact(const Proposition& p, const SISet& where) {
+    // resize where
+    SISet newSet(where);
+    if (!maxInterval_.isNull()) newSet.setMaxInterval(span(where.maxInterval(), maxInterval_));
+
     if (partialModel_.count(p) == 0) {
-        partialModel_.insert(std::make_pair(p, where));
+        partialModel_.insert(std::make_pair(p, newSet));
     } else {
-        partialModel_.at(p).add(where);
+        partialModel_.at(p).setMaxInterval(newSet.maxInterval());
+        partialModel_.at(p).add(newSet);
     }
     predTypes_.insert(p.atom.predicateType());
     allAtoms_.insert(p.atom);
@@ -295,7 +301,8 @@ inline void Domain::addFact(const Proposition& p, const SISet& where) {
 
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
 inline Model Domain::defaultModel() const {return Model(partialModel_, maxInterval_);};
-
+inline void Domain::setDontModifyObsPreds(bool b) { dontModifyObsPreds_ = b; }
+inline bool Domain::dontModifyObsPreds() const { return dontModifyObsPreds_; }
 inline Interval Domain::maxInterval() const {return maxInterval_;};
 inline SpanInterval Domain::maxSpanInterval() const {
     return SpanInterval(maxInterval_.start(), maxInterval_.finish(),

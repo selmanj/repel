@@ -22,7 +22,9 @@ SISet Domain::getModifiableSISet(const Atom& a) const {
 }
 
 SISet Domain::getModifiableSISet(const Atom& a, const SISet& where) const {
-    // check to see if its an obs predicate
+    if (!dontModifyObsPreds_) {
+        return where;
+    }
     SISet modifiable = where;
     Proposition trueAt(a, true);
     Proposition falseAt(a, false);
@@ -102,7 +104,7 @@ void Domain::setMaxInterval(const Interval& maxInterval) {
         }
     }
     for (PropMap::iterator it = partialModel_.begin(); it != partialModel_.end(); it++) {
-        it->second.setMaxInterval(maxInterval);
+        partialModel_.at(it->first).setMaxInterval(maxInterval);
     }
 }
 

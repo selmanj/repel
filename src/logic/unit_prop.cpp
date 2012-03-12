@@ -43,12 +43,13 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
         CNFClause a, b;
         a.push_back(atomTrue);
         b.push_back(atomFalse);
-        QCNFClause c, d;
+        QCNFClause c(a, trueAt), d(b, falseAt);
+        /*
         c.first = a;
         d.first = b;
         c.second = trueAt;
         d.second = falseAt;
-
+        */
         if (c.second.size() != 0) clauses.push_back(c);
         if (d.second.size() != 0) clauses.push_back(d);
     }
@@ -183,9 +184,9 @@ namespace {
                    }
                 }
 
-                QCNFLiteral qlit;
-                qlit.first = lit;
-                qlit.second = where;
+                QCNFLiteral qlit(lit, where);
+                //qlit.first = lit;
+                //qlit.second = where;
 
                 unitClauses.push_back(qlit);
                 it = sentences.erase(it);
@@ -205,22 +206,22 @@ namespace {
                 if (partialModel.count(iUnitProp) == 0) {
                     // add it in, woo!
                     if (partialModel.count(unitProp) == 0) {
-                        partialModel[unitProp] = where; // do this so max interval is preserved
+                        partialModel.insert(std::make_pair(unitProp, where)); // do this so max interval is preserved
                     } else {
-                        partialModel[unitProp].add(where);
+                        partialModel.find(unitProp)->second.add(where);
                     }
                 } else {
                     // if there's an intersection, throw an exception
-                    SISet iTrueAt = partialModel[iUnitProp];
+                    SISet iTrueAt = partialModel.find(iUnitProp)->second;
                     SISet intersect = intersection(iTrueAt, where);
                     if (!intersect.empty()) {
                         throw contradiction();
                     } else {
                         // safe to add
                         if (partialModel.count(unitProp) == 0) {
-                            partialModel[unitProp] = where; // do this so max interval is preserved
+                            partialModel.insert(std::make_pair(unitProp, where)); // do this so max interval is preserved
                         } else {
-                            partialModel[unitProp].add(where);
+                            partialModel.find(unitProp)->second.add(where);
                         }
                     }
                 }
@@ -534,9 +535,9 @@ QCNFClause convertToQCNFClause(const ELSentence& el) {
         throw std::logic_error("logic error: given an ELSentence with no quantification and asked to convert to QCNFClause");
     }
     SISet s = el.quantification();
-    QCNFClause qc;
-    qc.first = c;
-    qc.second = s;
+    QCNFClause qc(c, s);
+    //qc.first = c;
+    //qc.second = s;
 
     return qc;
 }

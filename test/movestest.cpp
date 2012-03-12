@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
             "1: [S(a)]");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);   TODO: fix this!
+    d.setDontModifyObsPreds(false);
     std::vector<ELSentence> formSet(d.formulas_begin(), d.formulas_end());
     ELSentence form1 = formSet.at(0);
     ELSentence form2 = formSet.at(1);
@@ -36,6 +36,10 @@ BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
 
     std::vector<Move> moves;
     Move move;
+
+    BOOST_CHECK_EQUAL(d.defaultModel().toString(),  "P(a, b) @ {[1:5]}\n"
+                                                    "S(a) @ {[1:2], [4:4]}\n");
+    BOOST_CHECK_EQUAL(d.maxInterval(), Interval(1,5));
 
     // initialize seed
     srand(0);
@@ -65,7 +69,7 @@ BOOST_AUTO_TEST_CASE(liquidConjMovesTest) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setMaxInterval(Interval(1,10));
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     srand(0);
 
@@ -81,7 +85,7 @@ BOOST_AUTO_TEST_CASE(liquidDisjMovesTest) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setMaxInterval(Interval(1,10));
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     srand(0);
 
@@ -98,7 +102,7 @@ BOOST_AUTO_TEST_CASE(pelCNFAtomTest) {
     std::string formulas("1: S(a)");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     srand(0);
 
@@ -113,12 +117,12 @@ BOOST_AUTO_TEST_CASE(pelCNFNegAtomTest) {
     std::string formulas("1: !S(a)");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     srand(0);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
-    BOOST_CHECK_EQUAL(moves.size(), 1);
+    BOOST_REQUIRE_EQUAL(moves.size(), 1);
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {S(a) @ [1:2]}");
 }
 
@@ -129,7 +133,7 @@ BOOST_AUTO_TEST_CASE(pelCNFDisjunctionTest) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setMaxInterval(Interval(1,10));
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     srand(0);
 
@@ -147,7 +151,7 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondTestTest) {
     std::string formulas("1: Huddle(a) -> !(<>{>} [Dig(a) v Spike(a)])");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     srand(0);
 
@@ -166,7 +170,9 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondConjTest) {
     std::string formulas("1: GoingDown(a) ^{<} GoingDown(a) -> <>{d} GoingUp(a)");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    BOOST_CHECK_EQUAL(d.defaultModel().toString(),  "GoingDown(a) @ {[3:3], [5:5]}\n"
+                                                    "GoingUp(a) @ {[1:1], [8:8]}\n");
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     SISet sat = form1.sentence()->dSatisfied(d.defaultModel(), d);
     std::cout << "sat = " << sat.toString() << std::endl;
@@ -188,7 +194,7 @@ BOOST_AUTO_TEST_CASE(pelCNFDisjLiqTest) {
     std::string formulas("1: [!Driving(p1)] v [HasTrack(p1, t1) ^ D-Driving(t1)]");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
     SISet sat = form1.sentence()->dSatisfied(d.defaultModel(), d);
     BOOST_CHECK_EQUAL(sat.toString(), "{[1:34], [35:50]}");
@@ -215,7 +221,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1mi) {
     std::string formulas("100: P(a) -> <>{mi} [P(a) v P(b)]\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     srand(2);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
@@ -230,7 +236,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1m) {
     std::string formulas("100: P(b) -> <>{m} [P(a) v P(b)]\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     srand(2);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
@@ -245,7 +251,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1f) {
     std::string formulas("100: P(b) -> <>{f} [P(a) v P(b)]\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     srand(2);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
@@ -261,7 +267,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1fi) {
     std::string formulas("100: P(b) -> <>{fi} [P(a) v P(b)]\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     srand(2);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
@@ -278,7 +284,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm2) {
     std::string formulas("100: P(a) ; P(b) -> <>{mi} [P(b) v P(c)]\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     srand(2);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
@@ -296,7 +302,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm3) {
     std::string formulas("100: P(b) -> !(P(a) ; P(c); P(d))\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     srand(2);
 
     std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
@@ -310,7 +316,7 @@ BOOST_AUTO_TEST_CASE(diamondLessThan) {
     std::string formulas("100: [ !ElevatorEnter(a) ] v <>{>} [ GateExit(a) ]");
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    //d.setDontModifyObsPreds(false);
+    d.setDontModifyObsPreds(false);
     srand(0);
     d.setMaxInterval(Interval(1,10));
 

@@ -411,8 +411,8 @@ std::ostream& operator<<(std::ostream& o, const SISet& s) {
 
 
 SISet intersection(const SISet& a, const SISet& b) {
-    SISet result;
-    result.setMaxInterval(a.maxInterval_);  // TODO: better way?
+    SISet result(a.forceLiquid(), a.maxInterval_);  // TODO: better way?
+    //result.setMaxInterval(a.maxInterval_);  // TODO: better way?
     if (a.forceLiquid() && b.forceLiquid()) {
         result.setForceLiquid(true);
     } else {

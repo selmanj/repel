@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE( qconstraints ) {
     boost::shared_ptr<Sentence> s = getAsSentence("<>{m} P(a)");
     boost::shared_ptr<DiamondOp> dia = boost::dynamic_pointer_cast<DiamondOp>(s);
 
-    TQConstraints constraints;
+    TQConstraints constraints(Interval(1,2));
     constraints.mustBeIn.add(SpanInterval(1,2,1,2));
     constraints.mustNotBeIn.add(SpanInterval(1,1,1,1));
 
@@ -102,10 +102,11 @@ BOOST_AUTO_TEST_CASE( simple_lit_directly ) {
     QCNFClause qs2 = convertToQCNFClause(s2);
     QCNFClause qs3 = convertToQCNFClause(s3);
 
-    QCNFLiteral l1;
+    QCNFLiteral l1(qs1.first.front(), qs1.second);
+    /*
     l1.first = qs1.first.front();
     l1.second = qs1.second;
-
+    */
     QCNFClauseList list = propagateLiteral(l1, qs3);
     BOOST_REQUIRE_EQUAL(list.size(), 1);
     BOOST_CHECK_EQUAL(list.front().second.toString(), "{[(1, 10), (11, 20)], [11:20]}");

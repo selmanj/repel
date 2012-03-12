@@ -44,7 +44,7 @@ public:
 private:
     std::set<Interval::INTERVAL_RELATION> rels_;
     boost::shared_ptr<Sentence> s_;
-    TQConstraints tqconstraints_;
+    TQConstraints tqconstraints_;   // TODO: make these optional?
 
     virtual Sentence* doClone() const;
     virtual bool doEquals(const Sentence& s) const;

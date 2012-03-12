@@ -18,6 +18,24 @@
 
 // anonymous namespace for helper functions
 namespace {
+
+struct find_max_interval : public std::unary_function<SpanInterval, void> {
+    find_max_interval() : max() {}
+
+    void operator()(const SpanInterval& i) {
+        Interval x(i.start().start(), i.finish().finish());
+
+        if (max.isNull()) {
+            max = x;
+        } else {
+            max = span(max, x);
+        }
+    }
+
+    Interval max;
+};
+
+
 template <class ForwardIterator>
 struct iters {
     iters(ForwardIterator c, ForwardIterator l) : cur(c), last(l) {};
@@ -322,24 +340,38 @@ ELSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
     // check to see if it's quantified
     if (peekTokenType(FOLParse::AT, its)) {
         consumeTokenType(FOLParse::AT, its);
-        SISet set;
+        //SISet set;
+        std::vector<SpanInterval> sis;
         if (peekTokenType(FOLParse::OPEN_BRACE, its)) {
             consumeTokenType(FOLParse::OPEN_BRACE, its);
             while (!peekTokenType(FOLParse::CLOSE_BRACE, its)) {
-                SpanInterval si = doParseInterval(its);
-                set.add(si);
+                //SpanInterval si = doParseInterval(its);
+                // normalize it
+                boost::optional<SpanInterval> normSi = doParseInterval(its).normalize();
+                if (normSi) sis.push_back(*normSi);
                 if (!peekTokenType(FOLParse::CLOSE_BRACE, its)) {
                     consumeTokenType(FOLParse::COMMA, its);
                 }
             }
             consumeTokenType(FOLParse::CLOSE_BRACE, its);
         } else {
-            SpanInterval si = doParseInterval(its);
-            set.add(si);
+            boost::optional<SpanInterval> normSi = doParseInterval(its).normalize();
+            if (normSi) sis.push_back(*normSi);
         }
-        sentence.setQuantification(set);
+        if (sis.empty()) {
+            sentence.removeQuantification();
+        } else {
+            find_max_interval maxIntFinder;
+            std::copy(sis.begin(), sis.end(), std::ostream_iterator<SpanInterval>(std::cout, ", "));
+            maxIntFinder = std::for_each(sis.begin(), sis.end(), maxIntFinder);
+            SISet set(false, maxIntFinder.max);
+            for (std::vector<SpanInterval>::const_iterator it = sis.begin(); it != sis.end(); it++) {
+                set.add(*it);
+            }
+            sentence.setQuantification(set);
+        }
     } else {
-        sentence.setIsQuantified(false);
+        sentence.removeQuantification();
     }
     return sentence;
 }

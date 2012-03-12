@@ -27,6 +27,14 @@ BOOST_AUTO_TEST_CASE( addFactsFormulas ) {
     Model m = d.defaultModel();
     BOOST_CHECK_EQUAL(m.toString(), "P(a) @ {[1:10]}\n"
                                     "Q(a) @ {}\n");
+
+    Atom pa2 = Atom("P");
+    pa2.push_back(Constant("a"));
+    Proposition p2(pa2, true);
+    d.addFact(p2, SISet(SpanInterval(12,12,12, 12), false, Interval(9,16)));
+    BOOST_CHECK_EQUAL(d.defaultModel().toString(), "P(a) @ {[1:10], [12:12]}\n"
+                                    "Q(a) @ {}\n");
+
 }
 
 BOOST_AUTO_TEST_CASE( sat_test )
@@ -218,7 +226,7 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
     Domain d = loadDomainWithStreams(facts.str(), "");
 
     boost::shared_ptr<Sentence> query;
-    SISet trueAt;
+    SISet trueAt(false, Interval(d.maxInterval()));
 
     query = getAsSentence("true");
     trueAt = query->dSatisfied(d.defaultModel(), d);

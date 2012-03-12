@@ -49,6 +49,7 @@ public:
     void setSentence(const boost::shared_ptr<Sentence>& s);
     void setWeight(unsigned int w);
     void setQuantification(const SISet& s);
+    void removeQuantification();
     void setHasInfWeight(bool b);
     //void setIsQuantified(bool b);
 
@@ -130,6 +131,13 @@ inline SISet ELSentence::quantification() const {
     }
     return *quantification_;
 }
+
+inline void ELSentence::removeQuantification() {
+    if (quantification_ == 0) return;
+    delete quantification_;
+    quantification_ = 0;
+}
+
 inline bool ELSentence::hasInfWeight() const {return hasInfWeight_;}
 inline bool ELSentence::isQuantified() const {return (quantification_ != 0); }
 

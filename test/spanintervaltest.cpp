@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( basic_test )
 BOOST_AUTO_TEST_CASE( siset_test ) {
     SpanInterval sp1(1,10,1,10);
     SpanInterval sp2(8,11,8,11);
-    SISet set;
+    SISet set(false, Interval(1,11));
     BOOST_CHECK(set.isDisjoint());
     set.add(sp1);
     BOOST_CHECK(set.isDisjoint());
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( rand_siset_test ) {
 BOOST_AUTO_TEST_CASE( sisetliq_test ) {
     SpanInterval sp1(1,10,1,10);
     SpanInterval sp2(6,11,6,11);
-    SISet set(true);
+    SISet set(true, Interval(1,11));
 
     set.add(sp1);
     set.add(sp2);
@@ -194,8 +194,8 @@ BOOST_AUTO_TEST_CASE ( siSetSubtractTest) {
     SpanInterval sp3(5,5,5,5);
     SpanInterval sp4(11,15,13,14);
 
-    SISet set1;
-    SISet set2;
+    SISet set1(false, Interval(1,15));
+    SISet set2(false, Interval(1,15));
 
     set1.add(sp1);
     set1.add(sp2);

@@ -14,9 +14,10 @@
 #include "../src/log.h"
 #include "testutilities.h"
 
-/* TODO: this isn't mcsat, erase this
 BOOST_AUTO_TEST_CASE( mcsat_test)
 {
+    /* TODO: this isn't mcsat, erase this
+
     std::string facts("D-P(a) @ [1:10]\n");
     std::string formulas("1: [ D-P(a) -> P(a) ] @ [1:15]\n"
             "inf: P(a) -> Q(a) \n");
@@ -30,5 +31,6 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
     boost::mt19937 gen(0);
     Model m = mcSatSolver.run(d, gen);
     std::cout << "model m = " << m.toString() << std::endl;
+    */
+    BOOST_CHECK(true);
 }
-*/
