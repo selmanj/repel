@@ -1,5 +1,5 @@
 #ifndef DISJUNCTION_H
-#define CONJUNCTION_H
+#define DISJUNCTION_H
 
 #include <boost/shared_ptr.hpp>
 #include "sentence.h"

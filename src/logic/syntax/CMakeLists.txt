@@ -12,4 +12,6 @@ add_library(pel-syntax
   variable.cpp
   ../model.cpp
   ../domain.cpp
+  ../moves.cpp
+  ../namegenerator.cpp
   )

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <boost/utility.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/shared_ptr.hpp>
 #include "sentencevisitor.h"
 #include "../../siset.h"
 
@@ -145,6 +146,8 @@ public:
     std::string toString() const;
     bool empty() const;
 };
+
+bool isDisjunctionOfCNFLiterals(const boost::shared_ptr<const Sentence>& sentence);
 
 // IMPLEMENTATION
 inline Sentence::~Sentence() {};
