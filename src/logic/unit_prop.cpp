@@ -16,13 +16,20 @@
 #include "logic/collectors.h"
 #include "log.h"
 
-QUnitsFormulasPair performUnitPropagation(const Domain& d) {
+Domain performUnitPropagation(const Domain& d) {
     LOG(LOG_INFO) << "performing unit propagation...";
-    std::vector<ELSentence> formulas(d.formulas_begin(), d.formulas_end());
+    std::vector<ELSentence> upforms(d.formulas_begin(), d.formulas_end());
+    std::vector<ELSentence> leftover;
 
     // add quantification to any formulas that may be missing them, and remove
-    // formulas that aren't in CNF form
-    for (std::vector<ELSentence>::iterator it = formulas.begin(); it != formulas.end(); ) {
+    // upforms that aren't in CNF form
+    for (std::vector<ELSentence>::iterator it = upforms.begin(); it != upforms.end(); ) {
+        // if it's not infinitely weighted, its not suitable
+        if (!it->hasInfWeight()) {
+            leftover.push_back(*it);
+            it = upforms.erase(it);
+            continue;
+        }
         if (!it->isQuantified()) {
             SISet everywhere(d.maxSpanInterval(), false, d.maxInterval());
             it->setQuantification(everywhere);
@@ -30,12 +37,13 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
         // check for cnf
         if (!isPELCNFLiteral(*it->sentence()) && !isDisjunctionOfPELCNFLiterals(*it->sentence())) {
             LOG_PRINT(LOG_WARN) << "Sentence: " << *it << " is not in CNF form!  ignoring";
-            it = formulas.erase(it);
-        } else {
-            it++;
+            leftover.push_back(*it);
+            it = upforms.erase(it);
+            continue;
         }
+        it++;
     }
-    QCNFClauseList clauses = convertToQCNFClauseList(formulas);
+    QCNFClauseList clauses = convertToQCNFClauseList(upforms);
 
     // convert all the facts into unit clauses
     Model obs = d.defaultModel();
@@ -63,7 +71,33 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     }
 
     QUnitsFormulasPair reducedList = performUnitPropagation(clauses);
-    return reducedList;
+    Domain newD;
+    std::stringstream newForms;
+    newForms << "Unit Clauses:\n";
+    for (QCNFLiteralList::const_iterator it = reducedList.first.begin(); it != reducedList.first.end(); it++) {
+        ELSentence newS = convertFromQCNFClause(*it);
+        newS.setHasInfWeight(true);
+        newForms << "\t" << newS << "\n";
+        if (isSimpleLiteral(*newS.sentence()))
+            newD.addFact(newS);
+        else
+            newD.addFormula(newS);
+    }
+    newForms << "upforms:\n";
+    for (QCNFClauseList::const_iterator it = reducedList.second.begin(); it != reducedList.second.end(); it++) {
+        ELSentence newS = convertFromQCNFClause(*it);
+        // should have inf weight
+        newS.setHasInfWeight(true);
+        newForms << "\t" << newS << "\n";
+        newD.addFormula(newS);
+    }
+    LOG(LOG_INFO) << "unit prop completed.\n" << newForms.str();
+
+    // copy in all the unweighted upforms from the original d
+    for (Domain::formula_const_iterator it = leftover.begin(); it != leftover.end(); it++) {
+        newD.addFormula(*it);
+    }
+    return newD;
 }
 
 QUnitsFormulasPair performUnitPropagation(const QCNFClauseList& sentences) {

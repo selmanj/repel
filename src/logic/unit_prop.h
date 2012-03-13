@@ -30,12 +30,10 @@ typedef std::pair<QCNFLiteralList, QCNFClauseList> QUnitsFormulasPair;
  * Perform unit propagation on a domain.  All infinitely-weighted formulas (as
  * well as facts) are propagated or treated as candidates for propagation.
  *
- * Note that only closed-world domains are supported at this time.
- *
  * @param d the domain containing formulas to propagate
- * @return a pairing of unit clauses and formulas after propagation
+ * @return a copy of the domain after unit prop is applied
  */
-QUnitsFormulasPair performUnitPropagation(const Domain& d);
+Domain performUnitPropagation(const Domain& d);
 
 /**
  * Perform unit propagation with the given QCNFClauseList.

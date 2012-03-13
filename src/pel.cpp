@@ -122,39 +122,7 @@ int main(int argc, char* argv[]) {
         } else {
             if (vm.count("unitProp")) {
                 LOG_PRINT(LOG_INFO) << "running unit propagation...";
-                QUnitsFormulasPair reducedforms = performUnitPropagation(d);
-                // TODO: enforce the unit props better.  for now we are just adding
-                // them to the formula set.
-                Domain newD;
-
-                std::stringstream newForms;
-                newForms << "Unit Clauses:\n";
-                for (QCNFLiteralList::iterator it = reducedforms.first.begin(); it != reducedforms.first.end(); it++) {
-                    ELSentence newS = convertFromQCNFClause(*it);
-                    newS.setHasInfWeight(true);
-                    newForms << "\t" << newS << "\n";
-                    if (isSimpleLiteral(*newS.sentence()))
-                        newD.addFact(newS);
-                    else
-                        newD.addFormula(newS);
-                }
-                newForms << "formulas:\n";
-                for (QCNFClauseList::const_iterator it = reducedforms.second.begin(); it != reducedforms.second.end(); it++) {
-                    ELSentence newS = convertFromQCNFClause(*it);
-                    // should have inf weight
-                    newS.setHasInfWeight(true);
-                    newForms << "\t" << newS << "\n";
-                    newD.addFormula(newS);
-                }
-                LOG(LOG_INFO) << "unit prop completed.\n" << newForms.str();
-
-                // copy in all the unweighted formulas from the original d
-                for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
-                    if (!it->hasInfWeight()) newD.addFormula(*it);
-                }
-                // replace the old form
-                d = newD;
-
+                d = performUnitPropagation(d);
             }
             double p = vm["prob"].as<double>();
             unsigned int iterations = vm["iterations"].as<unsigned int>();

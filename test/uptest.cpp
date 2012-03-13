@@ -133,13 +133,17 @@ BOOST_AUTO_TEST_CASE( simpleLitToLiq) {
     std::string formulas = "[ P(a) ] v Q(a) @ [1:30]\n";
 
     Domain d = loadDomainWithStreams(facts, formulas);
-    QUnitsFormulasPair pair = performUnitPropagation(d);
+    Domain newD = performUnitPropagation(d);
     std::ostringstream str;
-    std::copy(pair.second.begin(), pair.second.end(), std::ostream_iterator<QCNFClause>(str, ", "));
+    std::copy(newD.formulas_begin(), newD.formulas_end(), std::ostream_iterator<ELSentence>(str, ", "));
     BOOST_CHECK_EQUAL(str.str(), "");
-    str.str("");
-    std::copy(pair.first.begin(), pair.first.end(), std::ostream_iterator<QCNFLiteral>(str, ", "));
-    BOOST_CHECK_EQUAL(str.str(), "P(a) @ {[1:20]}, !P(a) @ {[21:30]}, Q(a) @ {[(1, 20), (21, 30)], [21:30]}, ");
+    //str.str("");
+    //std::copy(newD.facts_begin(), newD.facts_end(), std::ostream_iterator<ELSentence>(str, ", "));
+    /*
+    std::vector<std::pair<Proposition, SISet> > newFacts(newD.facts_begin(), newD.facts_end());
+    BOOST_REQUIRE_EQUAL(newFacts.size(), 1);
+    BOOST_CHECK_EQUAL(newf, "P(a) @ {[1:20]}, !P(a) @ {[21:30]}, Q(a) @ {[(1, 20), (21, 30)], [21:30]}, ");
+    */
 
 }
 
