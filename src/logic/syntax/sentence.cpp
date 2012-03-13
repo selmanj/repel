@@ -1,6 +1,11 @@
 #include "sentence.h"
 #include "disjunction.h"
-#include "../moves.h"
+#include "atom.h"
+#include "boollit.h"
+#include "conjunction.h"
+#include "diamondop.h"
+#include "liquidop.h"
+#include "negation.h"
 #include <sstream>
 #include <boost/shared_ptr.hpp>
 
@@ -22,12 +27,12 @@ std::string TQConstraints::toString() const {
     return str.str();
 }
 
-bool isDisjunctionOfCNFLiterals(const Sentence& s) {
+bool isDisjunctionOfPELCNFLiterals(const Sentence& s) {
     if (s.getTypeCode() != Disjunction::TypeCode) return false;
     const Disjunction& dis = static_cast<const Disjunction&>(s);
 
-    if ((isPELCNFLiteral(*dis.left()) || isDisjunctionOfCNFLiterals(*dis.left()))
-            && (isPELCNFLiteral(*dis.right()) || isDisjunctionOfCNFLiterals(*dis.right()))) {
+    if ((isPELCNFLiteral(*dis.left()) || isDisjunctionOfPELCNFLiterals(*dis.left()))
+            && (isPELCNFLiteral(*dis.right()) || isDisjunctionOfPELCNFLiterals(*dis.right()))) {
         return true;
     }
     return false;
@@ -69,3 +74,12 @@ bool isPELCNFLiteral(const Sentence& sentence) {
     return false;
 }
 
+
+bool isSimpleLiteral(const Sentence& lit) {
+    if (lit.getTypeCode() == Atom::TypeCode) return true;
+    if (lit.getTypeCode() == Negation::TypeCode) {
+        const Negation& neg = static_cast<const Negation&>(lit);
+        if (neg.sentence()->getTypeCode() == Atom::TypeCode) return true;
+    }
+    return false;
+}

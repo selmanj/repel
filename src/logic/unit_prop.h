@@ -153,10 +153,6 @@ namespace {
     Proposition convertToProposition(const QCNFLiteral& lit);
 
     /**
-     * Check to see if we are given a simple literal.
-     */
-    bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit);
-    /**
      * Check to see if left or right is the negated version of the opposite (e.g. P(a) is negated of !P(a)).
      */
     bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);

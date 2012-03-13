@@ -20,11 +20,19 @@ QUnitsFormulasPair performUnitPropagation(const Domain& d) {
     LOG(LOG_INFO) << "performing unit propagation...";
     std::vector<ELSentence> formulas(d.formulas_begin(), d.formulas_end());
 
-    // add quantification to any formulas that may be missing them
-    for (std::vector<ELSentence>::iterator it = formulas.begin(); it != formulas.end(); it++) {
+    // add quantification to any formulas that may be missing them, and remove
+    // formulas that aren't in CNF form
+    for (std::vector<ELSentence>::iterator it = formulas.begin(); it != formulas.end(); ) {
         if (!it->isQuantified()) {
             SISet everywhere(d.maxSpanInterval(), false, d.maxInterval());
             it->setQuantification(everywhere);
+        }
+        // check for cnf
+        if (!isPELCNFLiteral(*it->sentence()) && !isDisjunctionOfPELCNFLiterals(*it->sentence())) {
+            LOG_PRINT(LOG_WARN) << "Sentence: " << *it << " is not in CNF form!  ignoring";
+            it = formulas.erase(it);
+        } else {
+            it++;
         }
     }
     QCNFClauseList clauses = convertToQCNFClauseList(formulas);
@@ -128,7 +136,7 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
         CNFClause *cClause = &qClause.first;
         toProcess.pop();
         bool addCurrentClause = true;
-        if (isSimpleLiteral(cnfLit)) {
+        if (isSimpleLiteral(*cnfLit)) {
             // if we have a negation, unwrap it so we can find the base proposition easier
             boost::shared_ptr<Sentence> baseProp = cnfLit;
             if (boost::dynamic_pointer_cast<Negation>(baseProp).get()!=0) {
@@ -138,9 +146,9 @@ QCNFClauseList propagateLiteral(const QCNFLiteral& lit, const QCNFClause& c) {
             CNFClause::iterator it = cClause->begin();
             while (it != cClause->end()) {
                 boost::shared_ptr<Sentence> currentLit = *it;
-                if (isSimpleLiteral(currentLit) && *cnfLit == *currentLit) {    // Propagating P into P
+                if (isSimpleLiteral(*currentLit) && *cnfLit == *currentLit) {    // Propagating P into P
                     addCurrentClause = propagateSimpleLitToSimpleLit(lit, qClause, it, toProcess);
-                } else if (isSimpleLiteral(currentLit) && isNegatedLiteral(currentLit, cnfLit)) {
+                } else if (isSimpleLiteral(*currentLit) && isNegatedLiteral(currentLit, cnfLit)) {
                     addCurrentClause = propagateNegSimpleLitToSimpleLit(lit, qClause, it, toProcess);
                 } else if (boost::dynamic_pointer_cast<LiquidOp>(currentLit) != 0
                         && currentLit->contains(*baseProp)) {    // propagating P into [...]
@@ -249,18 +257,6 @@ namespace {
         }
         throw std::invalid_argument("convertToProposition(): got passed a lit that we don't know how to handle!");
 
-    }
-
-
-    bool isSimpleLiteral(const boost::shared_ptr<Sentence>& lit) {
-        if (boost::dynamic_pointer_cast<Atom>(lit) != 0) return true;
-        if (boost::dynamic_pointer_cast<Negation>(lit) != 0) {
-            boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(lit);
-            if (boost::dynamic_pointer_cast<Atom>(neg->sentence()) != 0) {
-                return true;
-            }
-        }
-        return false;
     }
 
     bool isNegatedLiteral(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right) {

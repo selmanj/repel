@@ -147,8 +147,13 @@ public:
     bool empty() const;
 };
 
-bool isDisjunctionOfCNFLiterals(const Sentence& sentence);
+bool isDisjunctionOfPELCNFLiterals(const Sentence& sentence);
 bool isPELCNFLiteral(const Sentence& sentence);
+/**
+ * Check to see if we are given a simple literal (atom or a negation of an
+ * atom).
+ */
+bool isSimpleLiteral(const Sentence& lit);
 
 // IMPLEMENTATION
 inline Sentence::~Sentence() {};

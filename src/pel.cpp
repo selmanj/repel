@@ -133,7 +133,10 @@ int main(int argc, char* argv[]) {
                     ELSentence newS = convertFromQCNFClause(*it);
                     newS.setHasInfWeight(true);
                     newForms << "\t" << newS << "\n";
-                    newD.addFact(newS);
+                    if (isSimpleLiteral(*newS.sentence()))
+                        newD.addFact(newS);
+                    else
+                        newD.addFormula(newS);
                 }
                 newForms << "formulas:\n";
                 for (QCNFClauseList::const_iterator it = reducedforms.second.begin(); it != reducedforms.second.end(); it++) {
