@@ -33,45 +33,37 @@ bool isDisjunctionOfCNFLiterals(const Sentence& s) {
     return false;
 }
 
-bool isPELCNFLiteral(const Sentence& sentence) {    // TODO: this is stupid and slow!  rewrite this!
-    boost::shared_ptr<Sentence> copy(sentence.clone());
-    return isPELCNFLiteral(copy);
-}
+bool isPELCNFLiteral(const Sentence& sentence) {
+    if (sentence.getTypeCode() == Atom::TypeCode
+            || sentence.getTypeCode() == BoolLit::TypeCode
+            || sentence.getTypeCode() == LiquidOp::TypeCode) {
+        return true;
+    }
+    if (sentence.getTypeCode() == Negation::TypeCode) {
+        const Negation& neg = static_cast<const Negation&>(sentence);
 
-bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence) {
-    if (boost::dynamic_pointer_cast<const Atom>(sentence)
-            || boost::dynamic_pointer_cast<const BoolLit>(sentence)) {
-        return true;
+        // TODO: necessary to check for double negation?
+        if (neg.sentence()->getTypeCode() == Negation::TypeCode) return false;
+        return isPELCNFLiteral(*neg.sentence());
     }
-    if (boost::dynamic_pointer_cast<const Negation>(sentence)) {
-        boost::shared_ptr<const Negation> neg = boost::dynamic_pointer_cast<const Negation>(sentence);
-        // TODO: necessary?
-        if (boost::dynamic_pointer_cast<const Negation>(neg->sentence())) {
-            return false;
-        }
-        return isPELCNFLiteral(neg->sentence());
-    }
-    if (boost::dynamic_pointer_cast<const DiamondOp>(sentence)) {
-        boost::shared_ptr<const DiamondOp> dia = boost::dynamic_pointer_cast<const DiamondOp>(sentence);
-        if (boost::dynamic_pointer_cast<const Atom>(dia->sentence())
-                || boost::dynamic_pointer_cast<const BoolLit>(dia->sentence())
-                || boost::dynamic_pointer_cast<const LiquidOp>(dia->sentence())) {  // TODO add liquidop
+    if (sentence.getTypeCode() == DiamondOp::TypeCode) {
+        const DiamondOp& dia = static_cast<const DiamondOp&>(sentence);
+        if (       dia.sentence()->getTypeCode()    == Atom::TypeCode
+                || dia.sentence()->getTypeCode()    == BoolLit::TypeCode
+                || dia.sentence()->getTypeCode()    == LiquidOp::TypeCode) {  // TODO add liquidop
             return true;
         }
         return false;
     }
-    if (boost::dynamic_pointer_cast<const Conjunction>(sentence)) {
-        boost::shared_ptr<const Conjunction> con = boost::dynamic_pointer_cast<const Conjunction>(sentence);
-        if ((boost::dynamic_pointer_cast<const Atom>(con->left())
-             || boost::dynamic_pointer_cast<const BoolLit>(con->left()))
-            && (boost::dynamic_pointer_cast<const Atom>(con->right())
-             || boost::dynamic_pointer_cast<const BoolLit>(con->right()))) {
+    if (sentence.getTypeCode() == Conjunction::TypeCode) {
+        const Conjunction& con = static_cast<const Conjunction&>(sentence);
+        if ((con.left()->getTypeCode() == Atom::TypeCode
+                || con.left()->getTypeCode() == BoolLit::TypeCode)
+              && (con.right()->getTypeCode() == Atom::TypeCode
+                || con.right()->getTypeCode() == BoolLit::TypeCode)) {
             return true;
         }
         return false;
-    }
-    if (boost::dynamic_pointer_cast<const LiquidOp>(sentence)) {
-        return true;
     }
 
     return false;

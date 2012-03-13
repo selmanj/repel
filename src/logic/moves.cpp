@@ -1513,7 +1513,7 @@ bool moveContainsObservationPreds(const Domain& d, const Move &m) {
 
 namespace {
     boost::shared_ptr<Sentence> convertToPELCNF_(const boost::shared_ptr<Sentence>& curSentence, std::vector<boost::shared_ptr<Sentence> >& additionalSentences, Domain& d) {
-        if (isPELCNFLiteral(curSentence)) {
+        if (isPELCNFLiteral(*curSentence)) {
             // if curSentence is a literal, we're good!
             return curSentence;
         } else if (boost::dynamic_pointer_cast<Disjunction>(curSentence)) {
@@ -1535,7 +1535,7 @@ namespace {
         // OK, it needs to be fixed.  find the element immediately below this operation
         if (boost::dynamic_pointer_cast<Negation>(curSentence)) {
             boost::shared_ptr<Negation> neg = boost::dynamic_pointer_cast<Negation>(curSentence);
-            assert(isPELCNFLiteral(neg->sentence()) || isDisjunctionOfCNFLiterals(*neg->sentence()));
+            assert(isPELCNFLiteral(*neg->sentence()) || isDisjunctionOfCNFLiterals(*neg->sentence()));
 
             boost::shared_ptr<Sentence> newLit = rewriteAsLiteral(neg->sentence(), additionalSentences, d);
             neg->setSentence(newLit);

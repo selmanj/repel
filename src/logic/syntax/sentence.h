@@ -149,7 +149,6 @@ public:
 
 bool isDisjunctionOfCNFLiterals(const Sentence& sentence);
 bool isPELCNFLiteral(const Sentence& sentence);
-bool isPELCNFLiteral(const boost::shared_ptr<const Sentence>& sentence);
 
 // IMPLEMENTATION
 inline Sentence::~Sentence() {};
