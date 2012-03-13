@@ -69,10 +69,3 @@ bool isPELCNFLiteral(const Sentence& sentence) {
     return false;
 }
 
-/*
-SISet Sentence::satisfied(const Model& m, const Domain& d, bool forceLiquid, const SISet* where) const {
-    SISet set = doSatisfied(m, d, forceLiquid);
-    if (where) return intersection(set, *where);
-    return set;
-}
-*/
