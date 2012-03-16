@@ -53,7 +53,7 @@ private:
 
 // IMPLEMENTATION BELOW:
 inline MCSat::MCSat(const Domain *d)
-    : d_(0),
+    : d_(d),
       numSamples_(defNumSamples),
       walksatIterations_(defWalksatIterations),
       walksatRandomMoveProb_(defWalksatRandomMoveProb),
