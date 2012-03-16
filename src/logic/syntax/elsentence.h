@@ -66,7 +66,10 @@ private:
     bool hasInfWeight_;
    // bool isQuantified_;
     SISet* quantification_;
+};
 
+struct IsHardClausePred : public std::unary_function<ELSentence, bool> {
+    bool operator()(const ELSentence& s) const { return s.hasInfWeight(); }
 };
 
 
