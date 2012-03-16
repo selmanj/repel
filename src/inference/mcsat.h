@@ -38,6 +38,8 @@ public:
 
     void run();
 private:
+    Domain applyUP(const Domain& d) const;
+
     const Domain* d_;
 
     unsigned int numSamples_;
@@ -45,7 +47,9 @@ private:
     double walksatRandomMoveProb_;
 
     std::vector<Model> samples_;
+
 };
+
 
 // IMPLEMENTATION BELOW:
 inline MCSat::MCSat(const Domain *d)

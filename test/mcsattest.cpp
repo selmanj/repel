@@ -11,12 +11,10 @@
 #include <boost/random.hpp>
 #include <string>
 #include "../src/inference/mcsat.h"
-#include "../src/log.h"
 #include "testutilities.h"
 
 BOOST_AUTO_TEST_CASE( mcsat_test)
 {
-    /* TODO: this isn't mcsat, erase this
 
     std::string facts("D-P(a) @ [1:10]\n");
     std::string formulas("1: [ D-P(a) -> P(a) ] @ [1:15]\n"
@@ -26,11 +24,6 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
     Domain d = loadDomainWithStreams(facts, formulas);
     FileLog::globalLogLevel() = LOG_DEBUG;
 
-    MCSat mcSatSolver;
-    mcSatSolver.setNumIterations(1000);
-    boost::mt19937 gen(0);
-    Model m = mcSatSolver.run(d, gen);
-    std::cout << "model m = " << m.toString() << std::endl;
-    */
-    BOOST_CHECK(true);
+    MCSat mcSatSolver(&d);
+    mcSatSolver.run();
 }

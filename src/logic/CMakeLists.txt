@@ -7,5 +7,6 @@ add_library(pel-logic
   model.cpp
   moves.cpp
   namegenerator.cpp
-  unit_prop.cpp)
+  unit_prop.cpp
+  ../inference/mcsat.cpp)
 
