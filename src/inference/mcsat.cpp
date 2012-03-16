@@ -5,6 +5,8 @@
  *      Author: selman.joe@gmail.com
  */
 
-#include <boost/random.hpp>
-#include <stdexcept>
 #include "mcsat.h"
+
+void MCSat::run() {
+   throw std::runtime_error("MCSat::run() unimplemented.");
+}
