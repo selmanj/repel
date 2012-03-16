@@ -127,11 +127,17 @@ std::basic_ostream<char,traits>& operator<< (std::basic_ostream<char,traits>& os
  */
 class contradiction : public std::exception {
 public:
-    contradiction() throw() {};
-    contradiction(const contradiction& o) throw() {}
-    contradiction& operator=(const contradiction& o) throw() {return *this;}
-    virtual const char* what() const throw() { return "Contradiction found in constraints.";}
+    contradiction() throw()
+        : what_("Contradiction found in constraints.") {};
+    contradiction(const contradiction& o) throw()
+        : what_(o.what_) {}
+    contradiction(const std::string& what) throw()
+        : what_(what) {}
+    //contradiction& operator=(const contradiction& o) throw() {ifreturn *this;}
+    virtual const char* what() const throw() { return what_.c_str();}
     //friend std::ostream& operator<<(std::ostream& o, const contradiction& c) { o << "contradiction: " << c.what(); return o;}
+private:
+    const std::string& what_;
 };
 
 namespace {
