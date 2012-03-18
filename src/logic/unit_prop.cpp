@@ -46,28 +46,28 @@ Domain performUnitPropagation(const Domain& d) {
     QCNFClauseList clauses = convertToQCNFClauseList(upforms);
 
     // convert all the facts into unit clauses
-    Model obs = d.defaultModel();
-    std::set<Atom, atomcmp> atoms = obs.atoms();
+    //Model obs = d.defaultModel();
+    //std::set<Atom, atomcmp> atoms = obs.atoms();
 
-    for (std::set<Atom, atomcmp>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
-        SISet trueAt = obs.getAtom(*it);
-        SISet falseAt = trueAt.compliment();    // TODO: fixi t here
+    for (Domain::atom_const_iterator it = d.atoms_begin(); it != d.atoms_end(); it++) {
+        Proposition ptrue(*it, true);
+        boost::shared_ptr<Sentence> atomPtr;
+        SISet trueAt(false, d.maxInterval());
+        if (d.hasFact(ptrue)) {
+            trueAt = d.lookupFact(ptrue);
+            atomPtr = boost::shared_ptr<Sentence>(new Atom(*it));
+        } else if (d.hasFact(ptrue.inverse())) {
+            trueAt = d.lookupFact(ptrue.inverse());
+            boost::shared_ptr<Sentence> atom(new Atom(*it));
+            atomPtr = boost::shared_ptr<Sentence>(new Negation(atom));
+        } else {
+            continue;   // it's not here
+        }
+        CNFClause clause;
+        clause.push_back(atomPtr);
+        QCNFClause qclause(clause, trueAt);
 
-        // TODO: why make a copy?  we should have the original shared_ptr
-        boost::shared_ptr<Sentence> atomTrue(new Atom(*it));
-        boost::shared_ptr<Sentence> atomFalse(new Negation(atomTrue));
-        CNFClause a, b;
-        a.push_back(atomTrue);
-        b.push_back(atomFalse);
-        QCNFClause c(a, trueAt), d(b, falseAt);
-        /*
-        c.first = a;
-        d.first = b;
-        c.second = trueAt;
-        d.second = falseAt;
-        */
-        if (c.second.size() != 0) clauses.push_back(c);
-        if (d.second.size() != 0) clauses.push_back(d);
+        if (qclause.second.size() != 0) clauses.push_back(qclause);
     }
 
     QUnitsFormulasPair reducedList = performUnitPropagation(clauses);

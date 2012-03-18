@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( simpleLitToLiq) {
     Domain newD = performUnitPropagation(d);
     std::ostringstream str;
     std::copy(newD.formulas_begin(), newD.formulas_end(), std::ostream_iterator<ELSentence>(str, ", "));
-    BOOST_CHECK_EQUAL(str.str(), "");
+    BOOST_CHECK_EQUAL(str.str(), "inf: [ P(a) ] v Q(a) @ {[(1, 20), (21, 30)], [21:30]}, ");
     //str.str("");
     //std::copy(newD.facts_begin(), newD.facts_end(), std::ostream_iterator<ELSentence>(str, ", "));
     /*

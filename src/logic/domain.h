@@ -55,6 +55,9 @@ public:
     void addFact(const ELSentence& e);
     void addFact(const Proposition& p, const SISet& where);
 
+    bool hasFact(const Proposition& p) const;
+    SISet lookupFact(const Proposition& p) const;
+
     SISet getModifiableSISet(const Atom& a) const;
     SISet getModifiableSISet(const Atom& a, const SISet& where) const;
 
@@ -164,7 +167,8 @@ inline void Domain::addFact(const Proposition& p, const SISet& where) {
     growMaxInterval(where.maxInterval());
 }
 
-
+inline bool Domain::hasFact(const Proposition& p) const {return partialModel_.count(p) != 0; }
+inline SISet Domain::lookupFact(const Proposition& p) const { return partialModel_.at(p);}
 
 inline NameGenerator& Domain::nameGenerator() {return generator_;};
 inline Model Domain::defaultModel() const {return Model(partialModel_, maxInterval_);};

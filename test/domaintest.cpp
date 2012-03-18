@@ -254,7 +254,9 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
-    Domain d = loadDomainWithStreams(facts.str(), "");
+    ParseOptions options;
+    options.setAssumeClosedWorldInFacts(false);
+    Domain d = loadDomainWithStreams(facts.str(), "", options);
 
     Model randomModel = d.randomModel();
 

@@ -18,7 +18,7 @@ void Domain::addObservedPredicate(const Atom& a) {
 */
 
 SISet Domain::getModifiableSISet(const Atom& a) const {
-    return getModifiableSISet(a, SISet(maxSpanInterval(), false, maxInterval_));
+    return getModifiableSISet(a, SISet(maxSpanInterval(), true, maxInterval_));
 }
 
 SISet Domain::getModifiableSISet(const Atom& a, const SISet& where) const {
