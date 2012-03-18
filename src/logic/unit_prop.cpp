@@ -51,7 +51,7 @@ Domain performUnitPropagation(const Domain& d) {
 
     for (std::set<Atom, atomcmp>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
         SISet trueAt = obs.getAtom(*it);
-        SISet falseAt = trueAt.compliment();
+        SISet falseAt = trueAt.compliment();    // TODO: fixi t here
 
         // TODO: why make a copy?  we should have the original shared_ptr
         boost::shared_ptr<Sentence> atomTrue(new Atom(*it));

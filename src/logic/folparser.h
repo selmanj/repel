@@ -43,6 +43,24 @@ struct iters {
     ForwardIterator last;
 };
 
+class ParseOptions {
+public:
+    static const bool defAssumeClosedWorldInFacts = true;
+
+    ParseOptions() : factsClosed_(defAssumeClosedWorldInFacts) {}
+
+    bool assumeClosedWorldInFacts() const { return factsClosed_;}
+    void setAssumeClosedWorldInFacts(bool b) {factsClosed_ = b;}
+
+private:
+    bool factsClosed_;
+};
+
+std::ostream& operator<<(std::ostream& o, const ParseOptions& p) {
+    o << "{assumeClosedWorldInFacts = " << p.assumeClosedWorldInFacts() << "}";
+    return o;
+}
+
 template <class ForwardIterator>
 bool peekTokenType(FOLParse::FOL_TOKEN_TYPE type, iters<ForwardIterator> &its) {
     if (its.cur == its.last) return false;
@@ -692,7 +710,7 @@ void parseFormulas(const ForwardIterator &first,
     doParseFormulas(store, its);
 }
 
-Domain loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile) {
+Domain loadDomainFromFiles(const std::string &eventfile, const std::string &formulafile, const ParseOptions& options=ParseOptions()) {
     std::vector<FOL::Event> events;
     //std::vector<WSentence> formulas;
     std::vector<ELSentence> formSet;
@@ -703,17 +721,28 @@ Domain loadDomainFromFiles(const std::string &eventfile, const std::string &form
     std::cout << "Read " << formSet.size() << " formulas from file." << std::endl;
 
     Domain d;
+    boost::unordered_set<Atom> factAtoms;   // collect the fact atoms
     for (std::vector<FOL::Event>::const_iterator it = events.begin(); it != events.end(); it++) {
         // convert to proposition
         Proposition prop(*it->atom(), it->truthVal());
+        factAtoms.insert(*it->atom());
         Interval maxInt(it->where().start().start(), it->where().finish().finish());
         SISet where(it->where(), true, maxInt);     // Locking all facts from the events file as liquid - need a better way to do this
         // TODO: type system!
         d.addFact(prop, where);
     }
-
     d.addFormulas(formSet.begin(), formSet.end());
 
+    if (options.assumeClosedWorldInFacts()) {
+        // for every fact atom, subtract the places where it's not true, and add in the false statements
+        for (boost::unordered_set<Atom>::const_iterator it = factAtoms.begin(); it != factAtoms.end(); it++) {
+            SISet noFixedValue = d.getModifiableSISet(*it);
+            if (!noFixedValue.empty()) {
+                Proposition prop(*it, false);
+                d.addFact(prop, noFixedValue);
+            }
+        }
+    }
     return d;
 
 }
@@ -773,4 +802,6 @@ ELSentence parseWeightedFormula(const ForwardIterator &first,
     return doParseWeightedFormula(its);
 }
 };
+
+
 #endif
