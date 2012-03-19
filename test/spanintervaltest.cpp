@@ -2,6 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <boost/optional.hpp>
+#include <boost/assign/list_of.hpp>
 #include "spaninterval.h"
 #include "interval.h"
 #include "siset.h"
@@ -11,6 +12,8 @@
 #include <list>
 #include <iterator>
 #include <algorithm>
+
+using boost::assign::list_of;
 
 BOOST_AUTO_TEST_CASE( basic_test )
 {
@@ -240,6 +243,57 @@ BOOST_AUTO_TEST_CASE ( siIteratorTest) {
             BOOST_CHECK(std::find(intervals.begin(), intervals.end(), interval) != intervals.end());
         }
     }
+}
 
+BOOST_AUTO_TEST_CASE (siSetOutputIteratorTest ) {
+    std::list<SpanInterval> list = list_of(SpanInterval(0,1,0,1))(SpanInterval(3,6,3,6))(SpanInterval(9,10,9,10))(SpanInterval(11,11,11,11));
+    SISet siset(false, Interval(0,15));
+    std::copy(list.begin(), list.end(), SISetInserter(siset));
+    BOOST_CHECK_EQUAL(siset.toString(), "{[0:1], [3:6], [9:10], [11:11]}");
+}
 
+BOOST_AUTO_TEST_CASE( siSetEndpointTest) {
+    /*
+    {
+        SISet empty(true, Interval(0,10));
+        std::vector<unsigned int> expected = list_of(0)(10);
+        std::vector<unsigned int> actual;
+        empty.collectEndpoints(std::back_inserter(actual));
+        BOOST_CHECK_EQUAL_COLLECTIONS(actual.begin(), actual.end(), expected.begin(), expected.end());
+    }
+    {
+        SISet set(true, Interval(0,10));
+        set.add(SpanInterval(3,6,3,6));
+        std::vector<unsigned int> expected = list_of(0)(3)(6)(10);
+        std::vector<unsigned int> actual;
+        set.collectEndpoints(std::back_inserter(actual));
+        BOOST_CHECK_EQUAL_COLLECTIONS(actual.begin(), actual.end(), expected.begin(), expected.end());
+    }
+    {
+        SISet set(true, Interval(0,10));
+        set.add(SpanInterval(0,6,0,6));
+        std::vector<unsigned int> expected = list_of(0)(6)(10);
+        std::vector<unsigned int> actual;
+        set.collectEndpoints(std::back_inserter(actual));
+        BOOST_CHECK_EQUAL_COLLECTIONS(actual.begin(), actual.end(), expected.begin(), expected.end());
+    }
+    {
+        SISet set(true, Interval(0,10));
+        set.add(SpanInterval(3,10,3,10));
+        std::vector<unsigned int> expected = list_of(0)(3)(10);
+        std::vector<unsigned int> actual;
+        set.collectEndpoints(std::back_inserter(actual));
+        BOOST_CHECK_EQUAL_COLLECTIONS(actual.begin(), actual.end(), expected.begin(), expected.end());
+    }
+    {
+        SISet set(true, Interval(0,10));
+        set.add(SpanInterval(3,6,3,6));
+        set.add(SpanInterval(7,8,7,8));
+        set.add(SpanInterval(1,1,1,1));
+        std::vector<unsigned int> expected = list_of(0)(1)(3)(8)(10);
+        std::vector<unsigned int> actual;
+        set.collectEndpoints(std::back_inserter(actual));
+        BOOST_CHECK_EQUAL_COLLECTIONS(actual.begin(), actual.end(), expected.begin(), expected.end());
+    }
+    */
 }

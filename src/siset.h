@@ -69,6 +69,9 @@ public:
     static SISet randomSISet(bool forceLiquid, const Interval& maxInterval);
     SpanInterval randomSI() const;
 
+    template<class OutIter>
+    void collectSegments(OutIter out) const;
+
     std::string toString() const;
     friend std::ostream& operator<<(std::ostream& o, const SISet& s);
     friend bool operator ==(const SISet& l, const SISet& r);
@@ -84,6 +87,48 @@ private:
     bool forceLiquid_;
     Interval maxInterval_;
 };
+
+
+struct SISetInserterHelper {
+    SISetInserterHelper(SISet *s) : siset(s), nogood(false) {}
+
+    SISetInserterHelper& operator=(const SpanInterval& si) {
+        if (siset == 0)
+            throw std::logic_error("can't add a spanning interval to an inserter created with null ptr reference");
+        siset->add(si);
+        nogood = true;
+        return *this;
+    }
+
+    SISet *siset;
+    bool nogood;
+};
+
+// output iterator for SISet
+class SISetInserter : public std::iterator<std::output_iterator_tag, SpanInterval> {
+public:
+    SISetInserter() : siset(0), helper(0) {}
+    SISetInserter(SISet& s) : siset(&s), helper(&s) {}
+
+    SISetInserterHelper& operator*() {
+        return helper;
+    }
+
+    SISetInserter& operator++() {
+        helper.nogood = false;
+        return *this;
+    }
+
+    SISetInserter operator++(int) {
+        SISetInserter copy(*this);
+        helper.nogood = false;
+        return copy;
+    }
+private:
+    SISet *siset;
+    SISetInserterHelper helper;
+};
+
 SISet span(const SpanInterval& a, const SpanInterval& b, const Interval& maxInterval);
 SISet composedOf(const SpanInterval& a, const SpanInterval& b, Interval::INTERVAL_RELATION, const SpanInterval& universe);
 bool equalByInterval(const SISet& a, const SISet& b);
@@ -113,6 +158,41 @@ inline std::size_t hash_value(const SISet& si) {
     }
     boost::hash_range(seed, liqSet.begin(), liqSet.end());
     return seed;
+}
+
+template<class OutIter>
+void SISet::collectSegments(OutIter out) const {
+
+    /*
+    // doesn't work currently for non liquid sets
+    if (!forceLiquid_) {
+        throw std::logic_error("can't collect endpoints on non-liquid SISet");
+    }
+    // endpoints always start/end at the max interval
+    *out = maxInterval_.start();
+    out++;
+    // make a sorted copy
+    std::set<SpanInterval> copy(set_.begin(), set_.end());
+    std::set<SpanInterval>::size_type index = 0;
+    std::set<SpanInterval>::size_type size = copy.size();
+    for (std::set<SpanInterval>::const_iterator it = copy.begin(); it != copy.end(); it++) {
+        Interval si = it->start();  // can use the start interval only
+                                        // since the end interval is the same
+                                        // for liquid
+        if (index != 0 || si.start() != maxInterval_.start()) {
+            *out = si.start();
+            out++;
+        }
+        if ((index != size-1 || si.finish() != maxInterval_.finish())
+                && si.finish() != si.start()) { // don't add the same endpoint twice
+            *out = si.finish();
+            out++;
+        }
+        index++;
+    }
+    *out = maxInterval_.finish();
+    out++;
+    */
 }
 
 #endif /* SISET_H_ */
