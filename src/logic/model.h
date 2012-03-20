@@ -26,6 +26,8 @@ public:
    // Model(const Model& m);
   //  virtual ~Model();
 
+    friend std::size_t hash_value(const Model& m);
+
     std::set<Atom, atomcmp> atoms() const;
 
     bool hasAtom(const Atom& a) const;
@@ -88,7 +90,14 @@ inline Model::Model(const boost::unordered_map<Proposition, SISet>& partialModel
 }
 inline Interval Model::maxInterval() const {return maxInterval_;}
 
-inline bool operator==(const Model& l, const Model& r) {return l.amap_ == r.amap_;}
+inline bool operator==(const Model& l, const Model& r) {return l.amap_ == r.amap_ && l.maxInterval_ == r.maxInterval_;}
 inline bool operator!=(const Model& l, const Model& r) {return !operator==(l, r);}
+
+inline std::size_t hash_value(const Model& m) {
+    std::size_t seed = 0;
+    boost::hash_range(seed, m.amap_.begin(), m.amap_.end());
+    boost::hash_combine(seed, m.maxInterval_);
+    return seed;
+}
 
 #endif /* MODEL_H_ */

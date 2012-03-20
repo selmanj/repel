@@ -19,6 +19,9 @@ public:
     static const unsigned int defNumSamples = 1000;
     static const unsigned int defWalksatIterations = 1000;
     static const double defWalksatRandomMoveProb = 0.2;
+    static const unsigned int defWalksatNumRandomRestarts = 4;
+
+    boost::unordered_set<Model> sampleSat(const Model& initialModel, const Domain& d);
 
     typedef std::vector<Model>::const_iterator const_iterator;
 
@@ -33,6 +36,7 @@ public:
     unsigned int numSamples() const;
     unsigned int walksatIterations() const;
     double walksatRandomMoveProb() const;
+    unsigned int walksatNumRandomRestarts() const;
     const_iterator begin() const;
     const_iterator end() const;
     const MCSatSampleStrategy* sampleStrategy() const;
@@ -41,23 +45,23 @@ public:
     void setNumSamples(unsigned int numSamples);
     void setWalksatIterations(unsigned int walksatIterations);
     void setWalksatRandomMoveProb(double walksatRandomMoveProb);
+    void setWalksatNumRandomRestarts(unsigned int walksatNumRandomRestarts);
     void setSampleStrategy(const MCSatSampleStrategy *strategy);
     void clear();
 
     void run();
 private:
-    Domain applyUP(const Domain& d) const;
+    static Domain applyUP(const Domain& d);   // TODO: move this to unit_prop.h eventually
 
     const Domain* d_;
 
     unsigned int numSamples_;
     unsigned int walksatIterations_;
     double walksatRandomMoveProb_;
+    unsigned int walksatNumRandomRestarts_;
 
     std::vector<Model> samples_;
     MCSatSampleStrategy *sampleStrategy_;
-
-
 };
 
 /**
@@ -89,6 +93,7 @@ inline MCSat::MCSat(const Domain *d)
       numSamples_(defNumSamples),
       walksatIterations_(defWalksatIterations),
       walksatRandomMoveProb_(defWalksatRandomMoveProb),
+      walksatNumRandomRestarts_(defWalksatNumRandomRestarts),
       samples_(),
       sampleStrategy_(0) {
     // use default strategy of segment strategy
@@ -100,6 +105,7 @@ inline MCSat::MCSat(const MCSat& m)
       numSamples_(m.numSamples_),
       walksatIterations_(m.walksatIterations_),
       walksatRandomMoveProb_(m.walksatRandomMoveProb_),
+      walksatNumRandomRestarts_(m.walksatNumRandomRestarts_),
       samples_(m.samples_),
       sampleStrategy_(m.sampleStrategy_ == 0 ? 0 : m.sampleStrategy_->clone()) {}
 
@@ -115,6 +121,7 @@ inline void swap(MCSat& l, MCSat& r) {
     swap(l.numSamples_, r.numSamples_);
     swap(l.walksatIterations_, r.walksatIterations_);
     swap(l.walksatRandomMoveProb_, r.walksatRandomMoveProb_);
+    swap(l.walksatNumRandomRestarts_, r.walksatNumRandomRestarts_);
     swap(l.samples_, r.samples_);
     swap(l.sampleStrategy_, r.sampleStrategy_);
 }
@@ -136,6 +143,7 @@ inline void MCSat::setDomain(const Domain* d) {d_ = d;}
 inline void MCSat::setNumSamples(unsigned int numSamples) {numSamples_ = numSamples;}
 inline void MCSat::setWalksatIterations(unsigned int walksatIterations) {walksatIterations_ = walksatIterations;}
 inline void MCSat::setWalksatRandomMoveProb(double walksatRandomMoveProb) {walksatRandomMoveProb_ = walksatRandomMoveProb;}
+inline void MCSat::setWalksatNumRandomRestarts(unsigned int walksatNumRandomRestarts) {walksatNumRandomRestarts_ = walksatNumRandomRestarts;}
 inline void MCSat::setSampleStrategy(const MCSatSampleStrategy *strategy) {
     sampleStrategy_ = (strategy == 0 ? 0 : strategy->clone());
 }

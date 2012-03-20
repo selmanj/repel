@@ -8,5 +8,7 @@ add_library(pel-logic
   moves.cpp
   namegenerator.cpp
   unit_prop.cpp
-  ../inference/mcsat.cpp)
+  ../inference/mcsat.cpp
+  ../inference/maxwalksat.cpp)
 
+target_link_libraries(pel-logic pel-syntax)

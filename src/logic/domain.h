@@ -53,6 +53,7 @@ public:
     template <class InputIterator>
     void addFormulas(InputIterator begin, InputIterator end);
     void addFact(const ELSentence& e);
+    void addFact(const std::pair<const Proposition, const SISet>& pair);
     void addFact(const Proposition& p, const SISet& where);
 
     bool hasFact(const Proposition& p) const;
@@ -149,6 +150,10 @@ inline void Domain::addFormulas(InputIterator begin, InputIterator end) {
     for (InputIterator it = begin; it != end; it++) {
         addFormula(*it);
     }
+}
+
+inline void Domain::addFact(const std::pair<const Proposition, const SISet>& pair) {
+    addFact(pair.first, pair.second);
 }
 
 inline void Domain::addFact(const Proposition& p, const SISet& where) {
