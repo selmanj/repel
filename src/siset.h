@@ -55,6 +55,7 @@ public:
     void subtract(const SpanInterval& si);
     void subtract(const SISet& sis);
 
+    bool includes(const SpanInterval& si) const;
     /**
      * Check to see if this SISet includes another SISet.  This is equivalent
      * to set inclusion.
@@ -139,6 +140,12 @@ unsigned long hammingDistance(const SISet& a, const SISet& b);
 inline SISet::const_iterator SISet::begin() const {return set_.begin();}
 inline SISet::const_iterator SISet::end() const {return set_.end();}
 inline bool SISet::empty() const { return size() == 0;}
+
+inline bool SISet::includes(const SpanInterval& si) const {
+    SISet onlySi(false, maxInterval_);
+    onlySi.add(si);
+    return includes(onlySi);
+}
 
 inline bool SISet::includes(const SISet& s) const {
     SISet copy = s;

@@ -34,6 +34,7 @@ void MCSat::run() {
         sampleStrategy_->sampleSentences(prevModel, prevDomain, newSentences);
         // make a new domain using new Sentences
         Domain curDomain;
+        curDomain.setMaxInterval(prevDomain.maxInterval());
         for (Domain::fact_const_iterator it = prevDomain.facts_begin(); it != prevDomain.facts_end(); it++) {
             curDomain.addFact(*it);
         }
@@ -82,12 +83,32 @@ Domain MCSat::applyUP(const Domain& d) {
 void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled) {
     for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
         ELSentence currentSentence = *it;
+
+        // if it has hard weight, it must be included
+        if (currentSentence.hasInfWeight()) {
+            sampled.push_back(currentSentence);
+            continue;
+        }
         SISet satisfied = currentSentence.dSatisfied(m, d);
 
         if (satisfied.empty()) continue;
 
+        // find the segments for this sentence
+        boost::unordered_set<SpanInterval> segments = formulaToSegment_.at(currentSentence.sentence().get());
+        SISet toEnforceAt(false, d.maxInterval());
+        for (boost::unordered_set<SpanInterval>::const_iterator sIt = segments.begin(); sIt != segments.end(); sIt++) {
+            // first, require that the sentence be fully satisfied at the spanning interval
+            if (!satisfied.includes(*sIt)) continue;
+            // sample it.  with probability 1 - e^-score, add it to be enforced
+            double prob = 1.0 - exp(-(currentSentence.weight()*sIt->size()));
+            bool addit = (((double)rand()) / ((double)RAND_MAX)) <= prob;
+            if (addit) toEnforceAt.add(*sIt);
+        }
+        if (!toEnforceAt.empty()) {
+            currentSentence.setQuantification(toEnforceAt);
+            sampled.push_back(currentSentence);
+        }
     }
-    throw std::runtime_error("MCSatSampleSegmentsStrategy::sampleSentences() not yet implemented");
 }
 
 boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Domain& d) {
