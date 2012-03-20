@@ -26,4 +26,5 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
 
     MCSat mcSatSolver(&d);
     mcSatSolver.run();
+    BOOST_CHECK_EQUAL(mcSatSolver.size(), MCSat::defNumSamples);
 }

@@ -11,6 +11,11 @@
 #include "../logic/domain.h"
 #include "../logic/syntax/elsentence.h"
 
+const unsigned int MCSat::defNumSamples = 1000;
+const unsigned int MCSat::defWalksatIterations = 1000;
+const double MCSat::defWalksatRandomMoveProb = 0.2;
+const unsigned int MCSat::defWalksatNumRandomRestarts = 4;
+
 void MCSat::run() {
     if (d_ == 0) {
         throw std::logic_error("MCSat::run() - Domain not set");

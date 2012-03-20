@@ -16,10 +16,10 @@ class MCSatSampleStrategy;
 
 class MCSat {
 public:
-    static const unsigned int defNumSamples = 1000;
-    static const unsigned int defWalksatIterations = 1000;
-    static const double defWalksatRandomMoveProb = 0.2;
-    static const unsigned int defWalksatNumRandomRestarts = 4;
+    static const unsigned int defNumSamples;
+    static const unsigned int defWalksatIterations;
+    static const double defWalksatRandomMoveProb;
+    static const unsigned int defWalksatNumRandomRestarts;
 
     boost::unordered_set<Model> sampleSat(const Model& initialModel, const Domain& d);
 
@@ -40,6 +40,7 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
     const MCSatSampleStrategy* sampleStrategy() const;
+    std::size_t size() const;
 
     void setDomain(const Domain *d);
     void setNumSamples(unsigned int numSamples);
@@ -166,6 +167,7 @@ inline unsigned int MCSat::walksatIterations() const { return walksatIterations_
 inline MCSat::const_iterator MCSat::begin() const { return samples_.begin();}
 inline MCSat::const_iterator MCSat::end() const { return samples_.end();}
 inline const MCSatSampleStrategy* MCSat::sampleStrategy() const { return sampleStrategy_;}
+inline std::size_t MCSat::size() const {return samples_.size(); }
 
 
 inline void MCSat::setDomain(const Domain* d) {d_ = d;}
