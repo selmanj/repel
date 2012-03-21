@@ -339,12 +339,36 @@ const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel) con
 
 
 SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
-    SISet start(forceLiquid, maxInterval);
+    SISet set(forceLiquid, maxInterval);
     if (!forceLiquid) {
         LOG_PRINT(LOG_ERROR) << "generating random SISets for non-liquid events is not yet implemented!";
-        return start;
+        return set;
     }
 
+    // for liquid, we just sample each timepoint and build up a spanning interval
+    unsigned int curStart = 0;
+    unsigned int curFinish = 0;
+    bool hasData = false;
+    for (unsigned int point = maxInterval.start(); point <= maxInterval.finish(); point++) {
+        bool sampleThis = (rand() % 2) == 0;
+        if (sampleThis) {
+            if (!hasData) {
+                curStart = point;
+                hasData = true;
+            }
+            curFinish = point;
+        } else {
+            if (hasData) {
+                // add it in
+                set.add(SpanInterval(curStart, curFinish, curStart, curFinish));
+                hasData = false;
+            }
+        }
+    }
+    if (hasData) set.add(SpanInterval(curStart, curFinish, curStart, curFinish));   // one final check in case we hit the end of the list without adding
+    return set;
+
+    /*
     int bitsLeft = 15;  // TODO: we assume max is 32767, always true?
     int random = rand();
     unsigned int curStart = 0;
@@ -374,6 +398,7 @@ SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
         }
     }
     return start;
+    */
 }
 
 SpanInterval SISet::randomSI() const {

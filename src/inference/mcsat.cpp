@@ -138,11 +138,14 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
         return models;  // can't continue, just return our models which has only one item.
     }
 
+    // rewrite infinite weighted formulas so they have singular weight
+    reduced = reduced.replaceInfForms();
+
     // do some random restarts and hope for different models
     for (unsigned int i = 1; i <= walksatNumRandomRestarts_; i++) {
-        Model iterInitModel = dSat.randomModel();   // TODO: better way to make random models
-        Model iterModel = maxWalkSat(dSat, walksatIterations_, walksatRandomMoveProb_, &iterInitModel);
-        if (dSat.isFullySatisfied(iterModel)) models.insert(iterModel);
+        Model iterInitModel = reduced.randomModel();   // TODO: better way to make random models
+        Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, &iterInitModel);
+        if (reduced.isFullySatisfied(iterModel)) models.insert(iterModel);
     }
     return models;
 }
@@ -172,6 +175,7 @@ MCSatSampleSegmentsStrategy::MCSatSampleSegmentsStrategy(const Domain& d)
                 it2 != atomCollect.atoms.end();
                 it2++) {
             Atom atom = *it2;
+            if (formulaToSegment_.count(&atom) == 0) continue;
             boost::unordered_set<SpanInterval> toMerge = formulaToSegment_.at(&atom);
             std::copy(toMerge.begin(), toMerge.end(), std::inserter(segments, segments.end()));
         }
@@ -203,3 +207,33 @@ MCSatSampleSegmentsStrategy::~MCSatSampleSegmentsStrategy() {
     }
     toDelete.clear();
 }
+
+void MCSatSamplePerfectlyStrategy::sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled) {
+    // sample on an interval basis for each formula
+    for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
+        ELSentence curSentence = *it;
+        if (curSentence.hasInfWeight()) {
+            sampled.push_back(curSentence); // have to take it
+            continue;
+        }
+        SISet satisfied = curSentence.dSatisfied(m, d);
+        double prob = 1.0 - exp(-(double)(curSentence.weight()));   // probability to sample an interval
+        SISet where(false, d.maxInterval());
+        // iterate over each interval, sampling!
+        for (SISet::const_iterator sisetIt = satisfied.begin(); sisetIt != satisfied.end(); sisetIt++) {
+            SpanInterval si = *sisetIt;
+            for (SpanInterval::const_iterator siIt = si.begin(); siIt != si.end(); siIt++) {
+                Interval interval = *siIt;
+                // sample it with probability 1-exp(-w)
+                if (((double)rand()) / ((double)RAND_MAX) <= prob) {
+                    where.add(SpanInterval(interval.start(), interval.start(), interval.finish(), interval.finish()));
+                }
+            }
+        }
+        if (!where.empty()) {
+            curSentence.setQuantification(where);
+            sampled.push_back(curSentence);
+        }
+    }
+}
+

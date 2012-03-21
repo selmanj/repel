@@ -85,7 +85,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
 
         if (notFullySatisfied.size()==0) {
             // can't really improve on this
-            LOG_PRINT(LOG_INFO) << "no more sentences to satisfy!  exiting early after "<< iteration-1 << " iterations";
+            LOG(LOG_INFO) << "no more sentences to satisfy!  exiting early after "<< iteration-1 << " iterations";
             return currentModel;
         }
 

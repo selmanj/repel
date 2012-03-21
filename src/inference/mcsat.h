@@ -47,7 +47,7 @@ public:
     void setWalksatIterations(unsigned int walksatIterations);
     void setWalksatRandomMoveProb(double walksatRandomMoveProb);
     void setWalksatNumRandomRestarts(unsigned int walksatNumRandomRestarts);
-    void setSampleStrategy(const MCSatSampleStrategy *strategy);
+    void setSampleStrategy(MCSatSampleStrategy *strategy);
     void clear();
 
     void run();
@@ -56,7 +56,7 @@ private:
 
     const Domain* d_;
 
-    unsigned int numSamples_;
+    unsigned int numSamples_;                   // TODO: refactor these into an options attribute
     unsigned int walksatIterations_;
     double walksatRandomMoveProb_;
     unsigned int walksatNumRandomRestarts_;
@@ -113,6 +113,12 @@ public:
 private:
     boost::unordered_map<Sentence*, boost::unordered_set<SpanInterval>,
     sentence_ptr_hash, sentence_ptr_pred> formulaToSegment_;
+};
+
+class MCSatSamplePerfectlyStrategy : public MCSatSampleStrategy {
+    virtual MCSatSamplePerfectlyStrategy* clone() const;
+
+    virtual void sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled);
 };
 
 
@@ -175,8 +181,8 @@ inline void MCSat::setNumSamples(unsigned int numSamples) {numSamples_ = numSamp
 inline void MCSat::setWalksatIterations(unsigned int walksatIterations) {walksatIterations_ = walksatIterations;}
 inline void MCSat::setWalksatRandomMoveProb(double walksatRandomMoveProb) {walksatRandomMoveProb_ = walksatRandomMoveProb;}
 inline void MCSat::setWalksatNumRandomRestarts(unsigned int walksatNumRandomRestarts) {walksatNumRandomRestarts_ = walksatNumRandomRestarts;}
-inline void MCSat::setSampleStrategy(const MCSatSampleStrategy *strategy) {
-    sampleStrategy_ = (strategy == 0 ? 0 : strategy->clone());
+inline void MCSat::setSampleStrategy(MCSatSampleStrategy *strategy) {
+    sampleStrategy_ = strategy;
 }
 
 inline void MCSat::clear() {samples_.clear();}
@@ -198,6 +204,11 @@ inline MCSatSampleSegmentsStrategy& MCSatSampleSegmentsStrategy::operator=(MCSat
     swap(*this, other);
     return *this;
 }
+
+inline MCSatSamplePerfectlyStrategy* MCSatSamplePerfectlyStrategy::clone() const {
+    return new MCSatSamplePerfectlyStrategy;    //no state
+}
+
 
 
 
