@@ -5,6 +5,7 @@
  *      Author: selman.joe@gmail.com
  */
 
+#include <cmath>
 #include "mcsat.h"
 #include "maxwalksat.h"
 #include "../logic/unit_prop.h"
@@ -105,7 +106,7 @@ void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& 
             // first, require that the sentence be fully satisfied at the spanning interval
             if (!satisfied.includes(*sIt)) continue;
             // sample it.  with probability 1 - e^-score, add it to be enforced
-            double prob = 1.0 - exp(-(currentSentence.weight()*sIt->size()));
+            double prob = 1.0 - exp((double)-(currentSentence.weight()*sIt->size()));
             bool addit = (((double)rand()) / ((double)RAND_MAX)) <= prob;
             if (addit) toEnforceAt.add(*sIt);
         }

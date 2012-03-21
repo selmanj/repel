@@ -9,18 +9,25 @@
 #ifndef ELSENTENCE_H_
 #define ELSENTENCE_H_
 
+#ifdef _WIN32
+#else
+#include <tr1/cstdint>	// no tr1 cstdint header on visual studio?  
+#endif
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include <string>
 #include <sstream>
-#include <tr1/cstdint>
 #include "siset.h"
 #include "sentence.h"
 
 class Model;
 class Domain;
 
+#ifdef _WIN32
+typedef unsigned __int64 score_t;
+#else
 typedef uint64_t score_t;   // TODO: remove all occurences of score values and replace it with this
+#endif
 
 class ELSentence {
 public:
