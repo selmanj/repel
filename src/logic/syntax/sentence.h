@@ -5,7 +5,6 @@
 #include <sstream>
 #include <boost/utility.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/shared_ptr.hpp>
 #include "sentencevisitor.h"
 #include "../../siset.h"
 
