@@ -15,7 +15,6 @@
 
 class Domain;
 class Model;
-struct Proposition;
 struct PredicateType;
 
 class Atom : public Sentence {
@@ -69,29 +68,6 @@ struct atomcmp {
     bool operator()(const Atom& a, const Atom& b) const {
         return a.toString() < b.toString();
     }
-};
-
-/**
- * Simple container class for propositions (literals) without a temporal quantifier.
- */
-struct Proposition {
-    Proposition(const Atom& a, bool s)
-        : atom(a), sign(s) {
-        if (!atom.isGrounded()) throw std::invalid_argument("Cannot initialize a Proposition with an atom containing variables.");
-    }
-
-    Proposition inverse() const { return Proposition(atom, !sign);}
-    friend std::size_t hash_value(const Proposition& p) {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, p.atom);
-        boost::hash_combine(seed, p.sign);
-        return seed;
-    }
-    friend bool operator==(const Proposition& l, const Proposition& r) { return l.sign == r.sign && l.atom == r.atom; }
-    friend bool operator!=(const Proposition& l, const Proposition& r) { return !operator==(l,r);}
-
-    Atom atom;
-    bool sign;  // if positive, true, if negative, false
 };
 
 /**

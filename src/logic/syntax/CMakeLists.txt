@@ -8,6 +8,7 @@ add_library(pel-syntax
   elsentence.cpp
   liquidop.cpp
   negation.cpp
+  proposition.cpp
   sentence.cpp
   variable.cpp
   ../model.cpp

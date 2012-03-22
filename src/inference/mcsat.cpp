@@ -155,7 +155,7 @@ MCSatSampleSegmentsStrategy::MCSatSampleSegmentsStrategy(const Domain& d)
     : formulaToSegment_() {
     for (Domain::fact_const_iterator it = d.facts_begin(); it != d.facts_end(); it++) {
         Proposition p = it->first;
-        Sentence *a = new Atom(p.atom); // this should work for negation too,
+        Sentence *a = new Atom(p.atom()); // this should work for negation too,
                                         // since the segment collection is the same
 
         SISet sisetWhere = it->second;

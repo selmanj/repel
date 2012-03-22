@@ -10,7 +10,6 @@
 #include "model.h"
 #include "el_syntax.h"
 
-
 Model::Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval)
     : amap_(), maxInterval_(maxInterval) {
     /*
@@ -49,6 +48,23 @@ Model::Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval)
         amap_.insert(pair);
     }
 }
+
+Model::Model(const boost::unordered_map<Proposition, SISet>& partialModel, const Interval& maxInterval)
+    : amap_(), maxInterval_(maxInterval) {
+    for(boost::unordered_map<Proposition, SISet>::const_iterator it = partialModel.begin();
+            it != partialModel.end(); it++) {
+        if (amap_.count(it->first.atom()) == 0) {
+            SISet empty(it->second.forceLiquid(), maxInterval_);
+            amap_.insert(std::pair<const Atom, SISet>(it->first.atom(), empty));
+        }
+        if (it->first.sign()) {
+            amap_.at(it->first.atom()).add(it->second);
+        } else {
+            amap_.at(it->first.atom()).subtract(it->second);
+        }
+    }
+}
+
 /*
 Model::Model(const Model& m)
     : amap_(m.amap_) {

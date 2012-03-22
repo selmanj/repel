@@ -28,6 +28,7 @@
 #include "syntax/variable.h"
 #include "syntax/elsentence.h"
 #include "syntax/sentencevisitor.h"
+#include "syntax/proposition.h"
 #include "../spaninterval.h"
 
 /*

@@ -131,20 +131,6 @@ inline void Domain::clearFacts() {
     partialModel_.clear();
 }
 
-inline void Domain::addFact(const ELSentence& e) {
-    if (!e.hasInfWeight()) throw std::invalid_argument("Cannot enforce facts that have finite weight");
-    if (e.sentence()->getTypeCode() == Atom::TypeCode) {
-        boost::shared_ptr<const Atom> atom = boost::static_pointer_cast<const Atom>(e.sentence());
-        addFact(Proposition(*atom, true), e.quantification());
-    } else if (e.sentence()->getTypeCode() == Negation::TypeCode
-            && (boost::static_pointer_cast<const Negation>(e.sentence())->sentence()->getTypeCode() == Atom::TypeCode)) {
-        boost::shared_ptr<const Negation> neg = boost::static_pointer_cast<const Negation>(e.sentence());
-        addFact(Proposition(*(boost::static_pointer_cast<const Atom>(neg->sentence())), false), e.quantification());
-    } else {
-        throw std::invalid_argument("unable to add fact because it's not a simple atom or its negation: "+ e.toString());
-    }
-}
-
 template <class InputIterator>
 inline void Domain::addFormulas(InputIterator begin, InputIterator end) {
     for (InputIterator it = begin; it != end; it++) {
@@ -154,22 +140,6 @@ inline void Domain::addFormulas(InputIterator begin, InputIterator end) {
 
 inline void Domain::addFact(const std::pair<const Proposition, const SISet>& pair) {
     addFact(pair.first, pair.second);
-}
-
-inline void Domain::addFact(const Proposition& p, const SISet& where) {
-    // resize where
-    SISet newSet(where);
-    if (!maxInterval_.isNull()) newSet.setMaxInterval(span(where.maxInterval(), maxInterval_));
-
-    if (partialModel_.count(p) == 0) {
-        partialModel_.insert(std::make_pair(p, newSet));
-    } else {
-        partialModel_.at(p).setMaxInterval(newSet.maxInterval());
-        partialModel_.at(p).add(newSet);
-    }
-    predTypes_.insert(p.atom.predicateType());
-    allAtoms_.insert(p.atom);
-    growMaxInterval(where.maxInterval());
 }
 
 inline bool Domain::hasFact(const Proposition& p) const {return partialModel_.count(p) != 0; }
@@ -184,14 +154,5 @@ inline SpanInterval Domain::maxSpanInterval() const {
     return SpanInterval(maxInterval_.start(), maxInterval_.finish(),
             maxInterval_.start(), maxInterval_.finish());
 };
-
-inline void Domain::growMaxInterval(const Interval& maxInterval) {
-    if (maxInterval_.isNull()) setMaxInterval(maxInterval);
-    if (maxInterval.start() < maxInterval_.start()
-            || maxInterval.finish() > maxInterval_.finish()) {
-        setMaxInterval(span(maxInterval, maxInterval_));
-    }
-}
-
 
 #endif /* DOMAIN_H_ */
