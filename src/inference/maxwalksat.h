@@ -18,14 +18,13 @@ class Model;
 class Domain;
 class Atom;
 class ELSentence;
-class atomcmp;
+struct AtomStringCompare;
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0, std::ostream* dataout=0);
 
 namespace {
-
     typedef std::set<int> FormSet;
-    typedef std::map<Atom, FormSet, atomcmp> AtomOccurences;
+    typedef std::map<Atom, FormSet, AtomStringCompare> AtomOccurences;
 
     struct score_pair {
         unsigned long totalScore;

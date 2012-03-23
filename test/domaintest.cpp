@@ -25,14 +25,18 @@ BOOST_AUTO_TEST_CASE( addFactsFormulas ) {
     BOOST_REQUIRE_EQUAL(d.atoms_size(), 2);
     BOOST_CHECK_EQUAL(d.maxInterval(), Interval(1,16));
     Model m = d.defaultModel();
-    BOOST_CHECK_EQUAL(m.toString(), "P(a) @ {[1:10]}\n"
+    std::stringstream mstr;
+    mstr << m;
+    BOOST_CHECK_EQUAL(mstr.str(), "P(a) @ {[1:10]}\n"
                                     "Q(a) @ {}\n");
 
     Atom pa2 = Atom("P");
     pa2.push_back(Constant("a"));
     Proposition p2(pa2, true);
     d.addFact(p2, SISet(SpanInterval(12,12,12, 12), false, Interval(9,16)));
-    BOOST_CHECK_EQUAL(d.defaultModel().toString(), "P(a) @ {[1:10], [12:12]}\n"
+    mstr.clear();
+    mstr << d.defaultModel();
+    BOOST_CHECK_EQUAL(mstr.str(), "P(a) @ {[1:10], [12:12]}\n"
                                     "Q(a) @ {}\n");
 
 }
@@ -259,15 +263,10 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
     Domain d = loadDomainWithStreams(facts.str(), "", options);
 
     Model randomModel = d.randomModel();
+    std::stringstream strstm;
+    strstm << randomModel;
 
-    std::cout << "atoms = ";
-    std::set<Atom, atomcmp> atoms = randomModel.atoms();
-    for (std::set<Atom, atomcmp>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
-        std::cout << it->toString() << " at " << randomModel.getAtom(*it) << ", ";
-    }
-    std::cout << std::endl;
-
-    BOOST_CHECK_EQUAL(randomModel.toString(), "Q(a) @ {[1:3], [16:17]}\n"
+    BOOST_CHECK_EQUAL(strstm.str(), "Q(a) @ {[1:3], [16:17]}\n"
             "R(a) @ {[1:1], [5:13]}\n"
             "S(a) @ {[1:3], [6:7], [9:9], [11:20]}\n");
     //std::cout << "random model: " << randomModel.toString() << std::endl;

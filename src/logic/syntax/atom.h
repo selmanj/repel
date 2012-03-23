@@ -19,7 +19,8 @@ struct PredicateType;
 
 class Atom : public Sentence {
 public:
-    typedef boost::ptr_vector<Term>::size_type size_type;
+    typedef boost::ptr_vector<Term>::size_type      size_type;
+    typedef boost::ptr_vector<Term>::const_iterator term_const_iterator;
 
     static const std::size_t TypeCode = 0;
 
@@ -30,6 +31,9 @@ public:
     Atom(const Atom& a);    // shallow copy
 
     bool isGrounded() const;
+
+    Atom::term_const_iterator term_begin() const;
+    Atom::term_const_iterator term_end() const;
 
     int arity() const;
     std::string name() const;
@@ -64,10 +68,16 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
+/*
 struct atomcmp {
     bool operator()(const Atom& a, const Atom& b) const {
         return a.toString() < b.toString();
     }
+};
+*/
+
+struct AtomStringCompare {
+    bool operator()(const Atom& a, const Atom& b) const;
 };
 
 /**

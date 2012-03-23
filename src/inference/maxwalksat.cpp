@@ -62,7 +62,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
             std::cout << ".";
             std::cout.flush();
         }
-        LOG(LOG_DEBUG) << "currentModel: " << currentModel.toString();
+        LOG(LOG_DEBUG) << "currentModel: " << currentModel;
         LOG(LOG_DEBUG) << "current score: " << currentScore;
 
         datalog << currentScore;

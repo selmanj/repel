@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
             if (datastream.is_open()) datastream.close();
 
             LOG_PRINT(LOG_INFO) << "Best model found: " << std::endl;
-            LOG_PRINT(LOG_INFO) << maxModel.toString();
+            LOG_PRINT(LOG_INFO) << maxModel;
             if (vm.count("output")) {
                 // log it to the output file as well
                 fprintf(outputFile, "# generated from fact file \"%s\" and formula file \"%s\"\n",
@@ -168,7 +168,9 @@ int main(int argc, char* argv[]) {
                 fprintf(outputFile, "# run with %d iterations and %g chance of choosing a random move\n",
                          iterations,
                         p);
-                fputs(maxModel.toString().c_str(), outputFile);
+                std::stringstream stream;
+                stream << maxModel;
+                fputs(stream.str().c_str(), outputFile);
             }
         }
 

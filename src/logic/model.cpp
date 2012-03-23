@@ -75,14 +75,6 @@ Model::~Model() {
 }
 */
 
-std::set<Atom, atomcmp> Model::atoms() const {
-    std::set<Atom, atomcmp> atoms;
-    for(atom_map::const_iterator it = amap_.begin(); it != amap_.end(); it++) {
-        atoms.insert(it->first);
-    }
-    return atoms;
-}
-
 bool Model::hasAtom(const Atom& a) const {
     return amap_.count(a) == 1;
 }
@@ -164,26 +156,6 @@ void Model::intersect(const Model& b) {
     }
 }
 
-void Model::compliment(const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval) {
-    Model newModel(maxInterval);
-
-    BOOST_FOREACH(Atom atom, allAtoms) {
-        if (amap_.count(atom) == 1) {
-            Model::const_iterator it = amap_.find(atom);
-            SISet set = it->second;
-            if (set.compliment().size() != 0) {
-                newModel.amap_.insert(std::pair<Atom, SISet>(atom, set.compliment()));
-            }
-        } else {
-            SISet set(true, maxInterval);
-            set.add(SpanInterval(maxInterval, maxInterval));
-            newModel.amap_.insert(std::pair<Atom, SISet>(atom, set));
-        }
-    }
-
-    swap(newModel);
-}
-
 unsigned long Model::size() const {
     unsigned long sum = 0;
     for (Model::const_iterator it = amap_.begin(); it != amap_.end(); it++) {
@@ -192,34 +164,25 @@ unsigned long Model::size() const {
     return sum;
 }
 
-std::string Model::toString() const {
-    std::stringstream stream;
+std::ostream& operator<<(std::ostream& out, const Model& m) {
+    // collect the keys, sort them, then print
+    std::list<Atom> atoms;
 
-    // sort it
-    std::set<Atom, atomcmp> at = atoms();
-    for (std::set<Atom, atomcmp>::const_iterator it = at.begin(); it != at.end(); it++) {
-        Atom a = *it;
-        SISet set = amap_.at(a);
-        stream << a.toString() << " @ " << set.toString() << std::endl;
+    for (Model::atom_map::const_iterator it = m.amap_.begin(); it != m.amap_.end(); it++) {
+        std::pair<Atom, SISet> pair = *it;
+        atoms.push_back(pair.first);
     }
-    return stream.str();
+    atoms.sort(AtomStringCompare());
+
+    for (std::list<Atom>::const_iterator it = atoms.begin(); it != atoms.end(); it++) {
+        out << it->toString() << " @ " << m.amap_.at(*it) << "\n";
+    }
+    return out;
 }
 
-Model subtractModel(const Model& from, const Model& toSubtract) {
-    Model mcopy(from);
-    mcopy.subtract(toSubtract);
-    return mcopy;
-}
-
-Model intersectModel(const Model& a, const Model& b) {
-    Model mcopy(a);
-    mcopy.intersect(b);
-    return mcopy;
-}
-
-Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval) {
-    Model mcopy(a);
-    mcopy.compliment(allAtoms, maxInterval);
-    return mcopy;
+std::string Model::toString() const {
+    std::stringstream strstr;
+    strstr << *this;
+    return strstr.str();
 }
 

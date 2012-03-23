@@ -20,6 +20,7 @@ public:
     typedef boost::unordered_map<Atom, SISet>::const_iterator const_iterator;
     typedef boost::unordered_map<Atom, SISet>::value_type value_type;
 
+
     Model(const Interval& maxInterval_);
     Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval_);
     Model(const boost::unordered_map<Proposition, SISet>& partialModel, const Interval& maxInterval_);
@@ -27,8 +28,6 @@ public:
   //  virtual ~Model();
 
     friend std::size_t hash_value(const Model& m);
-
-    std::set<Atom, atomcmp> atoms() const;
 
     bool hasAtom(const Atom& a) const;
 
@@ -42,13 +41,10 @@ public:
 
     void subtract(const Model& toSubtract);
     void intersect(const Model& b);
-    void compliment(const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval);
 
     unsigned long size() const;
     void swap(Model& b) { amap_.swap(b.amap_); };
-
     std::string toString() const;
-
     /*
     bool operator ==(const Model& a) const;
     bool operator !=(const Model& a) const {return !(*this == a);}
@@ -56,18 +52,16 @@ public:
     friend bool operator==(const Model& l, const Model& r);
     friend bool operator!=(const Model& l, const Model& r);
 
-    Model& operator=(const Model m) { if (*this != m) amap_ = m.amap_; return *this;}
-    typedef boost::unordered_map<Atom, SISet> atom_map;
+    friend std::ostream& operator<<(std::ostream& out, const Model& m);
+    Model& operator=(const Model m) { if (*this != m) amap_ = m.amap_; return *this;}   // TODO: use swap() dogg
+
 
 private:
+    typedef boost::unordered_map<Atom, SISet> atom_map;
 
     atom_map amap_;
     Interval maxInterval_;
 };
-
-Model subtractModel(const Model& from, const Model& toSubtract);
-Model intersectModel(const Model& a, const Model& b);
-Model complimentModel(const Model& a, const std::set<Atom, atomcmp>& allAtoms, const Interval& maxInterval);
 
 // IMPLEMENTATION
 inline Model::Model(const Interval& maxInterval)

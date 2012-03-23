@@ -18,6 +18,14 @@ bool Atom::isGrounded() const {
     return true;
 }
 
+Atom::term_const_iterator Atom::term_begin() const {
+    return terms.begin();
+}
+
+Atom::term_const_iterator Atom::term_end() const {
+    return terms.end();
+}
+
 bool Atom::doEquals(const Sentence& t) const {
     const Atom *at = dynamic_cast<const Atom*>(&t);
     if (at == NULL) {
@@ -63,3 +71,24 @@ SISet Atom::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
     std::runtime_error e("Domain::satisfiedAtom grounding out of atoms not implemented!");
     throw e;
 }
+
+bool AtomStringCompare::operator()(const Atom& a, const Atom& b) const {
+    if (a.name() < b.name()) return true;
+    if (a.name() > b.name()) return false;
+
+    Atom::term_const_iterator aIt = a.term_begin();
+    Atom::term_const_iterator bIt = b.term_begin();
+    bool reachedEndOfA = (aIt == a.term_end());
+    bool reachedEndOfB = (bIt == b.term_end());
+    while (!reachedEndOfA && !reachedEndOfB) {
+        if (aIt->name() < bIt->name()) return true;
+        if (aIt->name() > bIt->name()) return false;
+        aIt++;
+        bIt++;
+        reachedEndOfA = (aIt == a.term_end());
+        reachedEndOfB = (bIt == b.term_end());
+    }
+    if (reachedEndOfA) return true; // if a is shorter (or they're the same) return true
+    return false;   // must have reached end of b
+}
+
