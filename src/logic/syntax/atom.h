@@ -27,7 +27,6 @@ public:
     Atom(std::string name);
     template <class AutoPtrIterator>
     Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last);
-    Atom(std::string name, std::auto_ptr<Term> ptr);
     Atom(const Atom& a);    // shallow copy
 
     bool isGrounded() const;
@@ -114,8 +113,7 @@ inline Atom::Atom(std::string name)
 template <class AutoPtrIterator>
 Atom::Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last)
   : pred(name), terms(first, last) {};
-inline Atom::Atom(std::string name, std::auto_ptr<Term> ptr)
-  : pred(name), terms() { terms.push_back(ptr); }
+
 inline Atom::Atom(const Atom& a)
   : pred(a.pred), terms(a.terms) {};    // shallow copy
 
