@@ -4,6 +4,7 @@
 #include <boost/unordered_set.hpp>
 #include "syntax/sentencevisitor.h"
 #include "syntax/atom.h"
+#include "syntax/predicatetype.h"
 
 struct AtomCollector : public SentenceVisitor {
     virtual void accept(const Sentence& s) {

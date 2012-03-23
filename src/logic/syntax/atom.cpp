@@ -7,6 +7,7 @@
 
 #include "atom.h"
 #include "term.h"
+#include "predicatetype.h"
 #include "../domain.h"
 #include "../model.h"
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -91,4 +92,9 @@ bool AtomStringCompare::operator()(const Atom& a, const Atom& b) const {
     if (reachedEndOfA) return true; // if a is shorter (or they're the same) return true
     return false;   // must have reached end of b
 }
+
+PredicateType Atom::predicateType() const {
+    return PredicateType(name(), arity());
+}
+
 

@@ -15,7 +15,7 @@
 
 class Domain;
 class Model;
-struct PredicateType;
+class PredicateType;
 
 class Atom : public Sentence {
 public:
@@ -67,43 +67,8 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
-/*
-struct atomcmp {
-    bool operator()(const Atom& a, const Atom& b) const {
-        return a.toString() < b.toString();
-    }
-};
-*/
-
 struct AtomStringCompare {
     bool operator()(const Atom& a, const Atom& b) const;
-};
-
-/**
- * Class describing the type of an atom.  Right now its just the predicate name and
- * number of arguments.
- */
-struct PredicateType {
-    PredicateType() : name(), arity(0) {};
-    PredicateType(const std::string& predname, unsigned int numArgs)
-        : name(predname), arity(numArgs) {}
-
-    friend std::size_t hash_value(const PredicateType& t) {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, t.name);
-        boost::hash_combine(seed, t.arity);
-        return seed;
-    }
-
-    friend bool operator==(const PredicateType& l, const PredicateType& r) {
-        return (l.name == r.name) && (l.arity == r.arity);
-    }
-    friend bool operator!=(const PredicateType& l, const PredicateType& r) {
-        return !operator==(l, r);
-    }
-
-    std::string name;
-    unsigned int arity;
 };
 
 // IMPLEMENTATION
@@ -119,9 +84,6 @@ inline Atom::Atom(const Atom& a)
 
 inline int Atom::arity() const {return terms.size();};
 inline std::string Atom::name() const {return pred;};
-
-inline PredicateType Atom::predicateType() const {return PredicateType(name(), arity());}
-
 
 inline Atom& Atom::operator=(const Atom& b) {
     if (this != &b) {
