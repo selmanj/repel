@@ -69,8 +69,8 @@ BOOST_AUTO_TEST_CASE( atom_test)
     BOOST_CHECK_EQUAL(a->arity(), 2);
     BOOST_CHECK_EQUAL(a->at(0).name(), "cats");
     BOOST_CHECK_EQUAL(a->at(1).name(), "meowmix");
-    BOOST_CHECK(dynamic_cast<Variable*>(&a->at(0)) != NULL);
-    BOOST_CHECK(dynamic_cast<Constant*>(&a->at(1)) != NULL);
+    BOOST_CHECK(dynamic_cast<const Variable*>(&a->at(0)) != NULL);
+    BOOST_CHECK(dynamic_cast<const Constant*>(&a->at(1)) != NULL);
 }
 
 BOOST_AUTO_TEST_CASE( static_formula_test )
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE( static_formula_test )
     boost::shared_ptr<Atom> a = boost::dynamic_pointer_cast<Atom>(s);
     BOOST_CHECK(a != NULL);
     BOOST_CHECK_EQUAL(a->name(), "p");
-    BOOST_CHECK(dynamic_cast<Variable*>(&a->at(0)) != NULL);
+    BOOST_CHECK(dynamic_cast<const Variable*>(&a->at(0)) != NULL);
 
     std::istringstream stream2("p(x) ^ q(x) -> r(x)");
     tokens = FOLParse::tokenize(&stream2);

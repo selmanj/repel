@@ -27,7 +27,7 @@ public:
     Atom(std::string name);
     template <class AutoPtrIterator>
     Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last);
-    Atom(const Atom& a);    // shallow copy
+    Atom(const Atom& a);
 
     bool isGrounded() const;
 
@@ -40,7 +40,6 @@ public:
 
     Atom& operator=(const Atom& b);
 
-    Term& at(size_type n);
     const Term& at(size_type n) const;
 
     void push_back(std::auto_ptr<Term> t);
@@ -92,8 +91,8 @@ inline Atom& Atom::operator=(const Atom& b) {
     }
     return *this;
 }
+
 // TODO make the at() function throw an exception
-inline Term& Atom::at(size_type n) {return terms[n];};
 inline const Term& Atom::at(size_type n) const {return terms[n];};
 
 inline void Atom::push_back(std::auto_ptr<Term> t)  {terms.push_back(t);};
