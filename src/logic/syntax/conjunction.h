@@ -16,20 +16,21 @@ class Conjunction : public Sentence {
 public:
     static const std::size_t TypeCode = 2;
 
+    // Note, all these constructors take ownership of the passed in ptrs
     template<class InputIterator>
-    Conjunction(boost::shared_ptr<Sentence> left,
-            boost::shared_ptr<Sentence> right,
+    Conjunction(Sentence* left,
+            Sentence* right,
             InputIterator begin,
             InputIterator end,
             const std::pair<TQConstraints, TQConstraints>* tqconstraints=0);
 
-    Conjunction(boost::shared_ptr<Sentence> left,
-            boost::shared_ptr<Sentence> right,
+    Conjunction(Sentence* left,
+            Sentence* right,
             Interval::INTERVAL_RELATION rel,
             const std::pair<TQConstraints, TQConstraints>* tqconstraints=0);
 
-    Conjunction(boost::shared_ptr<Sentence> left,
-            boost::shared_ptr<Sentence> right,
+    Conjunction(Sentence* left,
+            Sentence* right,
             const std::pair<TQConstraints, TQConstraints>* tqconstraints=0);
 
     Conjunction(const Conjunction& a);
@@ -41,17 +42,13 @@ public:
     virtual std::size_t getTypeCode() const;
     friend std::size_t hash_value(const Conjunction& c);
 
-    boost::shared_ptr<Sentence> left();
-    boost::shared_ptr<const Sentence> left() const;
-    boost::shared_ptr<Sentence> right();
-    boost::shared_ptr<const Sentence> right() const;
-    std::set<Interval::INTERVAL_RELATION> relations();
+    const Sentence* left() const;
+    const Sentence* right() const;
     const std::set<Interval::INTERVAL_RELATION>& relations() const;
-    std::pair<TQConstraints, TQConstraints> tqconstraints();
     std::pair<const TQConstraints, const TQConstraints> tqconstraints() const;
 
-    void setLeft(boost::shared_ptr<Sentence> s);
-    void setRight(boost::shared_ptr<Sentence> s);
+    void setLeft(Sentence *left);
+    void setRight(Sentence *right);
     template<typename T>
     void setRelations(T begin, T end);
     void setTQConstraints(const std::pair<TQConstraints, TQConstraints>& tq);
@@ -62,8 +59,8 @@ public:
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
 
-    boost::shared_ptr<Sentence>  left_;
-    boost::shared_ptr<Sentence> right_;
+    Sentence *left_;
+    Sentence *right_;
     std::set<Interval::INTERVAL_RELATION> rels_;
     std::pair<TQConstraints, TQConstraints> tqconstraints_;
 
@@ -77,8 +74,8 @@ private:
 
 // IMPLEMENTATION
 template<class InputIterator>
-Conjunction::Conjunction(boost::shared_ptr<Sentence> left,
-        boost::shared_ptr<Sentence> right,
+Conjunction::Conjunction(Sentence *left,
+        Sentence *right,
         InputIterator begin,
         InputIterator end,
         const std::pair<TQConstraints, TQConstraints>* tqconstraints)
@@ -87,23 +84,6 @@ Conjunction::Conjunction(boost::shared_ptr<Sentence> left,
         tqconstraints_ = *tqconstraints;
 }
 
-inline Conjunction::Conjunction(boost::shared_ptr<Sentence> left,
-            boost::shared_ptr<Sentence> right,
-            Interval::INTERVAL_RELATION rel,
-            const std::pair<TQConstraints, TQConstraints>* tqconstraints)
-        : left_(left), right_(right), rels_(), tqconstraints_() {
-    rels_.insert(rel);
-    if (tqconstraints) tqconstraints_ = *tqconstraints;
-}
-inline Conjunction::Conjunction(boost::shared_ptr<Sentence> left,
-        boost::shared_ptr<Sentence> right,
-        const std::pair<TQConstraints, TQConstraints>* tqconstraints)
-        : left_(left), right_(right), rels_(defaultRelations()), tqconstraints_() {
-    if (tqconstraints) tqconstraints_ = *tqconstraints;
-}
-inline Conjunction::Conjunction(const Conjunction& a)
-        : left_(a.left_), right_(a.right_), rels_(a.rels_), tqconstraints_(a.tqconstraints_) {}
-inline Conjunction::~Conjunction() {}
 
 inline void swap(Conjunction& left, Conjunction& right) {
     using std::swap;
@@ -117,14 +97,16 @@ inline Conjunction& Conjunction::operator=(Conjunction b) {
     swap(*this, b);
     return *this;
 }
+
 inline std::size_t Conjunction::getTypeCode() const {
     return Conjunction::TypeCode;
 }
 
 inline std::size_t hash_value(const Conjunction& c) {
     std::size_t seed = Conjunction::TypeCode;
-    boost::hash_combine(seed, *c.left_);
-    boost::hash_combine(seed, *c.right_);
+
+    if (c.left_) boost::hash_combine(seed, *c.left_);
+    if (c.right_) boost::hash_combine(seed, *c.right_);
     boost::hash_range(seed, c.rels_.begin(), c.rels_.end());
     // TODO: we can't currently hash SISets, so we just ignore TQConstraints
     // This is ok, but causes conflicts and reduces performance.
@@ -132,18 +114,12 @@ inline std::size_t hash_value(const Conjunction& c) {
 }
 
 
-inline boost::shared_ptr<Sentence> Conjunction::left() {return left_;}
-inline boost::shared_ptr<const Sentence> Conjunction::left() const {return left_;}
-inline boost::shared_ptr<Sentence> Conjunction::right() {return right_;}
-inline boost::shared_ptr<const Sentence> Conjunction::right() const {return right_;}
+inline const Sentence* Conjunction::left() const {return left_;}
+inline const Sentence* Conjunction::right() const {return right_;}
 
-inline std::set<Interval::INTERVAL_RELATION> Conjunction::relations() {return rels_;}
 inline const std::set<Interval::INTERVAL_RELATION>& Conjunction::relations() const {return rels_;}
-inline std::pair<TQConstraints, TQConstraints> Conjunction::tqconstraints() {return tqconstraints_;}
 inline std::pair<const TQConstraints, const TQConstraints> Conjunction::tqconstraints() const {return tqconstraints_;}
 
-inline void Conjunction::setLeft(boost::shared_ptr<Sentence> s) {left_ = s;}
-inline void Conjunction::setRight(boost::shared_ptr<Sentence> s) {right_ = s;}
 
 template<typename T>
 inline void Conjunction::setRelations(T begin, T end) {
@@ -159,20 +135,24 @@ inline std::size_t Conjunction::doHashValue() const {return hash_value(*this);}
 
 
 inline bool Conjunction::doEquals(const Sentence& s) const {
-    const Conjunction *con = dynamic_cast<const Conjunction*>(&s);
-    if (con == NULL) {
-        return false;
-    }
-    return (*left_ == *(con->left_)
-            && *right_ == *(con->right_)
-            && rels_ == con->rels_
-            && tqconstraints_ == con->tqconstraints_);
+    if (s.getTypeCode() != Conjunction::TypeCode) return false;
+    const Conjunction &con = static_cast<const Conjunction&>(s);
+
+    if ((left_ == 0 && con.left_ != 0)
+            || (left_  != 0 && con.left_  == 0)) return false;
+    if ((right_ == 0 && con.right_ != 0)
+            || (right_ != 0 && con.right_ == 0)) return false;
+    // now either left,right pairs are both 0 or both valid
+    return ((!left_ && !con.left_ ? true : *left_ == *(con.left_))
+            && (!right_ && !con.right_ ? true : *right_ == *(con.right_))
+            && rels_ == con.rels_
+            && tqconstraints_ == con.tqconstraints_);
 }
 
 inline int Conjunction::doPrecedence() const { return 3; };
 inline bool Conjunction::doContains(const Sentence& s) const {
     if (*this == s) return true;
-    return (left_->contains(s) || right_->contains(s));
+    return ((left_ ? left_->contains(s) : false) || (right_ ? right_->contains(s) : false));
 }
 
 

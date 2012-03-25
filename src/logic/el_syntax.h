@@ -114,11 +114,11 @@ inline boost::shared_ptr<Conjunction> wrapInMeetsConjunction(const std::vector<c
     }
 
     // wrap them in a conjunction
-    boost::shared_ptr<Conjunction> con(new Conjunction(copies[0], copies[1], Interval::MEETS));
+    boost::shared_ptr<Conjunction> con(new Conjunction(copies[0]->clone(), copies[1]->clone(), Interval::MEETS));
     copies.pop_front();
     copies.pop_front();
     while (copies.size() > 0) {
-        boost::shared_ptr<Conjunction> newCon(new Conjunction(con, copies[0], Interval::MEETS));
+        boost::shared_ptr<Conjunction> newCon(new Conjunction(con->clone(), copies[0]->clone(), Interval::MEETS));
         copies.pop_front();
         con = newCon;
     }

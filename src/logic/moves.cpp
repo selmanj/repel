@@ -733,7 +733,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
                             boost::optional<SpanInterval> spShareRelOpt = intersection(spBeforeRelOpt.get(), spAfterRelOpt.get());
                             if (!spShareRelOpt) continue;
                             boost::optional<SpanInterval> leftover = intersection(*spShareRelOpt, spCurr);
-                            if (leftover && leftover->size() > 0) {
+                            if (leftover && !leftover->isEmpty()) {
                                 // generate a move deleting it here
                                 boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
                                 boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
@@ -750,7 +750,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
                     boost::optional<SpanInterval> spBeforeRelOpt = spBefore.satisfiesRelation(Interval::MEETS, d.maxSpanInterval());
                     if (spBeforeRelOpt) {
                         boost::optional<SpanInterval> leftover = intersection(spBeforeRelOpt.get(), spCurr);
-                        if (leftover && leftover->size() > 0) {
+                        if (leftover && !leftover->isEmpty()) {
                             // generate a move deleting it here
                             boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
                             boost::shared_ptr<Sentence> negatedIt(new Negation(itSentenceCopy));
@@ -1377,8 +1377,8 @@ boost::shared_ptr<Sentence> moveNegationsInward(const boost::shared_ptr<Sentence
             std::set<Interval::INTERVAL_RELATION> justEquals;
             justEquals.insert(Interval::EQUALS);
             if (con->relations() == justEquals) {
-                boost::shared_ptr<Sentence> conLeft = con->left();
-                boost::shared_ptr<Sentence> conRight = con->right();
+                Sentence *conLeft = con->left();
+                Sentence *conRight = con->right();
 
                 // wrap both left and right with a negation
                 boost::shared_ptr<Sentence> conLeftNeg(new Negation(conLeft));

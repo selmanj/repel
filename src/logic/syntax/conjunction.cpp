@@ -8,9 +8,56 @@
 #include "conjunction.h"
 #include "../domain.h"
 
+Conjunction::Conjunction(Sentence *left,
+            Sentence *right,
+            Interval::INTERVAL_RELATION rel,
+            const std::pair<TQConstraints, TQConstraints>* tqconstraints)
+        : left_(left), right_(right), rels_(), tqconstraints_() {
+    rels_.insert(rel);
+    if (tqconstraints) tqconstraints_ = *tqconstraints;
+}
+
+Conjunction::Conjunction(Sentence *left,
+        Sentence *right,
+        const std::pair<TQConstraints, TQConstraints>* tqconstraints)
+        : left_(left), right_(right), rels_(defaultRelations()), tqconstraints_() {
+    if (tqconstraints) tqconstraints_ = *tqconstraints;
+}
+
+Conjunction::Conjunction(const Conjunction& a)
+        : left_((a.left_ == 0 ? 0 : a.left_->clone())),
+          right_((a.right_ == 0 ? 0 : a.right_->clone())),
+          rels_(a.rels_),
+          tqconstraints_(a.tqconstraints_) {
+
+}
+
+Conjunction::~Conjunction() {
+    delete left_;
+    left_ = 0;
+    delete right_;
+    right_ = 0;
+}
+
+void Conjunction::setLeft(Sentence* s) {
+    if (left_ && left_ != s) {
+        delete left_;
+        left_ = 0;
+    }
+    left_ = s;
+}
+void Conjunction::setRight(Sentence* s) {
+    if (right_ && right_ != s) {
+        delete right_;
+        right_ = 0;
+    }
+    right_ = s;
+}
+
+
 void Conjunction::visit(SentenceVisitor& v) const {
-    left_->visit(v);
-    right_->visit(v);
+    if (left_) left_->visit(v);
+    if (right_) right_->visit(v);
 
     v.accept(*this);
 }
@@ -24,13 +71,16 @@ const std::set<Interval::INTERVAL_RELATION>& Conjunction::defaultRelations() {
 }
 
 void Conjunction::doToString(std::stringstream& str) const {
-    if (left_->precedence() > precedence()) {
+    if (left_ == 0) {
+        str << "null";
+    } else if (left_->precedence() > precedence()) {
         str << "(";
         str << left_->toString();
         str << ")";
     } else {
         str << left_->toString();
     }
+
     if (rels_ == defaultRelations() && tqconstraints_.first.empty() && tqconstraints_.second.empty()) {
         str << " ^ ";
     } else if (rels_.size() == 1 && rels_.find(Interval::MEETS) != rels_.end() && tqconstraints_.first.empty() && tqconstraints_.second.empty()) {
@@ -65,7 +115,9 @@ void Conjunction::doToString(std::stringstream& str) const {
         str << "} ";
     }
 
-    if (right_->precedence() > precedence()) {
+    if (right_ == 0) {
+        str << "null";
+    } else if (right_->precedence() > precedence()) {
         str << "(";
         str << right_->toString();
         str << ")";
@@ -75,6 +127,17 @@ void Conjunction::doToString(std::stringstream& str) const {
 }
 
 SISet Conjunction::satisfied(const Model& m, const Domain& d, bool forceLiquid) const {
+    if (left_ == 0 || right_ == 0) {
+        std::string whichNull;
+        if (left_ && right_) {
+            whichNull = "left_, right_ both 0";
+        } else if (left_ && !right_) {
+            whichNull = "left_ is 0";
+        } else {
+            whichNull = "right_ is 0";
+        }
+        throw std::logic_error("Null sentences found: "+whichNull);
+    }
     SISet leftSat = left_->satisfied(m, d, forceLiquid);
     SISet rightSat = right_->satisfied(m, d, forceLiquid);
 
