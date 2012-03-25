@@ -25,8 +25,6 @@ public:
     static const std::size_t TypeCode = 0;
 
     Atom(std::string name);
-    template <class AutoPtrIterator>
-    Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last);
     Atom(const Atom& a);
 
     bool isGrounded() const;
@@ -74,9 +72,6 @@ struct AtomStringCompare {
 
 inline Atom::Atom(std::string name)
   : pred(name), terms() {};
-template <class AutoPtrIterator>
-Atom::Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last)
-  : pred(name), terms(first, last) {};
 
 inline Atom::Atom(const Atom& a)
   : pred(a.pred), terms(a.terms) {};    // shallow copy
