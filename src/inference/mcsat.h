@@ -17,6 +17,7 @@ class MCSatSampleStrategy;
 class MCSat {
 public:
     static const unsigned int defNumSamples;
+    static const unsigned int defBurnInIterations;
     static const unsigned int defWalksatIterations;
     static const double defWalksatRandomMoveProb;
     static const unsigned int defWalksatNumRandomRestarts;
@@ -34,6 +35,7 @@ public:
 
     const Domain* domain() const;
     unsigned int numSamples() const;
+    unsigned int burnInIterations() const;
     unsigned int walksatIterations() const;
     double walksatRandomMoveProb() const;
     unsigned int walksatNumRandomRestarts() const;
@@ -44,6 +46,7 @@ public:
 
     void setDomain(const Domain *d);
     void setNumSamples(unsigned int numSamples);
+    void setBurnInIterations(unsigned int burnInIterations);
     void setWalksatIterations(unsigned int walksatIterations);
     void setWalksatRandomMoveProb(double walksatRandomMoveProb);
     void setWalksatNumRandomRestarts(unsigned int walksatNumRandomRestarts);
@@ -57,6 +60,7 @@ private:
     const Domain* d_;
 
     unsigned int numSamples_;                   // TODO: refactor these into an options attribute
+    unsigned int burnInIterations_;
     unsigned int walksatIterations_;
     double walksatRandomMoveProb_;
     unsigned int walksatNumRandomRestarts_;
@@ -126,6 +130,7 @@ class MCSatSamplePerfectlyStrategy : public MCSatSampleStrategy {
 inline MCSat::MCSat(const Domain *d)
     : d_(d),
       numSamples_(defNumSamples),
+      burnInIterations_(defBurnInIterations),
       walksatIterations_(defWalksatIterations),
       walksatRandomMoveProb_(defWalksatRandomMoveProb),
       walksatNumRandomRestarts_(defWalksatNumRandomRestarts),
@@ -139,6 +144,7 @@ inline MCSat::MCSat(const Domain *d)
 inline MCSat::MCSat(const MCSat& m)
     : d_(m.d_),
       numSamples_(m.numSamples_),
+      burnInIterations_(m.burnInIterations_),
       walksatIterations_(m.walksatIterations_),
       walksatRandomMoveProb_(m.walksatRandomMoveProb_),
       walksatNumRandomRestarts_(m.walksatNumRandomRestarts_),
@@ -155,6 +161,7 @@ inline void swap(MCSat& l, MCSat& r) {
 
     swap(l.d_, r.d_);
     swap(l.numSamples_, r.numSamples_);
+    swap(l.burnInIterations_, r.burnInIterations_);
     swap(l.walksatIterations_, r.walksatIterations_);
     swap(l.walksatRandomMoveProb_, r.walksatRandomMoveProb_);
     swap(l.walksatNumRandomRestarts_, r.walksatNumRandomRestarts_);
@@ -169,6 +176,7 @@ inline MCSat& MCSat::operator=(MCSat s) {
 
 inline const Domain* MCSat::domain() const { return d_;}
 inline unsigned int MCSat::numSamples() const { return numSamples_;}
+inline unsigned int MCSat::burnInIterations() const {return burnInIterations_;}
 inline unsigned int MCSat::walksatIterations() const { return walksatIterations_;}
 inline MCSat::const_iterator MCSat::begin() const { return samples_.begin();}
 inline MCSat::const_iterator MCSat::end() const { return samples_.end();}
@@ -178,6 +186,7 @@ inline std::size_t MCSat::size() const {return samples_.size(); }
 
 inline void MCSat::setDomain(const Domain* d) {d_ = d;}
 inline void MCSat::setNumSamples(unsigned int numSamples) {numSamples_ = numSamples;}
+inline void MCSat::setBurnInIterations(unsigned int burnInIterations) {burnInIterations_ = burnInIterations;}
 inline void MCSat::setWalksatIterations(unsigned int walksatIterations) {walksatIterations_ = walksatIterations;}
 inline void MCSat::setWalksatRandomMoveProb(double walksatRandomMoveProb) {walksatRandomMoveProb_ = walksatRandomMoveProb;}
 inline void MCSat::setWalksatNumRandomRestarts(unsigned int walksatNumRandomRestarts) {walksatNumRandomRestarts_ = walksatNumRandomRestarts;}

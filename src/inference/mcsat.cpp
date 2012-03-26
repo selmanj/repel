@@ -13,6 +13,7 @@
 #include "../logic/syntax/elsentence.h"
 
 const unsigned int MCSat::defNumSamples = 1000;
+const unsigned int MCSat::defBurnInIterations = 1000;
 const unsigned int MCSat::defWalksatIterations = 1000;
 const double MCSat::defWalksatRandomMoveProb = 0.2;
 const unsigned int MCSat::defWalksatNumRandomRestarts = 4;
@@ -32,9 +33,10 @@ void MCSat::run() {
     // default model is our initial sample
     Model prevModel = reduced.defaultModel();
     Domain prevDomain = reduced;
-    samples_.push_back(prevModel);
 
-    for (unsigned int iteration = 1; iteration < numSamples_; iteration++) {
+    if (burnInIterations_ == 0) samples_.push_back(prevModel);
+
+    for (unsigned int iteration = 1; iteration < numSamples_+burnInIterations_; iteration++) {
         std::vector<ELSentence> newSentences;
 
         sampleStrategy_->sampleSentences(prevModel, prevDomain, newSentences);
@@ -58,7 +60,7 @@ void MCSat::run() {
             index--;
         }
         // add the model
-        samples_.push_back(*it);
+        if (iteration >= burnInIterations_) samples_.push_back(*it);
         prevModel = *it;
         prevDomain = curDomain;
     }
