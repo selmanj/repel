@@ -11,6 +11,7 @@
 #include <boost/random.hpp>
 #include <string>
 #include "../src/inference/mcsat.h"
+#include "../src/logic/syntax/proposition.h"
 #include "testutilities.h"
 
 BOOST_AUTO_TEST_CASE( mcsat_test)
@@ -28,14 +29,19 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
     mcSatSolver.setSampleStrategy(new MCSatSamplePerfectlyStrategy());
     mcSatSolver.run();
     BOOST_CHECK_EQUAL(mcSatSolver.size(), MCSat::defNumSamples);
+    boost::shared_ptr<Sentence> pa = getAsSentence("P(a)");
+    Proposition propPa(static_cast<const Atom&>(*pa), true);
+    std::cout << "Probability of P(a) @ (1,2) = " << mcSatSolver.estimateProbability(propPa, Interval(1,2));
 }
 
-BOOST_AUTO_TEST_CASE( mcsatSampleSegmentStrategy_test) {
-    std::string facts("D-P(a) @ {[1:10], [20:25]}\n");
-    std::string formulas("1: [ D-P(a) -> P(a) ] @ [1:15]\n"
-            "inf: P(a) -> Q(a) \n");
-
+BOOST_AUTO_TEST_CASE( mcsatSamplePerfectlyStrategy) {
+    std::string facts("D-P(a) @ {[1:25]}\n");
+    std::string formulas("100: [ P(a) -> D-P(a) ] @ [1:15]\n");
     Domain d = loadDomainWithStreams(facts, formulas);
-    MCSatSampleSegmentsStrategy strategy(d);
+    MCSatSamplePerfectlyStrategy strategy;
+    std::vector<ELSentence> sampled;
+    strategy.sampleSentences(d.defaultModel(), d, sampled);
+    BOOST_REQUIRE(sampled.size() == 1);
+    std::cout << sampled[0].quantification().toString();
 
 }

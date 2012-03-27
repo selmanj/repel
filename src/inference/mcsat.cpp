@@ -153,6 +153,22 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
     return models;
 }
 
+double MCSat::estimateProbability(const Proposition& prop, const Interval& where) {
+    assert(samples_.size() == numSamples_);         // todo: probably better error recovery here
+    unsigned int count = 0;
+
+    // count the number of times prop is true at interval where
+    for (std::vector<Model>::const_iterator it = samples_.begin(); it != samples_.end(); it++) {
+        SISet trueAt = it->getAtom(prop.atom());
+        if ((trueAt.includes(where) && prop.sign())
+                || (!trueAt.includes(where) && !prop.sign())) {
+            count++;
+        }
+    }
+
+    return ((double)count )/((double) numSamples_);
+}
+
 MCSatSampleSegmentsStrategy::MCSatSampleSegmentsStrategy(const Domain& d)
     : formulaToSegment_() {
     for (Domain::fact_const_iterator it = d.facts_begin(); it != d.facts_end(); it++) {
@@ -215,6 +231,8 @@ void MCSatSamplePerfectlyStrategy::sampleSentences(const Model& m, const Domain&
     // sample on an interval basis for each formula
     for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
         ELSentence curSentence = *it;
+        std::cout << "working on sentence: " << curSentence << std::endl;
+
         if (curSentence.hasInfWeight()) {
             sampled.push_back(curSentence); // have to take it
             continue;

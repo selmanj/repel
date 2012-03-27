@@ -55,7 +55,6 @@ public:
     void subtract(const SpanInterval& si);
     void subtract(const SISet& sis);
 
-    bool includes(const SpanInterval& si) const;
     /**
      * Check to see if this SISet includes another SISet.  This is equivalent
      * to set inclusion.
@@ -64,6 +63,8 @@ public:
      * @return true if s is in this, false otherwise
      */
     bool includes(const SISet& s) const;
+    bool includes(const SpanInterval& si) const;
+    bool includes(const Interval& interval) const;
 
     const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const;
 
@@ -141,16 +142,21 @@ inline SISet::const_iterator SISet::begin() const {return set_.begin();}
 inline SISet::const_iterator SISet::end() const {return set_.end();}
 inline bool SISet::empty() const { return size() == 0;}
 
+
+inline bool SISet::includes(const SISet& s) const {
+    SISet copy = s;
+    copy.subtract(*this);
+    return copy.empty();
+}
+
 inline bool SISet::includes(const SpanInterval& si) const {
     SISet onlySi(false, maxInterval_);
     onlySi.add(si);
     return includes(onlySi);
 }
 
-inline bool SISet::includes(const SISet& s) const {
-    SISet copy = s;
-    copy.subtract(*this);
-    return copy.empty();
+inline bool SISet::includes(const Interval& interval) const {
+    return includes(SpanInterval(interval.start(), interval.start(), interval.finish(), interval.finish()));
 }
 
 inline bool operator==(const SISet& l, const SISet& r) {return l.includes(r) && r.includes(l);}    //TODO: is this the right thing to do???

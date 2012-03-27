@@ -54,6 +54,7 @@ public:
     void clear();
 
     void run();
+    double estimateProbability(const Proposition& prop, const Interval& where);
 private:
     static Domain applyUP(const Domain& d);   // TODO: move this to unit_prop.h eventually
 
@@ -120,6 +121,7 @@ private:
 };
 
 class MCSatSamplePerfectlyStrategy : public MCSatSampleStrategy {
+public:
     virtual MCSatSamplePerfectlyStrategy* clone() const;
 
     virtual void sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled);
