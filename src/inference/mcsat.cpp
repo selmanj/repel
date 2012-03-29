@@ -17,8 +17,10 @@ const unsigned int MCSat::defBurnInIterations = 1000;
 const unsigned int MCSat::defWalksatIterations = 1000;
 const double MCSat::defWalksatRandomMoveProb = 0.2;
 const unsigned int MCSat::defWalksatNumRandomRestarts = 4;
+const bool MCSat::defUseRandomInitialModels = false;
 
-void MCSat::run() {
+
+void MCSat::run() { // TODO: setup using random initial models
     if (d_ == 0) {
         throw std::logic_error("MCSat::run() - Domain not set");
     }
@@ -30,8 +32,12 @@ void MCSat::run() {
 
     // first, run unit propagation on our domain to get a new reduced one.
     Domain reduced = MCSat::applyUP(*d_);
-    // default model is our initial sample
-    Model prevModel = reduced.defaultModel();
+
+    // do a starting run on the whole problem as our initial sample
+    boost::unordered_set<Model> initModels = sampleSat(reduced.defaultModel(), reduced);
+    assert(!initModels.empty());
+
+    Model prevModel = *initModels.begin();
     Domain prevDomain = reduced;
 
     if (burnInIterations_ == 0) samples_.push_back(prevModel);
@@ -40,6 +46,9 @@ void MCSat::run() {
         std::vector<ELSentence> newSentences;
 
         sampleStrategy_->sampleSentences(prevModel, prevDomain, newSentences);
+        std::cout << "sampled sentences: ";
+        std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
+        std::cin.get();
         // make a new domain using new Sentences
         Domain curDomain;
         curDomain.setMaxInterval(prevDomain.maxInterval());
