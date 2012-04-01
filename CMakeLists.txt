@@ -33,4 +33,4 @@ enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(util)
+add_subdirectory(util EXCLUDE_FROM_ALL)
