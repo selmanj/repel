@@ -17,6 +17,10 @@ void Domain::addObservedPredicate(const Atom& a) {
 }
 */
 
+std::size_t Domain::formulas_size() const {
+    return formulas_.size();
+}
+
 SISet Domain::getModifiableSISet(const Atom& a) const {
     return getModifiableSISet(a, SISet(maxSpanInterval(), true, maxInterval_));
 }

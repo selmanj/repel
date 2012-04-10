@@ -33,11 +33,13 @@ void MCSat::run() { // TODO: setup using random initial models
     // first, run unit propagation on our domain to get a new reduced one.
     Domain reduced = MCSat::applyUP(*d_);
 
+    Model prevModel = (useRandomInitialModels_ ? reduced.randomModel() : reduced.defaultModel());
+
     // do a starting run on the whole problem as our initial sample
-    boost::unordered_set<Model> initModels = sampleSat(reduced.defaultModel(), reduced);
+    boost::unordered_set<Model> initModels = sampleSat(prevModel, reduced);
     assert(!initModels.empty());
 
-    Model prevModel = *initModels.begin();
+    prevModel = *initModels.begin();
     Domain prevDomain = reduced;
 
     if (burnInIterations_ == 0) samples_.push_back(prevModel);
@@ -46,9 +48,9 @@ void MCSat::run() { // TODO: setup using random initial models
         std::vector<ELSentence> newSentences;
 
         sampleStrategy_->sampleSentences(prevModel, prevDomain, newSentences);
-        std::cout << "sampled sentences: ";
-        std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
-        std::cin.get();
+      //  std::cout << "sampled sentences: ";
+      //  std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
+      //  std::cin.get();
         // make a new domain using new Sentences
         Domain curDomain;
         curDomain.setMaxInterval(prevDomain.maxInterval());
@@ -156,6 +158,11 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
     // do some random restarts and hope for different models
     for (unsigned int i = 1; i <= walksatNumRandomRestarts_; i++) {
         Model iterInitModel = reduced.randomModel();   // TODO: better way to make random models
+        if (reduced.formulas_size() == 0) {
+            // just add the random model and continue
+            models.insert(reduced.randomModel());
+            continue;
+        }
         Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, &iterInitModel);
         if (reduced.isFullySatisfied(iterModel)) models.insert(iterModel);
     }

@@ -46,6 +46,7 @@ public:
     atom_const_iterator atoms_end() const;
 
     std::size_t atoms_size() const;
+    std::size_t formulas_size() const;
 
     void clearFormulas();
     void clearFacts();
