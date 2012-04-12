@@ -132,7 +132,28 @@ unsigned int consumeNumber(iters<ForwardIterator> &its) throw (bad_parse) {
 
     // use iostream to convert to int
     std::istringstream in(its.cur->contents());
-    int num;
+    unsigned int num;
+    in >> num;
+    its.cur++;
+    return num;
+}
+
+template <class ForwardIterator>
+double consumeFloat(iters<ForwardIterator> &its) throw (bad_parse) {
+    if (its.cur == its.last) {
+        bad_parse e;
+        e.details << "unexpectedly reached end of tokens while looking for number" << std::endl;
+        throw e;
+    }
+    if (its.cur->type() != FOLParse::FLOAT) {
+        bad_parse e;
+        e.details << "expected a float, instead we have type " << its.cur->type() << std::endl;
+        throw e;
+    }
+
+    // use iostream to convert to float
+    std::istringstream in(its.cur->contents());
+    double num;
     in >> num;
     its.cur++;
     return num;
@@ -335,18 +356,24 @@ boost::shared_ptr<Atom> doParseAtom(iters<ForwardIterator> &its) {
 template <class ForwardIterator>
 ELSentence doParseWeightedFormula(iters<ForwardIterator> &its) {
     bool hasWeight;
-    unsigned int weight;
+    double weight;
     if (peekTokenType(FOLParse::NUMBER, its)) {
         hasWeight = true;
         weight = consumeNumber(its);
         consumeTokenType(FOLParse::COLON, its);
+    } else if (peekTokenType(FOLParse::FLOAT, its)) {
+        hasWeight = true;
+        weight = consumeFloat(its);
+        consumeTokenType(FOLParse::COLON, its);
+
+        //consumeTokenType(FOLParse::FLOAT, its);
     } else {
         if (peekTokenType(FOLParse::INF, its)) {
             consumeTokenType(FOLParse::INF, its);
             consumeTokenType(FOLParse::COLON, its);
         }
         hasWeight = false;
-        weight = 0;
+        weight = 0.0;
     }
     boost::shared_ptr<Sentence> p = doParseFormula(its);
     ELSentence sentence(p);

@@ -9,10 +9,6 @@
 #ifndef ELSENTENCE_H_
 #define ELSENTENCE_H_
 
-#ifdef _WIN32
-#else
-#include <tr1/cstdint>	// no tr1 cstdint header on visual studio?  
-#endif
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include <string>
@@ -23,18 +19,12 @@
 class Model;
 class Domain;
 
-#ifdef _WIN32
-typedef unsigned __int64 score_t;
-#else
-typedef uint64_t score_t;   // TODO: remove all occurences of score values and replace it with this
-#endif
-
 class ELSentence {
 public:
 
     ELSentence(const boost::shared_ptr<Sentence>& s);
-    ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w);
-    ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q);
+    ELSentence(const boost::shared_ptr<Sentence>& s, double w);
+    ELSentence(const boost::shared_ptr<Sentence>& s, double w, const SISet& q);
     ELSentence(const ELSentence& s);
     virtual ~ELSentence();
 
@@ -47,14 +37,14 @@ public:
 
     boost::shared_ptr<Sentence> sentence();
     boost::shared_ptr<const Sentence> sentence() const;
-    unsigned int weight() const;
+    double weight() const;
     SISet quantification() const;
 
     bool hasInfWeight() const;
     bool isQuantified() const;
 
     void setSentence(const boost::shared_ptr<Sentence>& s);
-    void setWeight(unsigned int w);
+    void setWeight(double w);
     void setQuantification(const SISet& s);
     void removeQuantification();
     void setHasInfWeight(bool b);
@@ -69,7 +59,7 @@ public:
     friend void swap(ELSentence& a, ELSentence& b);
 private:
     boost::shared_ptr<Sentence> s_;
-    unsigned int w_;
+    double w_;
     bool hasInfWeight_;
    // bool isQuantified_;
     SISet* quantification_;
@@ -86,12 +76,12 @@ struct IsHardClausePred : public std::unary_function<ELSentence, bool> {
 // IMPLEMENTATION
 
 inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s)
-    : s_(s), w_(1), hasInfWeight_(true), quantification_(0) {}
+    : s_(s), w_(1.0), hasInfWeight_(true), quantification_(0) {}
 
-inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w)
+inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, double w)
     : s_(s), w_(w), hasInfWeight_(false), quantification_(0) {}
 
-inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, unsigned int w, const SISet& q)
+inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s, double w, const SISet& q)
     : s_(s), w_(w), hasInfWeight_(false), quantification_(new SISet(q)) {}
 
 inline ELSentence::ELSentence(const ELSentence& s)
@@ -128,7 +118,7 @@ inline boost::shared_ptr<Sentence> ELSentence::sentence() { return s_;}
 
 inline boost::shared_ptr<const Sentence> ELSentence::sentence() const {return s_;}
 
-inline unsigned int ELSentence::weight() const {
+inline double ELSentence::weight() const {
     if (hasInfWeight_) {
         throw std::logic_error("logic error: cannot return infinite weight");
     }
@@ -152,7 +142,7 @@ inline bool ELSentence::hasInfWeight() const {return hasInfWeight_;}
 inline bool ELSentence::isQuantified() const {return (quantification_ != 0); }
 
 inline void ELSentence::setSentence(const boost::shared_ptr<Sentence>& s) {s_ = s;};
-inline void ELSentence::setWeight(unsigned int w) {
+inline void ELSentence::setWeight(double w) {
     w_ = w;
     hasInfWeight_ = false;
 };

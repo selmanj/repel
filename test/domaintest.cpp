@@ -34,6 +34,7 @@ BOOST_AUTO_TEST_CASE( addFactsFormulas ) {
     pa2.push_back(Constant("a"));
     Proposition p2(pa2, true);
     d.addFact(p2, SISet(SpanInterval(12,12,12, 12), false, Interval(9,16)));
+    mstr.str(std::string());
     mstr.clear();
     mstr << d.defaultModel();
     BOOST_CHECK_EQUAL(mstr.str(), "P(a) @ {[1:10], [12:12]}\n"
@@ -270,6 +271,20 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
             "R(a) @ {[1:1], [5:13]}\n"
             "S(a) @ {[1:3], [6:7], [9:9], [11:20]}\n");
     //std::cout << "random model: " << randomModel.toString() << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE( scoreTest ) {
+    std::stringstream facts;
+    facts << "Q(a) @ [1:1]\n";;
+    facts << "R(a) @ [1:5]\n";
+
+    std::stringstream formulas;
+    formulas << "5.5: [ Q(a) -> R(a) ]\n";
+
+    Domain d = loadDomainWithStreams(facts.str(), formulas.str());
+    double score = d.score(d.defaultModel());
+
+    BOOST_CHECK_CLOSE(score, 82.5, 0.01);
 }
 
 

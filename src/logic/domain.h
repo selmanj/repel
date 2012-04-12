@@ -83,8 +83,8 @@ public:
     bool dontModifyObsPreds() const;
     void setDontModifyObsPreds(bool b);
 
-    score_t score(const ELSentence& s, const Model& m) const;
-    score_t score(const Model& m) const;
+    double score(const ELSentence& s, const Model& m) const;
+    double score(const Model& m) const;
 
     bool isFullySatisfied(const Model& m) const;
 

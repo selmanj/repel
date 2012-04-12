@@ -27,8 +27,8 @@ namespace {
     typedef std::map<Atom, FormSet, AtomStringCompare> AtomOccurences;
 
     struct score_pair {
-        unsigned long totalScore;
-        std::vector<unsigned long> formScores;
+        double totalScore;
+        std::vector<double> formScores;
     };
 
 
@@ -37,8 +37,8 @@ namespace {
     score_pair computeScoresForMove(const Domain& d,
             const Model& m,
             const Move& move,
-            unsigned long currentScore,
-            const std::vector<unsigned long>& curFormScores,
+            double currentScore,
+            const std::vector<double>& curFormScores,
             const AtomOccurences& occurs);
 
     struct row_out {

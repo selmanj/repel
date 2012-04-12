@@ -7,13 +7,16 @@
 #include "logic/follexer.h"
 #include <istream>
 
+Domain loadDomainWithStreams(const std::string& facts, const std::string& formulas, const ParseOptions& options=ParseOptions());
+boost::shared_ptr<Sentence> getAsSentence(const std::string& str);
+
 boost::shared_ptr<Sentence> getAsSentence(const std::string& str) {
     std::istringstream stream(str);
     std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
     return FOLParse::parseFormula(tokens.begin(),tokens.end());
 }
 
-Domain loadDomainWithStreams(const std::string& facts, const std::string& formulas, const ParseOptions& options=ParseOptions()) {
+Domain loadDomainWithStreams(const std::string& facts, const std::string& formulas, const ParseOptions& options) {
     std::istringstream factsStream(facts);
     std::istringstream formulasStream(formulas);
 

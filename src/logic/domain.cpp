@@ -147,26 +147,19 @@ bool Domain::isLiquid(const std::string& predicate) const {
     return true;
 }
 
-score_t Domain::score(const ELSentence& w, const Model& m) const {
+double Domain::score(const ELSentence& w, const Model& m) const {
     SISet quantification = SISet(maxSpanInterval(), false, maxInterval());
     if (w.isQuantified()) quantification = w.quantification();
 
     SISet sat = w.sentence()->dSatisfied(m, *this, quantification);
 
-    // check for overflow.
-    if (sat.size() > std::numeric_limits<score_t>::max() / w.weight()) {
-        throw std::runtime_error("integer overflow when scoring domain!");
-    }
-    return sat.size() * w.weight();
+    return (double)sat.size() * w.weight();
 }
 
-score_t Domain::score(const Model& m) const {
-    score_t sum = 0;
+double Domain::score(const Model& m) const {
+    double sum = 0.0;
     for (std::vector<ELSentence>::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
-        score_t x = score(*it, m);
-        if (std::numeric_limits<score_t>::max() - x < sum) {
-            throw std::runtime_error("integer overflow when scoring domain!");
-        }
+        double x = score(*it, m);
         sum += x;
     }
     return sum;
@@ -183,19 +176,15 @@ Domain Domain::replaceInfForms() const {
     Domain d = *this;
 
     // find the highest weighted rule in the domain
-    unsigned int maxWeight = 0;
+    double maxWeight = 0.0;
     for (std::vector<ELSentence>::const_iterator it = d.formulas_.begin(); it != d.formulas_.end(); it++) {
        if (!it->hasInfWeight() && it->weight() > maxWeight) {
            maxWeight = it->weight();
        }
     }
-    unsigned int hardWeight = 0;
-    if (maxWeight == 0) hardWeight = 1;  // if nothing is weighted, a weight of 1 is all that's needed.
+    double hardWeight = 0.0;
+    if (maxWeight == 0.0) hardWeight = 1.0;  // if nothing is weighted, a weight of 1 is all that's needed.
     else {
-        // check for overflow
-        if (maxWeight > std::numeric_limits<unsigned int>::max() / Domain::hardFormulaFactor) {
-            throw std::overflow_error("overflow exception in replaceInfForms()");
-        }
         hardWeight = maxWeight * Domain::hardFormulaFactor;
     }
 

@@ -41,17 +41,17 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
     }
 
     AtomOccurences occurs = findAtomOccurences(formulas);
-    std::vector<unsigned long> formScores;
-    unsigned long currentScore = 0;
+    std::vector<double> formScores;
+    double currentScore = 0.0;
     for (unsigned int i = 0; i < formulas.size(); i++) {
         ELSentence formula = formulas[i];
-        unsigned long localScore = d.score(formula, currentModel);
+        double localScore = d.score(formula, currentModel);
         formScores.push_back(localScore);
         currentScore += localScore;
     }
 
     // initialize best score to the current score
-    unsigned long bestScore = currentScore;
+    double bestScore = currentScore;
     Model bestModel = currentModel;
 
 
@@ -117,7 +117,7 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
             formScores = scorePair.formScores;
         } else {
             // find the models resulting from each move, and choose the highest scoring model as our next model
-            unsigned long bestLocalScore = 0;
+            double bestLocalScore = 0;
             std::vector<Model> bestLocalModels;
             std::vector<Move> bestLocalMoves;
             std::vector<score_pair> bestLocalScorePairs;
@@ -187,8 +187,8 @@ namespace {
     score_pair computeScoresForMove(const Domain& d,
             const Model& m,
             const Move& move,
-            unsigned long currentScore,
-            const std::vector<unsigned long>& curFormScores,
+            double currentScore,
+            const std::vector<double>& curFormScores,
             const AtomOccurences& occurs) {
         // first, find the formulas we need to recompute
         std::set<int> formsToRescore;
@@ -214,9 +214,9 @@ namespace {
             int formNum = *it;
             ELSentence sentence = formulas[formNum];
 
-            unsigned long score = d.score(sentence, m);
-            if (score != curFormScores.at(formNum)) {
-                unsigned long difference = score - curFormScores.at(formNum);
+            double score = d.score(sentence, m);
+            if (score != curFormScores.at(formNum)) {   // TODO: require some sort of epsilon check?
+                double difference = score - curFormScores.at(formNum);
                 pair.formScores[formNum] = score;
                 pair.totalScore += difference;
             }

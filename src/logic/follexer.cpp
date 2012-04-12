@@ -64,19 +64,21 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
             }
             token.setContents(ident);
             tokens.push_back(token);
-        } else if (c >= '0' && c <= '9') {
+        } else if ((c >= '0' && c <= '9') || c == '.') {
             std::string num;
+            bool isFloat = (c == '.');
             num.push_back(c);
             while (!input->eof()) {
                 c = input->peek();
-                if (c >= '0' && c <= '9') {
+                if ((c >= '0' && c <= '9') || c == '.') {
+                    if (!isFloat && c == '.') isFloat = true;
                     input->get();
                     num.push_back(c);
                 } else {
                     break;
                 }
             }
-            token.setType(FOLParse::NUMBER);
+            token.setType(isFloat ? FOLParse::FLOAT : FOLParse::NUMBER);
             token.setContents(num);
             tokens.push_back(token);
         } else if (c == '?') {
