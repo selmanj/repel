@@ -102,6 +102,13 @@ public:
      */
     bool spans(const Interval& i) const;
 
+    /**
+     * Subtract an interval from another.  "Subtract" is defined as removing
+     * any overlap (intersection) that the left interval has.  For instance,
+     * interval (1,4).subtract(2,3)
+     */
+    Interval subtract(const Interval& i) const;
+
     /* friend functions */
     friend bool meets (const Interval& lhs, const Interval& rhs);
     friend bool meetsI(const Interval& lhs, const Interval& rhs);
@@ -260,12 +267,12 @@ Interval::INTERVAL_RELATION inverseRelation(Interval::INTERVAL_RELATION rel);
 bool relationHolds(const Interval& lhs, Interval::INTERVAL_RELATION rel, const Interval& rhs);
 
 /**
- * Compute the intersection of two intervals.
+ * Compute the overlap of two intervals.
  *
  * @param a first interval
  * @param b second interval
- * @return either an interval representing the intersection, or an empty
- * boost::optional<Interval> object representing the empty set.
+ * @return either an interval representing the overlap, or an empty
+ * boost::optional<Interval> object representing no overlap
  */
 boost::optional<Interval> intersection(const Interval& a, const Interval& b);
 

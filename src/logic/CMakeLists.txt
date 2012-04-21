@@ -9,6 +9,7 @@ add_library(pel-logic
   namegenerator.cpp
   unit_prop.cpp
   ../inference/mcsat.cpp
-  ../inference/maxwalksat.cpp)
+  ../inference/maxwalksat.cpp
+  ../inference/liquidsampler.cpp)
 
 target_link_libraries(pel-logic pel-syntax)
