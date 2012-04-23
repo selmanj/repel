@@ -10,7 +10,7 @@
 
 #include <vector>
 #include "../logic/Domain.h"
-#include "MCSatSamplerStrategy.h"
+#include "MCSatSampleStrategy.h"
 
 class Model;
 
@@ -116,14 +116,6 @@ private:
     sentence_ptr_hash, sentence_ptr_pred> formulaToSegment_;
 };
 
-class MCSatSamplePerfectlyStrategy : public MCSatSampleStrategy {
-public:
-    virtual MCSatSamplePerfectlyStrategy* clone() const;
-
-    virtual void sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled);
-};
-
-
 // IMPLEMENTATION BELOW:
 inline MCSat::MCSat(const Domain *d)
     : d_(d),
@@ -203,7 +195,6 @@ inline void MCSat::clear() {samples_.clear();}
 inline MCSatSampleSegmentsStrategy::MCSatSampleSegmentsStrategy()
     : formulaToSegment_() {}
 
-
 inline MCSatSampleStrategy* MCSatSampleSegmentsStrategy::clone() const {
     return new MCSatSampleSegmentsStrategy(*this);   // no state?
 }
@@ -217,12 +208,6 @@ inline MCSatSampleSegmentsStrategy& MCSatSampleSegmentsStrategy::operator=(MCSat
     swap(*this, other);
     return *this;
 }
-
-inline MCSatSamplePerfectlyStrategy* MCSatSamplePerfectlyStrategy::clone() const {
-    return new MCSatSamplePerfectlyStrategy;    //no state
-}
-
-
 
 
 #endif /* MCSAT_H_ */

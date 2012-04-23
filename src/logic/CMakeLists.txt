@@ -10,6 +10,7 @@ add_library(pel-logic
   UnitProp.cpp
   ../inference/MCSat.cpp
   ../inference/MaxWalkSat.cpp
-  ../inference/LiquidSampler.cpp)
+  ../inference/LiquidSampler.cpp
+  ../inference/MCSatSamplePerfectlyStrategy.cpp)
 
 target_link_libraries(pel-logic pel-syntax)

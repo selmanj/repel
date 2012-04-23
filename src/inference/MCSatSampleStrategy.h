@@ -1,5 +1,5 @@
 /*
- * MCSatSamplerStrategy.h
+ * MCSatSampleStrategy.h
  *
  *  Created on: Apr 23, 2012
  *      Author: selman.joe@gmail.com
@@ -7,6 +7,13 @@
 
 #ifndef MCSATSAMPLERSTRATEGY_H_
 #define MCSATSAMPLERSTRATEGY_H_
+
+#include <boost/utility.hpp>
+#include <vector>
+
+class Model;
+class Domain;
+class ELSentence;
 
 /**
  * Abstract Class representing the strategy used for sampling constraints.

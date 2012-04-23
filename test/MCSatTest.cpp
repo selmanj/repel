@@ -11,6 +11,7 @@
 #include <boost/random.hpp>
 #include <string>
 #include "../src/inference/MCSat.h"
+#include "../src/inference/MCSatSamplePerfectlyStrategy.h"
 #include "../src/logic/syntax/Proposition.h"
 #include "TestUtilities.h"
 
