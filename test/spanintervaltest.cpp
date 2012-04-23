@@ -277,7 +277,20 @@ BOOST_AUTO_TEST_CASE( intervalSubtract ) {
     Interval a(1,5);
     Interval b(6,10);
     Interval c(4,8);
+    Interval d(3,4);
 
-    BOOST_REQUIRE(!a.subtract(b).empty());
+    BOOST_REQUIRE_EQUAL(a.subtract(b).size(), 1);
     BOOST_CHECK_EQUAL(a.subtract(b)[0], Interval(1,5));
+    BOOST_REQUIRE_EQUAL(b.subtract(a).size(), 1);
+    BOOST_CHECK_EQUAL(b.subtract(a)[0], Interval(6,10));
+
+    BOOST_REQUIRE_EQUAL(a.subtract(c).size(), 1);
+    BOOST_CHECK_EQUAL(a.subtract(c)[0], Interval(1,3));
+    BOOST_REQUIRE_EQUAL(b.subtract(c).size(), 1);
+    BOOST_CHECK_EQUAL(b.subtract(c)[0], Interval(9,10));
+
+    BOOST_REQUIRE(d.subtract(a).empty());
+    BOOST_REQUIRE_EQUAL(a.subtract(d).size(), 2);
+    BOOST_CHECK_EQUAL(a.subtract(d)[0], Interval(1,2));
+    BOOST_CHECK_EQUAL(a.subtract(d)[1], Interval(5,5));
 }
