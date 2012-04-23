@@ -28,8 +28,9 @@ class SpanInterval {
 public:
     SpanInterval();
     explicit SpanInterval(const Interval& liq);
-    explicit SpanInterval(const Interval& start, const Interval& end);
-    explicit SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
+    SpanInterval(const Interval& start, const Interval& end);
+    SpanInterval(unsigned int liqStart, unsigned int liqEnd);
+    SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
 
     typedef SpanIntervalIterator const_iterator;
 
@@ -140,7 +141,8 @@ inline SpanInterval::SpanInterval()
 : start_(0, 0), finish_(0, 0) {}
 inline SpanInterval::SpanInterval(const Interval& liq)
 : start_(liq), finish_(liq) {}
-
+inline SpanInterval::SpanInterval(unsigned int liqStart, unsigned int liqEnd)
+: start_(liqStart, liqEnd), finish_(liqStart, liqEnd) {}
 inline SpanInterval::SpanInterval(const Interval& start, const Interval& end)
 : start_(start), finish_(end) {}
 
