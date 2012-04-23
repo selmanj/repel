@@ -36,6 +36,4 @@ BOOST_AUTO_TEST_CASE( samplerTest )
     BOOST_CHECK_EQUAL(sampled[2], SpanInterval(5,5));
     BOOST_CHECK_EQUAL(sampled[3], SpanInterval(6,6));
     BOOST_CHECK_EQUAL(sampled[4], SpanInterval(7,8));
-
-
 }

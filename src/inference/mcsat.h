@@ -10,9 +10,9 @@
 
 #include <vector>
 #include "../logic/domain.h"
+#include "mcsatsamplerstrategy.h"
 
 class Model;
-class MCSatSampleStrategy;
 
 class MCSat {
 public:
@@ -75,17 +75,6 @@ private:
 
     std::vector<Model> samples_;
     MCSatSampleStrategy *sampleStrategy_;
-};
-
-/**
- * Abstract Class representing the strategy used for sampling constraints.
- */
-class MCSatSampleStrategy : public boost::noncopyable {
-public:
-    virtual ~MCSatSampleStrategy() {}
-
-    virtual MCSatSampleStrategy* clone() const = 0;
-    virtual void sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled) = 0;
 };
 
 /**
