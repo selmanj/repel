@@ -11,11 +11,11 @@
 #include <algorithm>
 #include <iterator>
 
-#include "../siset.h"
-#include "domain.h"
-#include "../utils.h"
-#include "../log.h"
-#include "el_syntax.h"
+#include "../SISet.h"
+#include "Domain.h"
+#include "../Utils.h"
+#include "../Log.h"
+#include "ELSyntax.h"
 
 class LiquidOp;
 class Sentence;

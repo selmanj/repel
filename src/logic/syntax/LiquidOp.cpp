@@ -1,11 +1,11 @@
 /*
- * liquidop.cpp
+ * LiquidOp.cpp
  *
  *  Created on: Jan 30, 2012
  *      Author: joe
  */
 
-#include "liquidop.h"
+#include "LiquidOp.h"
 
 void LiquidOp::doToString(std::stringstream& str) const {
     str << "[ ";

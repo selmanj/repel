@@ -1,5 +1,5 @@
 /*
- * model.h
+ * Model.h
  *
  *  Created on: Sep 24, 2011
  *      Author: joe
@@ -10,10 +10,10 @@
 
 #include <boost/unordered_map.hpp>
 #include <utility>
-//#include "el_syntax.h"
-#include "../siset.h"
-#include "syntax/atom.h"
-#include "event.h"
+//#include "ELSyntax.h"
+#include "../SISet.h"
+#include "syntax/Atom.h"
+#include "Event.h"
 
 class Model {
 public:

@@ -1,5 +1,5 @@
 /*
- * boollit.h
+ * BoolLit.h
  *
  *  Created on: Jun 8, 2011
  *      Author: joe
@@ -8,7 +8,7 @@
 #ifndef BOOLLIT_H_
 #define BOOLLIT_H_
 
-#include "sentence.h"
+#include "Sentence.h"
 #include "boost/functional/hash.hpp"
 
 class BoolLit: public Sentence {

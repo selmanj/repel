@@ -10,7 +10,7 @@
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include <string>
-#include "si_histogram.h"
+#include "SIHistogram.h"
 
 BOOST_AUTO_TEST_CASE( si_histogram )
 {

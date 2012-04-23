@@ -1,5 +1,5 @@
 /*
- * mcsatsamplerstrategy.h
+ * MCSatSamplerStrategy.h
  *
  *  Created on: Apr 23, 2012
  *      Author: selman.joe@gmail.com

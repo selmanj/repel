@@ -1,5 +1,5 @@
 /*
- * domain.h
+ * Domain.h
  *
  *  Created on: May 20, 2011
  *      Author: joe
@@ -18,13 +18,13 @@
 #include <stdexcept>
 #include <boost/optional.hpp>
 #include <boost/unordered_set.hpp>
-#include "el_syntax.h"
-#include "collectors.h"
-#include "model.h"
-#include "../siset.h"
-#include "namegenerator.h"
-#include "../lrucache.h"
-#include "../utils.h"
+#include "ELSyntax.h"
+#include "Collectors.h"
+#include "Model.h"
+#include "../SISet.h"
+#include "NameGenerator.h"
+#include "../LRUCache.h"
+#include "../Utils.h"
 
 std::string modelToString(const Model& m);
 

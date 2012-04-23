@@ -1,5 +1,5 @@
 /*
- * model.cpp
+ * Model.cpp
  *
  *  Created on: Sep 24, 2011
  *      Author: joe
@@ -7,8 +7,8 @@
 
 #include <string>
 #include <sstream>
-#include "model.h"
-#include "el_syntax.h"
+#include "Model.h"
+#include "ELSyntax.h"
 
 Model::Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval)
     : amap_(), maxInterval_(maxInterval) {

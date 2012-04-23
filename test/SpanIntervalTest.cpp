@@ -3,9 +3,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/optional.hpp>
 #include <boost/assign/list_of.hpp>
-#include "spaninterval.h"
-#include "interval.h"
-#include "siset.h"
+#include "SpanInterval.h"
+#include "Interval.h"
+#include "SISet.h"
 
 #include <boost/foreach.hpp>
 #include <iostream>

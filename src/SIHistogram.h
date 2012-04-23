@@ -1,5 +1,5 @@
 /*
- * si_histogram.h
+ * SIHistogram.h
  *
  *  Created on: Sep 26, 2011
  *      Author: joe
@@ -12,9 +12,9 @@
 #include <map>
 #include <string>
 
-#include "interval.h"
-#include "spaninterval.h"
-#include "siset.h"
+#include "Interval.h"
+#include "SpanInterval.h"
+#include "SISet.h"
 
 
 

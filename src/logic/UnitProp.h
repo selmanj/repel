@@ -1,5 +1,5 @@
 /*
- * unit_prop.h
+ * UnitProp.h
  *
  *  Created on: Dec 11, 2011
  *      Author: joe
@@ -12,9 +12,9 @@
 #include <utility>
 #include <queue>
 #include <iostream>
-#include "logic/syntax/sentence.h"
-#include "logic/domain.h"
-#include "../siset.h"
+#include "logic/syntax/Sentence.h"
+#include "logic/Domain.h"
+#include "../SISet.h"
 
 typedef std::list<boost::shared_ptr<Sentence> > CNFClause;
 typedef std::pair<CNFClause, SISet> QCNFClause;

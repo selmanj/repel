@@ -1,6 +1,6 @@
 
-#include "proposition.h"
-#include "atom.h"
+#include "Proposition.h"
+#include "Atom.h"
 
 Proposition::Proposition(const Atom& a, bool s)
     : atom_(a), sign_(s) {

@@ -1,10 +1,10 @@
 /*
- * disjunction.cpp
+ * Disjunction.cpp
  *
  *  Created on: Jan 30, 2012
  *      Author: joe
  */
-#include "disjunction.h"
+#include "Disjunction.h"
 
 void Disjunction::doToString(std::stringstream& str) const {
     if (left_->precedence() > precedence()) {

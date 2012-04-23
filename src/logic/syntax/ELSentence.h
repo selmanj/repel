@@ -1,5 +1,5 @@
 /*
- * elsentence.h
+ * ELSentence.h
  *
  *  Created on: May 21, 2011
  *      Author: joe
@@ -13,8 +13,8 @@
 #include <stdexcept>
 #include <string>
 #include <sstream>
-#include "siset.h"
-#include "sentence.h"
+#include "SISet.h"
+#include "Sentence.h"
 
 class Model;
 class Domain;

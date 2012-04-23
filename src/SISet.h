@@ -1,5 +1,5 @@
 /*
- * siset.h
+ * SISet.h
  *
  *  Created on: May 24, 2011
  *      Author: joe
@@ -10,7 +10,7 @@
 #include <set>
 #include <list>
 #include <iostream>
-#include "spaninterval.h"
+#include "SpanInterval.h"
 #include <boost/functional/hash.hpp>
 
 class SISet {

@@ -1,13 +1,13 @@
 /*
- * maxwalksat.cpp
+ * MaxWalkSat.cpp
  *
  *  Created on: Mar 19, 2012
  *      Author: selman.joe@gmail.com
  */
 
-#include "maxwalksat.h"
-#include "../logic/domain.h"
-#include "../logic/moves.h"
+#include "MaxWalkSat.h"
+#include "../logic/Domain.h"
+#include "../logic/Moves.h"
 
 Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel, std::ostream* dataout) {
     row_out datalog(dataout);

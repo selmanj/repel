@@ -1,12 +1,12 @@
 /*
- * conjunction.cpp
+ * Conjunction.cpp
  *
  *  Created on: Dec 19, 2011
  *      Author: joe
  */
 
-#include "conjunction.h"
-#include "../domain.h"
+#include "Conjunction.h"
+#include "../Domain.h"
 
 void Conjunction::visit(SentenceVisitor& v) const {
     left_->visit(v);

@@ -1,5 +1,5 @@
 /*
- * sentencevisitor.h
+ * SentenceVisitor.h
  *
  *  Created on: May 20, 2011
  *      Author: joe

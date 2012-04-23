@@ -1,4 +1,4 @@
-#include "moves.h"
+#include "Moves.h"
 
 #include <vector>
 #include <utility>
@@ -10,12 +10,12 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include "el_syntax.h"
-#include "domain.h"
-#include "model.h"
-#include "../siset.h"
-#include "../log.h"
-#include "namegenerator.h"
+#include "ELSyntax.h"
+#include "Domain.h"
+#include "Model.h"
+#include "../SISet.h"
+#include "../Log.h"
+#include "NameGenerator.h"
 
 
 std::string Move::toString() const {

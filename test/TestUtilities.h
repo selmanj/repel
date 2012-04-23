@@ -2,9 +2,9 @@
 #define TESTUTILITIES_H
 
 #include <boost/shared_ptr.hpp>
-#include "logic/el_syntax.h"
-#include "logic/folparser.h"
-#include "logic/follexer.h"
+#include "logic/ELSyntax.h"
+#include "logic/FOLParser.h"
+#include "logic/FOLLexer.h"
 #include <istream>
 
 Domain loadDomainWithStreams(const std::string& facts, const std::string& formulas, const ParseOptions& options=ParseOptions());

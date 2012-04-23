@@ -1,12 +1,12 @@
 /*
- * boollit.cpp
+ * BoolLit.cpp
  *
  *  Created on: Jun 8, 2011
  *      Author: joe
  */
 
-#include "boollit.h"
-#include "../domain.h"
+#include "BoolLit.h"
+#include "../Domain.h"
 
 bool BoolLit::doEquals(const Sentence& t) const {
     const BoolLit *bt = dynamic_cast<const BoolLit*>(&t);

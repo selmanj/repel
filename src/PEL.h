@@ -9,7 +9,7 @@
 #define PELMAP_H_
 
 #include <boost/shared_ptr.hpp>
-#include "logic/domain.h"
+#include "logic/Domain.h"
 
 int main(int argc, char* argv[]);
 

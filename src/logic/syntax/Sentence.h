@@ -5,8 +5,8 @@
 #include <sstream>
 #include <boost/utility.hpp>
 #include <boost/functional/hash.hpp>
-#include "sentencevisitor.h"
-#include "../../siset.h"
+#include "SentenceVisitor.h"
+#include "../../SISet.h"
 
 class Domain;
 class Model;

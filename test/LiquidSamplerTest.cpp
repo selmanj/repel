@@ -11,9 +11,9 @@
 #include <vector>
 #include <iterator>
 
-#include "../src/inference/liquidsampler.h"
-#include "../src/interval.h"
-#include "../src/spaninterval.h"
+#include "../src/inference/LiquidSampler.h"
+#include "../src/Interval.h"
+#include "../src/SpanInterval.h"
 
 BOOST_AUTO_TEST_CASE( samplerTest )
 {

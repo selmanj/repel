@@ -2,7 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <boost/shared_ptr.hpp>
-#include "logic/el_syntax.h"
+#include "logic/ELSyntax.h"
 #include <iostream>
 #include <string>
 

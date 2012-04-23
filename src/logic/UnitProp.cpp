@@ -1,5 +1,5 @@
 /*
- * unit_prop.cpp
+ * UnitProp.cpp
  *
  *  Created on: Dec 11, 2011
  *      Author: joe
@@ -11,10 +11,10 @@
 #include <list>
 #include <queue>
 #include <algorithm>
-#include "unit_prop.h"
-#include "logic/domain.h"
-#include "logic/collectors.h"
-#include "log.h"
+#include "UnitProp.h"
+#include "logic/Domain.h"
+#include "logic/Collectors.h"
+#include "Log.h"
 
 Domain performUnitPropagation(const Domain& d) {
     LOG(LOG_INFO) << "performing unit propagation...";

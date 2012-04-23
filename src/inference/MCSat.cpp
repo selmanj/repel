@@ -1,16 +1,16 @@
 /*
- * mcsat.cpp
+ * MCSat.cpp
  *
  *  Created on: Feb 8, 2012
  *      Author: selman.joe@gmail.com
  */
 
 #include <cmath>
-#include "mcsat.h"
-#include "maxwalksat.h"
-#include "../logic/unit_prop.h"
-#include "../logic/domain.h"
-#include "../logic/syntax/elsentence.h"
+#include "MCSat.h"
+#include "MaxWalkSat.h"
+#include "../logic/UnitProp.h"
+#include "../logic/Domain.h"
+#include "../logic/syntax/ELSentence.h"
 
 const unsigned int MCSat::defNumSamples = 1000;
 const unsigned int MCSat::defBurnInIterations = 1000;

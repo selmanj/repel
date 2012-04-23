@@ -1,5 +1,5 @@
 /*
- * maxwalksat.h
+ * MaxWalkSat.h
  *
  *  Created on: Nov 10, 2011
  *      Author: selman.joe@gmail.com

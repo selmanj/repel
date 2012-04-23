@@ -1,5 +1,5 @@
 /*
- * spaninterval.cpp
+ * SpanInterval.cpp
  *
  *  Created on: Mar 30, 2011
  *      Author: Joe
@@ -14,9 +14,9 @@
 #include <iostream>
 #include <list>
 #include <iterator>
-#include "interval.h"
-#include "spaninterval.h"
-#include "log.h"
+#include "Interval.h"
+#include "SpanInterval.h"
+#include "Log.h"
 
 /*
 SpanInterval::SpanInterval(unsigned int smallest, unsigned int largest)

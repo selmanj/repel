@@ -2,7 +2,7 @@
 #define LIQUIDOP_H
 
 #include <boost/shared_ptr.hpp>
-#include "sentence.h"
+#include "Sentence.h"
 
 class Model;
 class Domain;

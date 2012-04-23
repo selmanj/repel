@@ -1,5 +1,5 @@
 /*
- * lrucache.h
+ * LRUCache.h
  *
  *  Created on: Oct 10, 2011
  *      Author: joe

@@ -1,7 +1,7 @@
 #ifndef PROPOSITION_H_
 #define PROPOSITION_H_
 
-#include "atom.h"
+#include "Atom.h"
 
 /**
  * Simple container class for propositions (literals) without a temporal quantifier.

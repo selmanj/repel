@@ -2,8 +2,8 @@
 #define DISJUNCTION_H
 
 #include <boost/shared_ptr.hpp>
-#include "sentence.h"
-#include "sentencevisitor.h"
+#include "Sentence.h"
+#include "SentenceVisitor.h"
 
 class Domain;
 class Model;

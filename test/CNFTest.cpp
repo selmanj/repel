@@ -9,9 +9,9 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <vector>
-#include "logic/el_syntax.h"
-#include "logic/moves.h"
-#include "testutilities.h"
+#include "logic/ELSyntax.h"
+#include "logic/Moves.h"
+#include "TestUtilities.h"
 
 BOOST_AUTO_TEST_CASE(simpleNegations) {
     boost::shared_ptr<Sentence> s;

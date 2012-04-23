@@ -7,14 +7,14 @@
 #include <fstream>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
-#include "follexer.h"
-#include "foltoken.h"
-#include "domain.h"
+#include "FOLLexer.h"
+#include "FOLToken.h"
+#include "Domain.h"
 #include "bad_parse.h"
-#include "../spaninterval.h"
-#include "../interval.h"
-#include "el_syntax.h"
-#include "../log.h"
+#include "../SpanInterval.h"
+#include "../Interval.h"
+#include "ELSyntax.h"
+#include "../Log.h"
 
 // anonymous namespace for helper functions
 namespace {

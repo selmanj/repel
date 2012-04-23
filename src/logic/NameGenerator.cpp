@@ -1,12 +1,12 @@
 /*
- * namegenerator.cpp
+ * NameGenerator.cpp
  *
  *  Created on: Jun 27, 2011
  *      Author: joe
  */
 #include <string>
 #include <sstream>
-#include "namegenerator.h"
+#include "NameGenerator.h"
 
 NameGenerator::NameGenerator() : counter_(0) {}
 

@@ -1,5 +1,5 @@
 /*
- * event.h
+ * Event.h
  *
  *  Created on: Sep 26, 2011
  *      Author: joe
@@ -9,8 +9,8 @@
 #define EVENT_H_
 
 #include <boost/shared_ptr.hpp>
-#include "el_syntax.h"
-#include "../spaninterval.h"
+#include "ELSyntax.h"
+#include "../SpanInterval.h"
 
 namespace FOL {
 

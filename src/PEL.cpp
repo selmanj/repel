@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : pel.cpp
+// Name        : PEL.cpp
 // Author      : Joe Selman
 // Version     :
 
@@ -19,14 +19,14 @@ namespace po = boost::program_options;
 #include <ctime>
 #include <map>
 #include <cstdlib>
-#include "pel.h"
-#include "logic/el_syntax.h"
-#include "logic/folparser.h"
-#include "logic/domain.h"
-#include "log.h"
-#include "logic/moves.h"
-#include "inference/maxwalksat.h"
-#include "logic/unit_prop.h"
+#include "PEL.h"
+#include "logic/ELSyntax.h"
+#include "logic/FOLParser.h"
+#include "logic/Domain.h"
+#include "Log.h"
+#include "logic/Moves.h"
+#include "inference/MaxWalkSat.h"
+#include "logic/UnitProp.h"
 
 
 int main(int argc, char* argv[]) {

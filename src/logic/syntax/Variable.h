@@ -3,7 +3,7 @@
 
 #include <string>
 #include <boost/functional/hash.hpp>
-#include "term.h"
+#include "Term.h"
 
 class Variable : public Term {
 public:

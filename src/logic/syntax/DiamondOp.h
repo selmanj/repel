@@ -3,9 +3,9 @@
 
 #include <boost/shared_ptr.hpp>
 #include <set>
-#include "sentence.h"
-#include "sentencevisitor.h"
-#include "../../interval.h"
+#include "Sentence.h"
+#include "SentenceVisitor.h"
+#include "../../Interval.h"
 
 class DiamondOp : public Sentence {
 public:

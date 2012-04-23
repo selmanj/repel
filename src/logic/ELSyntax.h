@@ -1,5 +1,5 @@
 /*
- * el_syntax.h
+ * ELSyntax.h
  *
  *  Created on: May 21, 2011
  *      Author: joe
@@ -14,22 +14,22 @@
 #include <deque>
 
 /* include all the elements needed for FOL sentences */
-#include "syntax/atom.h"
-#include "syntax/boollit.h"
-#include "syntax/conjunction.h"
-#include "syntax/constant.h"
-#include "syntax/diamondop.h"
-#include "syntax/disjunction.h"
-#include "event.h"
-#include "syntax/liquidop.h"
-#include "syntax/negation.h"
-#include "syntax/sentence.h"
-#include "syntax/term.h"
-#include "syntax/variable.h"
-#include "syntax/elsentence.h"
-#include "syntax/sentencevisitor.h"
-#include "syntax/proposition.h"
-#include "../spaninterval.h"
+#include "syntax/Atom.h"
+#include "syntax/BoolLit.h"
+#include "syntax/Conjunction.h"
+#include "syntax/Constant.h"
+#include "syntax/DiamondOp.h"
+#include "syntax/Disjunction.h"
+#include "Event.h"
+#include "syntax/LiquidOp.h"
+#include "syntax/Negation.h"
+#include "syntax/Sentence.h"
+#include "syntax/Term.h"
+#include "syntax/Variable.h"
+#include "syntax/ELSentence.h"
+#include "syntax/SentenceVisitor.h"
+#include "syntax/Proposition.h"
+#include "../SpanInterval.h"
 
 /*
 namespace FOL {

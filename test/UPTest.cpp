@@ -11,12 +11,12 @@
 #include <boost/shared_ptr.hpp>
 #include <list>
 #include <algorithm>
-#include "logic/unit_prop.h"
-#include "testutilities.h"
-#include "siset.h"
-#include "spaninterval.h"
-#include "interval.h"
-#include "logic/el_syntax.h"
+#include "logic/UnitProp.h"
+#include "TestUtilities.h"
+#include "SISet.h"
+#include "SpanInterval.h"
+#include "Interval.h"
+#include "logic/ELSyntax.h"
 
 BOOST_AUTO_TEST_CASE( qconstraints ) {
     boost::shared_ptr<Sentence> s = getAsSentence("<>{m} P(a)");

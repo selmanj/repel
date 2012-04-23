@@ -11,10 +11,10 @@
 #include <boost/optional.hpp>
 #include <cstdio>
 #include <vector>
-#include "logic/el_syntax.h"
-#include "logic/moves.h"
-#include "inference/maxwalksat.h"
-#include "testutilities.h"
+#include "logic/ELSyntax.h"
+#include "logic/Moves.h"
+#include "inference/MaxWalkSat.h"
+#include "TestUtilities.h"
 
 BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
     std::string facts("P(a,b) @ [1:5]\n"

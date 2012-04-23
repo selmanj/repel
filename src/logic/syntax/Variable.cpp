@@ -1,6 +1,6 @@
 
 #include <string>
-#include "variable.h"
+#include "Variable.h"
 
 Variable::Variable(std::string name) 
 : name_(name)

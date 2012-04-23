@@ -1,15 +1,15 @@
 add_subdirectory(syntax)
 
 add_library(pel-logic
-  domain.cpp
-  follexer.cpp
-  foltoken.cpp
-  model.cpp
-  moves.cpp
-  namegenerator.cpp
-  unit_prop.cpp
-  ../inference/mcsat.cpp
-  ../inference/maxwalksat.cpp
-  ../inference/liquidsampler.cpp)
+  Domain.cpp
+  FOLLexer.cpp
+  FOLToken.cpp
+  Model.cpp
+  Moves.cpp
+  NameGenerator.cpp
+  UnitProp.cpp
+  ../inference/MCSat.cpp
+  ../inference/MaxWalkSat.cpp
+  ../inference/LiquidSampler.cpp)
 
 target_link_libraries(pel-logic pel-syntax)

@@ -10,9 +10,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/random.hpp>
 #include <string>
-#include "../src/inference/mcsat.h"
-#include "../src/logic/syntax/proposition.h"
-#include "testutilities.h"
+#include "../src/inference/MCSat.h"
+#include "../src/logic/syntax/Proposition.h"
+#include "TestUtilities.h"
 
 BOOST_AUTO_TEST_CASE( mcsat_test)
 {

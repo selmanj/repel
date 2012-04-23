@@ -1,10 +1,10 @@
 /*
- * interval.cpp
+ * Interval.cpp
  *
  */
 #include <stdexcept>
 #include <boost/optional.hpp>
-#include "interval.h"
+#include "Interval.h"
 
 std::string relationToString(Interval::INTERVAL_RELATION rel) {
     switch (rel) {

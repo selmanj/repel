@@ -1,11 +1,11 @@
-#include "sentence.h"
-#include "disjunction.h"
-#include "atom.h"
-#include "boollit.h"
-#include "conjunction.h"
-#include "diamondop.h"
-#include "liquidop.h"
-#include "negation.h"
+#include "Sentence.h"
+#include "Disjunction.h"
+#include "Atom.h"
+#include "BoolLit.h"
+#include "Conjunction.h"
+#include "DiamondOp.h"
+#include "LiquidOp.h"
+#include "Negation.h"
 #include <sstream>
 #include <boost/shared_ptr.hpp>
 

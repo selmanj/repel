@@ -2,8 +2,8 @@
 #define COLLECTORS_H
 
 #include <boost/unordered_set.hpp>
-#include "syntax/sentencevisitor.h"
-#include "syntax/atom.h"
+#include "syntax/SentenceVisitor.h"
+#include "syntax/Atom.h"
 
 struct AtomCollector : public SentenceVisitor {
     virtual void accept(const Sentence& s) {

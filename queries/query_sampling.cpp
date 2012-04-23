@@ -7,10 +7,10 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 #include <iostream>
-#include "../src/log.h"
+#include "../src/Log.h"
 #include "../src/fol/obsproxy.h"
 #include "../src/fol/fol.h"
-#include "../src/fol/folparser.h"
+#include "../src/fol/FOLParser.h"
 
 int main(int argc, char* argv[]) {
 	// Declare the supported options.

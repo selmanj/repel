@@ -1,5 +1,5 @@
 /*
- * siset.cpp
+ * SISet.cpp
  *
  *  Created on: May 24, 2011
  *      Author: joe
@@ -12,9 +12,9 @@
 #include <cstdlib>
 #include <boost/foreach.hpp>
 #include <iterator>
-#include "siset.h"
-#include "spaninterval.h"
-#include "log.h"
+#include "SISet.h"
+#include "SpanInterval.h"
+#include "Log.h"
 #include "infix_ostream_iterator.h"
 
 

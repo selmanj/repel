@@ -1,14 +1,14 @@
 /*
- * atom.cpp
+ * Atom.cpp
  *
  *  Created on: Nov 27, 2011
  *      Author: joe
  */
 
-#include "atom.h"
-#include "term.h"
-#include "../domain.h"
-#include "../model.h"
+#include "Atom.h"
+#include "Term.h"
+#include "../Domain.h"
+#include "../Model.h"
 #include <boost/ptr_container/ptr_vector.hpp>
 
 bool Atom::isGrounded() const {

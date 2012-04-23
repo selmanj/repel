@@ -1,5 +1,5 @@
 /*
- * spaninterval.h
+ * SpanInterval.h
  *
  *  Created on: Mar 30, 2011
  *      Author: Joe
@@ -19,8 +19,8 @@
 #include <iterator>
 #include <iostream>
 #include <stdexcept>
-#include "interval.h"
-#include "log.h"
+#include "Interval.h"
+#include "Log.h"
 
 class SpanIntervalIterator;
 

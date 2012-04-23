@@ -1,13 +1,13 @@
 /*
- * si_histogram.cpp
+ * SIHistogram.cpp
  *
  *  Created on: Sep 26, 2011
  *      Author: joe
  */
 #include <boost/foreach.hpp>
 #include <sstream>
-#include "si_histogram.h"
-#include "spaninterval.h"
+#include "SIHistogram.h"
+#include "SpanInterval.h"
 
 SIHistogram::SIHistogram(bool forceLiquid, const Interval& maxInterval)
     : forceLiquid_(forceLiquid), sis_(), counts_(), maxInterval_(maxInterval) {

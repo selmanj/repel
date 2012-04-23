@@ -1,5 +1,5 @@
 /*
- * namegenerator.h
+ * NameGenerator.h
  *
  *  Created on: Jun 27, 2011
  *      Author: joe

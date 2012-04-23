@@ -1,18 +1,18 @@
 
 add_library(pel-syntax
-  atom.cpp
-  boollit.cpp
-  conjunction.cpp
-  disjunction.cpp
-  diamondop.cpp
-  elsentence.cpp
-  liquidop.cpp
-  negation.cpp
-  proposition.cpp
-  sentence.cpp
-  variable.cpp
-  ../model.cpp
-  ../domain.cpp
-  ../moves.cpp
-  ../namegenerator.cpp
+  Atom.cpp
+  BoolLit.cpp
+  Conjunction.cpp
+  Disjunction.cpp
+  DiamondOp.cpp
+  ELSentence.cpp
+  LiquidOp.cpp
+  Negation.cpp
+  Proposition.cpp
+  Sentence.cpp
+  Variable.cpp
+  ../Model.cpp
+  ../Domain.cpp
+  ../Moves.cpp
+  ../NameGenerator.cpp
   )

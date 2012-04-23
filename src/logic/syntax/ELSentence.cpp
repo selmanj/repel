@@ -1,12 +1,12 @@
 /*
- * elsentence.cpp
+ * ELSentence.cpp
  *
  *  Created on: Dec 19, 2011
  *      Author: joe
  */
 
-#include "elsentence.h"
-#include "../domain.h"
+#include "ELSentence.h"
+#include "../Domain.h"
 
 bool operator==(const ELSentence& a, const ELSentence& b) {
     if (*a.s_ != *b.s_) return false;

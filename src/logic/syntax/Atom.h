@@ -8,10 +8,10 @@
 #include <boost/foreach.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
-#include "term.h"
-#include "sentence.h"
-#include "sentencevisitor.h"
-#include "constant.h"
+#include "Term.h"
+#include "Sentence.h"
+#include "SentenceVisitor.h"
+#include "Constant.h"
 
 class Domain;
 class Model;

@@ -1,11 +1,11 @@
 /*
- * negation.cpp
+ * Negation.cpp
  *
  *  Created on: Jan 30, 2012
  *      Author: joe
  */
 
-#include "negation.h"
+#include "Negation.h"
 
 void Negation::doToString(std::stringstream& str) const {
     str << "!";

@@ -5,9 +5,9 @@
 #include <utility>
 #include <boost/shared_ptr.hpp>
 #include <boost/functional/hash.hpp>
-#include "sentence.h"
-#include "sentencevisitor.h"
-#include "../../interval.h"
+#include "Sentence.h"
+#include "SentenceVisitor.h"
+#include "../../Interval.h"
 
 class Domain;
 class Model;

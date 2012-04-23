@@ -3,10 +3,10 @@
 #include <boost/test/unit_test.hpp>
 #include <sstream>
 #include <cstdlib>
-#include "testutilities.h"
-#include "logic/domain.h"
-#include "logic/el_syntax.h"
-#include "logic/folparser.h"
+#include "TestUtilities.h"
+#include "logic/Domain.h"
+#include "logic/ELSyntax.h"
+#include "logic/FOLParser.h"
 
 BOOST_AUTO_TEST_CASE( addFactsFormulas ) {
     Domain d;

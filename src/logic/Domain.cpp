@@ -1,7 +1,7 @@
-#include "domain.h"
-#include "el_syntax.h"
-#include "model.h"
-#include "../log.h"
+#include "Domain.h"
+#include "ELSyntax.h"
+#include "Model.h"
+#include "../Log.h"
 
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>

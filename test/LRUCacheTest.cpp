@@ -2,7 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <string>
-#include "lrucache.h"
+#include "LRUCache.h"
 
 BOOST_AUTO_TEST_CASE( lrucache_basic_test)
 {

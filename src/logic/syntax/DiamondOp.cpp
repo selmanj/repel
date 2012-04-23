@@ -1,5 +1,5 @@
-#include "diamondop.h"
-#include "../domain.h"
+#include "DiamondOp.h"
+#include "../Domain.h"
 
 const std::set<Interval::INTERVAL_RELATION>& DiamondOp::defaultRelations() {
     static std::set<Interval::INTERVAL_RELATION>* defaults = new std::set<Interval::INTERVAL_RELATION>();

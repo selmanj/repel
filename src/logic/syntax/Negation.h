@@ -2,8 +2,8 @@
 #define NEGATION_H
 
 #include <boost/shared_ptr.hpp>
-#include "sentence.h"
-#include "sentencevisitor.h"
+#include "Sentence.h"
+#include "SentenceVisitor.h"
 
 class Negation : public Sentence {
 public:

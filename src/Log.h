@@ -1,5 +1,5 @@
 /*
- * log.h
+ * Log.h
  *
  *  Created on: Jun 17, 2011
  *      Author: joe

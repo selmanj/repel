@@ -1,5 +1,5 @@
 /*
- * liquidsampler.cpp
+ * LiquidSampler.cpp
  *
  *  Created on: Apr 18, 2012
  *      Author: selman.joe@gmail.com
@@ -9,9 +9,9 @@
 #include <cstdlib>
 #include <vector>
 
-#include "liquidsampler.h"
-#include "../spaninterval.h"
-#include "../siset.h"
+#include "LiquidSampler.h"
+#include "../SpanInterval.h"
+#include "../SISet.h"
 
 std::vector<SpanInterval> LiquidSampler::operator ()(const SpanInterval& si, double p) const {
     std::vector<SpanInterval> sampled;

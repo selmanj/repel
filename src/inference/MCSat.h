@@ -1,5 +1,5 @@
 /*
- * mcsat.h
+ * MCSat.h
  *
  *  Created on: Feb 7, 2012
  *      Author: selman.joe@gmail.com
@@ -9,8 +9,8 @@
 #define MCSAT_H_
 
 #include <vector>
-#include "../logic/domain.h"
-#include "mcsatsamplerstrategy.h"
+#include "../logic/Domain.h"
+#include "MCSatSamplerStrategy.h"
 
 class Model;
 
@@ -62,7 +62,7 @@ public:
     void run();
     double estimateProbability(const Proposition& prop, const Interval& where);
 private:
-    static Domain applyUP(const Domain& d);   // TODO: move this to unit_prop.h eventually
+    static Domain applyUP(const Domain& d);   // TODO: move this to UnitProp.h eventually
 
     const Domain* d_;
 
