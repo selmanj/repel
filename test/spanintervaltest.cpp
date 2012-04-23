@@ -272,3 +272,12 @@ BOOST_AUTO_TEST_CASE( siSetEndpointTest) {
         BOOST_CHECK_EQUAL_COLLECTIONS(segments.begin(), segments.end(), expected.begin(), expected.end());
     }
 }
+
+BOOST_AUTO_TEST_CASE( intervalSubtract ) {
+    Interval a(1,5);
+    Interval b(6,10);
+    Interval c(4,8);
+
+    BOOST_REQUIRE(!a.subtract(b).empty());
+    BOOST_CHECK_EQUAL(a.subtract(b)[0], Interval(1,5));
+}

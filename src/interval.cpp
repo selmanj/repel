@@ -116,4 +116,38 @@ bool relationHolds(const Interval& a, Interval::INTERVAL_RELATION rel, const Int
     }
 }
 
+std::vector<Interval> Interval::subtract(const Interval& i) const {
+    std::vector<Interval> results;
+    if (isNull()) {
+        return results;
+    } else if (i.isNull()) {
+        results.push_back(*this);
+        return results;
+    }
+
+    if (before(*this, i)
+            || after(*this, i)
+            || meets(*this, i)
+            || meetsI(*this, i)) {
+        // no possible way for them to intersect
+        results.push_back(*this);
+    } else if (starts(*this, i)
+            || finishes(*this, i)
+            || during(*this, i)
+            || equals(i, *this)) {
+        return results; // i spans *this
+    } else if (startsI(*this, i) || overlapsI(*this, i)) {
+        // form an interval from the end of i to the end of this
+        results.push_back(Interval(i.finish()+1, finish()));
+    } else if (overlaps(*this, i) || finishesI(*this, i)) {
+        results.push_back(Interval(start(), i.start()-1));
+    } else if (duringI(*this, i)) {
+        // get start and end
+        results.push_back(Interval(start(), i.start()-1));
+        results.push_back(Interval(i.finish()+1, finish()));
+    }
+    return results;
+
+}
+
 

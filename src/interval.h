@@ -6,6 +6,7 @@
 #include <boost/optional.hpp>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 /**
  * Class Interval represents an interval and defines useful relations between
@@ -107,7 +108,7 @@ public:
      * any overlap (intersection) that the left interval has.  For instance,
      * interval (1,4).subtract(2,3)
      */
-    Interval subtract(const Interval& i) const;
+    std::vector<Interval> subtract(const Interval& i) const;
 
     /* friend functions */
     friend bool meets (const Interval& lhs, const Interval& rhs);
