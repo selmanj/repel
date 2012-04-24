@@ -97,6 +97,8 @@ Domain performUnitPropagation(const Domain& d) {
     for (Domain::formula_const_iterator it = leftover.begin(); it != leftover.end(); it++) {
         newD.addFormula(*it);
     }
+    // to be safe, add in all atoms even if they're not used
+    newD.addAtoms(d.atoms_begin(), d.atoms_end());
     return newD;
 }
 

@@ -49,6 +49,7 @@ void MCSatSampleLiquidlyStrategy::sampleSentences(const Model& m, const Domain& 
             sampled.push_back(curSentence);
         }
     }
+
 }
 
 MCSatSampleStrategy* MCSatSampleLiquidlyStrategy::clone() const {

@@ -57,6 +57,10 @@ public:
     void addFact(const std::pair<const Proposition, const SISet>& pair);
     void addFact(const Proposition& p, const SISet& where);
 
+    void addAtom(const Atom& a);
+    template <class InputIterator>
+    void addAtoms(InputIterator begin, InputIterator end);
+
     bool hasFact(const Proposition& p) const;
     SISet lookupFact(const Proposition& p) const;
 
@@ -133,7 +137,7 @@ inline void Domain::clearFacts() {
 }
 
 template <class InputIterator>
-inline void Domain::addFormulas(InputIterator begin, InputIterator end) {
+void Domain::addFormulas(InputIterator begin, InputIterator end) {
     for (InputIterator it = begin; it != end; it++) {
         addFormula(*it);
     }
@@ -141,6 +145,13 @@ inline void Domain::addFormulas(InputIterator begin, InputIterator end) {
 
 inline void Domain::addFact(const std::pair<const Proposition, const SISet>& pair) {
     addFact(pair.first, pair.second);
+}
+
+template <class InputIterator>
+void Domain::addAtoms(InputIterator begin, InputIterator end) {
+    for (InputIterator it = begin; it != end; it++) {
+        addAtom(*it);
+    }
 }
 
 inline bool Domain::hasFact(const Proposition& p) const {return partialModel_.count(p) != 0; }

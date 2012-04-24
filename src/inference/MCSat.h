@@ -60,7 +60,8 @@ public:
     void clear();
 
     void run();
-    double estimateProbability(const Proposition& prop, const Interval& where);
+    double estimateProbability(const Proposition& prop, const Interval& where) const;
+    unsigned int countProps(const Proposition& prop, const Interval& where) const;
 private:
     static Domain applyUP(const Domain& d);   // TODO: move this to UnitProp.h eventually
 

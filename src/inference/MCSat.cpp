@@ -47,7 +47,7 @@ void MCSat::run() { // TODO: setup using random initial models
     for (unsigned int iteration = 1; iteration < numSamples_+burnInIterations_; iteration++) {
         std::vector<ELSentence> newSentences;
 
-        sampleStrategy_->sampleSentences(prevModel, prevDomain, newSentences);
+        sampleStrategy_->sampleSentences(prevModel, reduced, newSentences);
       //  std::cout << "sampled sentences: ";
       //  std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
       //  std::cin.get();
@@ -60,6 +60,7 @@ void MCSat::run() { // TODO: setup using random initial models
         for (std::vector<ELSentence>::const_iterator it = newSentences.begin(); it != newSentences.end(); it++) {
             curDomain.addFormula(*it);
         }
+        curDomain.addAtoms(prevDomain.atoms_begin(), prevDomain.atoms_end());
 
         boost::unordered_set<Model> curModels = sampleSat(prevModel, curDomain);
         assert(!curModels.empty());
@@ -144,6 +145,7 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
         s.setHasInfWeight(true);
         dSat.addFormula(s);
     }
+    dSat.addAtoms(d.atoms_begin(), d.atoms_end());
     // perform UP
     Domain reduced;
     try {
@@ -163,17 +165,25 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
             models.insert(reduced.randomModel());
             continue;
         }
+        /*
+        std::cout << "--\nFormulas for maxwalksat: ";
+        std::copy(reduced.formulas_begin(), reduced.formulas_end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+        std::cout << std::endl;
+        */
         Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, &iterInitModel);
         if (reduced.isFullySatisfied(iterModel)) models.insert(iterModel);
     }
     return models;
 }
 
-double MCSat::estimateProbability(const Proposition& prop, const Interval& where) {
-    assert(samples_.size() == numSamples_);         // todo: probably better error recovery here
+double MCSat::estimateProbability(const Proposition& prop, const Interval& where) const {
+    return ((double)countProps(prop, where)) / ((double) numSamples_);
+}
+
+unsigned int MCSat::countProps(const Proposition& prop, const Interval& where) const {
+    assert(samples_.size() == numSamples_);
     unsigned int count = 0;
 
-    // count the number of times prop is true at interval where
     for (std::vector<Model>::const_iterator it = samples_.begin(); it != samples_.end(); it++) {
         SISet trueAt = it->getAtom(prop.atom());
         if ((trueAt.includes(where) && prop.sign())
@@ -182,8 +192,9 @@ double MCSat::estimateProbability(const Proposition& prop, const Interval& where
         }
     }
 
-    return ((double)count )/((double) numSamples_);
+    return count;
 }
+
 
 MCSatSampleSegmentsStrategy::MCSatSampleSegmentsStrategy(const Domain& d)
     : formulaToSegment_() {

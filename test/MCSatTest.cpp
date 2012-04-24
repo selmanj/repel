@@ -20,14 +20,15 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
 {
     // disable debug logging
     FileLog::globalLogLevel() = LOG_ERROR;
-    std::string facts("D-P(a) @ {[1:10]}\n");
-    std::string formulas("0.01: [ P(a) -> D-P(a) ] @ [1:10]\n"
-            "0.01: [ D-P(a) -> P(a) ] @ [1:10]\n");
+    std::string facts("D-P(a) @ {[1:5]}\n");
+    std::string formulas("1: [ P(a) -> D-P(a) ] @ [1:10]\n"
+            "1: [ D-P(a) -> P(a) ] @ [1:10]\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
 
     MCSat mcSatSolver(&d);
     mcSatSolver.setSampleStrategy(new MCSatSampleLiquidlyStrategy());
+    //mcSatSolver.setBurnInIterations(10000);
     mcSatSolver.run();
     BOOST_CHECK_EQUAL(mcSatSolver.size(), MCSat::defNumSamples);
     boost::shared_ptr<Sentence> pa = getAsSentence("P(a)");
@@ -35,6 +36,12 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
     double probPaAt11 =  mcSatSolver.estimateProbability(propPa, Interval(1,1));
     std::cout << "probPaAt11 = " << probPaAt11 << std::endl;
 
+    std::cout << "counts:" << std::endl;
+    for (unsigned int i = 1; i <= 10; i++) {
+        std::cout << mcSatSolver.countProps(propPa, Interval(i,i));
+        if (i != 10) std::cout << ", ";
+    }
+    std::cout << std::endl;
     //BOOST_CHECK_CLOSE(probPaAt11, .99, .2);
 }
 

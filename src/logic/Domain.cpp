@@ -109,6 +109,11 @@ void Domain::addFormula(const ELSentence& e) {
     */
 }
 
+void Domain::addAtom(const Atom& a) {
+    predTypes_.insert(a.predicateType());
+    allAtoms_.insert(a);
+}
+
 Model Domain::randomModel() const {
     Model newModel(maxInterval_);
     //std::set<Atom, atomcmp> atoms = observations_.atoms();
@@ -119,6 +124,7 @@ Model Domain::randomModel() const {
         Proposition falseProp(*it, false);
         if (partialModel_.count(trueProp) != 0) random.add(     partialModel_.at(trueProp));
         if (partialModel_.count(falseProp) != 0) random.subtract(partialModel_.at(falseProp));
+
         random.makeDisjoint();
         //newModel.clearAtom(obsPair->first);
         newModel.setAtom(*it, random);
