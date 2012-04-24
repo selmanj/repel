@@ -13,7 +13,6 @@ void MCSatSamplePerfectlyStrategy::sampleSentences(const Model& m, const Domain&
     // sample on an interval basis for each formula
     for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
         ELSentence curSentence = *it;
-        std::cout << "working on sentence: " << curSentence << std::endl;
 
         if (curSentence.hasInfWeight()) {
             sampled.push_back(curSentence); // have to take it
