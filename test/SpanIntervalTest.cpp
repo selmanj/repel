@@ -1,12 +1,11 @@
 #define BOOST_TEST_MODULE SpanInterval 
-//#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MAIN
-#include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
 #include <boost/optional.hpp>
 #include <boost/assign/list_of.hpp>
-#include "SpanInterval.h"
-#include "Interval.h"
-#include "SISet.h"
+#include "../src/SpanInterval.h"
+#include "../src/Interval.h"
+#include "../src/SISet.h"
 
 #include <boost/foreach.hpp>
 #include <iostream>

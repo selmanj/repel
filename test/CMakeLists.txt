@@ -1,4 +1,4 @@
-set(test_LIBRARIES ${pel_LIBRARIES} boost_unit_test_framework pel-logic pel-syntax pel-spaninterval)
+set(test_LIBRARIES ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} pel-logic pel-syntax pel-spaninterval)
 
 add_executable(atomtest AtomTest.cpp)
 add_executable(cnftest CNFTest.cpp)
