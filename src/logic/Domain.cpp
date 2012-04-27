@@ -210,3 +210,21 @@ void Domain::growMaxInterval(const Interval& maxInterval) {
     }
 }
 
+void Domain::printDebugDescription(std::ostream& out) const {
+    out << "Domain at memory location: " << (void *)this << "\n";
+    out << "  dontModifyObsPreds: " << dontModifyObsPreds_ << "\n";
+    out << "  MaxInterval: " << maxInterval_ << "\n";
+    out << "  Formulas:\n";
+    for (std::vector<ELSentence>::const_iterator it = formulas_.begin(); it != formulas_.end(); it++) {
+        out << "    " << *it << "\n";
+    }
+    out << "  Facts:\n";
+    for (PropMap::const_iterator it = partialModel_.begin(); it != partialModel_.end(); it++) {
+        std::pair<Proposition, SISet> pair = *it;
+        out << "    " << pair.first << " @ " << pair.second << "\n";
+    }
+    // ignore atoms and generator for now
+    out << "  allAtoms: ";
+    std::copy(allAtoms_.begin(),  allAtoms_.end(), std::ostream_iterator<Atom>(out, ", "));
+    out << std::endl;
+}

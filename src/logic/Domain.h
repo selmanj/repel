@@ -92,6 +92,8 @@ public:
 
     bool isFullySatisfied(const Model& m) const;
 
+    void printDebugDescription(std::ostream& out) const;
+
     static const unsigned int hardFormulaFactor = 10;
 private:
 
