@@ -25,5 +25,7 @@ private:
     bool sign_;  // if positive, true, if negative, false
 };
 
+std::ostream& operator<<(std::ostream& out, const Proposition& p);
+
 
 #endif

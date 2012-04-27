@@ -34,3 +34,9 @@ void Proposition::setAtom(const Atom& a) {
 void Proposition::setSign(bool b) {
     sign_ = b;
 }
+
+std::ostream& operator<<(std::ostream& out, const Proposition& p) {
+    if (!p.sign()) out << "!";
+    out << p.atom();
+    return out;
+}
