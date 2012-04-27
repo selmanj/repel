@@ -50,24 +50,25 @@ Domain performUnitPropagation(const Domain& d) {
     //std::set<Atom, atomcmp> atoms = obs.atoms();
 
     for (Domain::atom_const_iterator it = d.atoms_begin(); it != d.atoms_end(); it++) {
-        Proposition ptrue(*it, true);
-        boost::shared_ptr<Sentence> atomPtr;
-        SISet trueAt(false, d.maxInterval());
-        if (d.hasFact(ptrue)) {
-            trueAt = d.lookupFact(ptrue);
-            atomPtr = boost::shared_ptr<Sentence>(new Atom(*it));
-        } else if (d.hasFact(ptrue.inverse())) {
-            trueAt = d.lookupFact(ptrue.inverse());
-            boost::shared_ptr<Sentence> atom(new Atom(*it));
-            atomPtr = boost::shared_ptr<Sentence>(new Negation(atom));
-        } else {
-            continue;   // it's not here
-        }
-        CNFClause clause;
-        clause.push_back(atomPtr);
-        QCNFClause qclause(clause, trueAt);
+        for (int boolVal = 0; boolVal < 2; boolVal++) {
+            Proposition ptrue(*it, boolVal == 0);
+            boost::shared_ptr<Sentence> atomPtr;
+            SISet trueAt(false, d.maxInterval());
+            if (d.hasFact(ptrue)) {
+                trueAt = d.lookupFact(ptrue);
+                atomPtr = boost::shared_ptr<Sentence>(new Atom(*it));
+                if (boolVal != 0) {
+                    atomPtr = boost::shared_ptr<Sentence>(new Negation(atomPtr));
+                }
+            } else {
+                continue;   // it's not here
+            }
+            CNFClause clause;
+            clause.push_back(atomPtr);
+            QCNFClause qclause(clause, trueAt);
 
-        if (qclause.second.size() != 0) clauses.push_back(qclause);
+            if (qclause.second.size() != 0) clauses.push_back(qclause);
+        }
     }
 
     QUnitsFormulasPair reducedList = performUnitPropagation(clauses);
