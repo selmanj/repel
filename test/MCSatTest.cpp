@@ -21,8 +21,8 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
     // disable debug logging
     FileLog::globalLogLevel() = LOG_ERROR;
     std::string facts("D-P(a) @ {[1:5]}\n");
-    std::string formulas("1: [ P(a) -> D-P(a) ] @ [1:10]\n"
-            "1: [ D-P(a) -> P(a) ] @ [1:10]\n");
+    std::string formulas("0.01: [ P(a) -> D-P(a) ] @ [1:10]\n"
+            "0.01: [ D-P(a) -> P(a) ] @ [1:10]\n");
 
     Domain d = loadDomainWithStreams(facts, formulas);
 

@@ -31,6 +31,8 @@ void MCSatSampleLiquidlyStrategy::sampleSentences(const Model& m, const Domain& 
             continue;
         }
         SISet satisfied = curSentence.dSatisfied(m, d);
+        std::cout << "satisfied = " << satisfied << std::endl;
+
         double prob = 1.0 - exp(-(double)(curSentence.weight()));   // probability to sample an interval
         SISet where(true, d.maxInterval());
 

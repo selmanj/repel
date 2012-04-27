@@ -110,7 +110,6 @@ void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& 
             continue;
         }
         SISet satisfied = currentSentence.dSatisfied(m, d);
-
         if (satisfied.empty()) continue;
 
         // find the segments for this sentence
@@ -165,11 +164,11 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
             models.insert(reduced.randomModel());
             continue;
         }
-        /*
+
         std::cout << "--\nFormulas for maxwalksat: ";
         std::copy(reduced.formulas_begin(), reduced.formulas_end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
         std::cout << std::endl;
-        */
+
         Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, &iterInitModel);
         if (reduced.isFullySatisfied(iterModel)) models.insert(iterModel);
     }

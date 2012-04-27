@@ -19,6 +19,7 @@ void MCSatSamplePerfectlyStrategy::sampleSentences(const Model& m, const Domain&
             continue;
         }
         SISet satisfied = curSentence.dSatisfied(m, d);
+
         double prob = 1.0 - exp(-(double)(curSentence.weight()));   // probability to sample an interval
         SISet where(false, d.maxInterval());
         // iterate over each interval, sampling!
