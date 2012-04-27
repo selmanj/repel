@@ -30,8 +30,14 @@ void MCSat::run() { // TODO: setup using random initial models
     samples_.clear();
     samples_.reserve(numSamples_);
 
+    //std::cout << "initial domain: ";
+    //d_->printDebugDescription(std::cout);
+
     // first, run unit propagation on our domain to get a new reduced one.
     Domain reduced = MCSat::applyUP(*d_);
+    //std::cout << "reduced domain: ";
+    //reduced.printDebugDescription(std::cout);
+
 
     Model prevModel = (useRandomInitialModels_ ? reduced.randomModel() : reduced.defaultModel());
 
@@ -61,6 +67,8 @@ void MCSat::run() { // TODO: setup using random initial models
             curDomain.addFormula(*it);
         }
         curDomain.addAtoms(prevDomain.atoms_begin(), prevDomain.atoms_end());
+        //std::cout << "curDomain";
+        //curDomain.printDebugDescription(std::cout);
 
         boost::unordered_set<Model> curModels = sampleSat(prevModel, curDomain);
         assert(!curModels.empty());
@@ -165,9 +173,9 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
             continue;
         }
 
-        std::cout << "--\nFormulas for maxwalksat: ";
-        std::copy(reduced.formulas_begin(), reduced.formulas_end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
-        std::cout << std::endl;
+        //std::cout << "--\nFormulas for maxwalksat: ";
+        //std::copy(reduced.formulas_begin(), reduced.formulas_end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
+        //std::cout << std::endl;
 
         Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, &iterInitModel);
         if (reduced.isFullySatisfied(iterModel)) models.insert(iterModel);
