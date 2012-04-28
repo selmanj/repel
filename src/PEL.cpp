@@ -31,46 +31,20 @@ namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
     try {
-        // Declare the supported options.
-        po::options_description desc("Allowed options");
-        desc.add_options()
-            ("help", "produce help message")
-            ("version,v", "print version and exit")
-            ("max", po::value<unsigned int>(), "maximum value an interval endpoint can take")
-            ("min", po::value<unsigned int>(), "minimum value an interval endpoint can take")
-            ("evalModel,e", "simply print the model weight of the facts file")
-            ("prob,p", po::value<double>()->default_value(0.25), "probability of taking a random move")
-            ("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
-            ("output,o", po::value<std::string>(), "output model file")
-            ("unitProp,u", "perform unit propagation only and exit")
-            ("datafile,d", po::value<std::string>(), "log scores from maxwalksat to this file (csv form)")
-        ;
-
-        po::options_description hidden("Hidden options");
-        hidden.add_options()
-            ("facts-file", po::value<std::string>(), "facts file")
-            ("formula-file", po::value<std::string>(), "formula file")
-        ;
-        po::positional_options_description p;
-        p.add("facts-file", 1);
-        p.add("formula-file", 1);
-
-        po::options_description cmdline_options;
-        cmdline_options.add(desc).add(hidden);
-
+        // build the variable map from our configuration
+        po::options_description options;
         po::variables_map vm;
-        po::store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
-        po::notify(vm);
+        initConfig(argc, argv, options, vm);
+
+        if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
+            std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
+            std::cout << options << std::endl;
+            return EXIT_FAILURE;
+        }
 
         if (vm.count("version")) {
             std::cout << "pel version " << PEL_VERSION_MAJOR << "." << PEL_VERSION_MINOR << std::endl;
             return EXIT_SUCCESS;
-        }
-
-        if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
-            std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
-            std::cout << desc << std::endl;
-            return EXIT_FAILURE;
         }
 
         // setup our logging facilities
@@ -183,4 +157,43 @@ int main(int argc, char* argv[]) {
         std::cerr << "Unknown exception occurred" << std::endl;
         return EXIT_FAILURE;
     }
+}
+
+void initConfig(int argc,
+        char* argv[],
+        po::options_description& shownOptions,
+        po::variables_map& vm) {
+    // Declare the supported options.
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help", "produce help message")
+        ("version,v", "print version and exit")
+        ("max", po::value<unsigned int>(), "maximum value an interval endpoint can take")
+        ("min", po::value<unsigned int>(), "minimum value an interval endpoint can take")
+        ("evalModel,e", "simply print the model weight of the facts file")
+        ("prob,p", po::value<double>()->default_value(0.25), "probability of taking a random move")
+        ("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
+        ("output,o", po::value<std::string>(), "output model file")
+        ("unitProp,u", "perform unit propagation only and exit")
+        ("datafile,d", po::value<std::string>(), "log scores from maxwalksat to this file (csv form)")
+    ;
+
+    po::options_description hidden("Hidden options");
+    hidden.add_options()
+        ("facts-file", po::value<std::string>(), "facts file")
+        ("formula-file", po::value<std::string>(), "formula file")
+    ;
+    po::positional_options_description p;
+    p.add("facts-file", 1);
+    p.add("formula-file", 1);
+
+    po::options_description options;
+    options.add(desc).add(hidden);
+
+    // save the options in the given options description
+    shownOptions.add(desc);
+
+    //po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).options(options).positional(p).run(), vm);
+    po::notify(vm);
 }
