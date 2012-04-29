@@ -184,6 +184,7 @@ void initConfig(int argc,
         ("formula-file", po::value<std::string>(), "formula file")
     ;
     po::positional_options_description p;
+    p.add("mode", 1);
     p.add("facts-file", 1);
     p.add("formula-file", 1);
 
