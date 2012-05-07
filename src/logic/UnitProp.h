@@ -12,8 +12,8 @@
 #include <utility>
 #include <queue>
 #include <iostream>
-#include "logic/syntax/Sentence.h"
-#include "logic/Domain.h"
+#include "syntax/Sentence.h"
+#include "Domain.h"
 #include "../SISet.h"
 
 typedef std::list<boost::shared_ptr<Sentence> > CNFClause;

@@ -53,7 +53,7 @@ public:
     friend bool operator!=(const Model& l, const Model& r);
 
     friend std::ostream& operator<<(std::ostream& out, const Model& m);
-    Model& operator=(const Model m) { if (*this != m) amap_ = m.amap_; return *this;}   // TODO: use swap() dogg
+    Model& operator=(const Model& m) { if (this != &m) amap_ = m.amap_; return *this;}   // TODO: use swap() dogg
 
 
 private:

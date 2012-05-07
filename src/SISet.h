@@ -159,7 +159,8 @@ inline bool SISet::includes(const Interval& interval) const {
     return includes(SpanInterval(interval.start(), interval.start(), interval.finish(), interval.finish()));
 }
 
-inline bool operator==(const SISet& l, const SISet& r) {return l.includes(r) && r.includes(l);}    //TODO: is this the right thing to do???
+//inline bool operator==(const SISet& l, const SISet& r) {return l.includes(r) && r.includes(l);}    //TODO: is this the right thing to do???
+inline bool operator==(const SISet& l, const SISet& r) {return l.set_ == r.set_;}
 inline bool operator!=(const SISet& l, const SISet& r) {return !operator==(l,r);}
 
 inline std::size_t hash_value(const SISet& si) {

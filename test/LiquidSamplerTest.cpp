@@ -37,3 +37,21 @@ BOOST_AUTO_TEST_CASE( samplerTest )
     BOOST_CHECK_EQUAL(sampled[3], SpanInterval(6,6));
     BOOST_CHECK_EQUAL(sampled[4], SpanInterval(7,8));
 }
+
+BOOST_AUTO_TEST_CASE( samplerTest2 )
+{
+    srand(120);
+
+    LiquidSampler sampler;
+    std::vector<SpanInterval> sampled;
+
+    std::cout << "S1: ";
+    sampled = sampler(SpanInterval(1,50,1,50), 1.0-exp(-1.0));
+    std::copy(sampled.begin(), sampled.end(), std::ostream_iterator<SpanInterval>(std::cout, ", "));
+    std::cout << std::endl;
+
+    std::cout << "S2: ";
+    sampled = sampler(SpanInterval(51,100,51,100), 1.0-exp(-1.0));
+    std::copy(sampled.begin(), sampled.end(), std::ostream_iterator<SpanInterval>(std::cout, ", "));
+    std::cout << std::endl;
+}

@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <string>
 #include <sstream>
-#include "SISet.h"
+#include "../../SISet.h"
 #include "Sentence.h"
 
 class Model;

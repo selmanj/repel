@@ -38,10 +38,12 @@ void MCSatSampleLiquidlyStrategy::sampleSentences(const Model& m, const Domain& 
         // assume its liquid for now!!
         LiquidSampler sampler;
         for (SISet::const_iterator siIt = satisfied.begin(); siIt != satisfied.end(); siIt++) {
+            //std::cout << "working on " << *siIt << std::endl;
             std::vector<SpanInterval> samples = sampler(*siIt, prob);
             for (std::vector<SpanInterval>::const_iterator sampleIt = samples.begin();
                     sampleIt != samples.end();
                     sampleIt++) {
+                //std::cout << "  adding " << *sampleIt << std::endl;
                 where.add(*sampleIt);
             }
         }

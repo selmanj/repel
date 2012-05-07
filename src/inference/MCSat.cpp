@@ -17,7 +17,7 @@ const unsigned int MCSat::defBurnInIterations = 1000;
 const unsigned int MCSat::defWalksatIterations = 1000;
 const double MCSat::defWalksatRandomMoveProb = 0.2;
 const unsigned int MCSat::defWalksatNumRandomRestarts = 4;
-const bool MCSat::defUseRandomInitialModels = false;
+const bool MCSat::defUseRandomInitialModels = true;
 
 
 void MCSat::run() { // TODO: setup using random initial models
@@ -42,10 +42,8 @@ void MCSat::run() { // TODO: setup using random initial models
     Model prevModel = (useRandomInitialModels_ ? reduced.randomModel() : reduced.defaultModel());
 
     // do a starting run on the whole problem as our initial sample
-    boost::unordered_set<Model> initModels = sampleSat(prevModel, reduced);
-    assert(!initModels.empty());
-
-    prevModel = *initModels.begin();
+    //boost::unordered_set<Model> initModels = sampleSat(prevModel, reduced);
+    //prevModel = *initModels.begin();
     Domain prevDomain = reduced;
 
     if (burnInIterations_ == 0) samples_.push_back(prevModel);
@@ -54,9 +52,19 @@ void MCSat::run() { // TODO: setup using random initial models
         std::vector<ELSentence> newSentences;
 
         sampleStrategy_->sampleSentences(prevModel, reduced, newSentences);
-      //  std::cout << "sampled sentences: ";
-      //  std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
-      //  std::cin.get();
+        if (iteration == 1) {
+            std::cout << "initial sampled sentences: ";
+            std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
+            std::cout << "initial model:";
+            std::cout << prevModel;
+            for (Domain::formula_const_iterator it = prevDomain.formulas_begin();
+                    it != prevDomain.formulas_end();
+                    it++) {
+                std::cout << "formula " << *it << " is satisfied at: " << it->dSatisfied(prevModel, prevDomain) << std::endl;
+            }
+            std::cin.get();
+        }
+
         // make a new domain using new Sentences
         Domain curDomain;
         curDomain.setMaxInterval(prevDomain.maxInterval());
@@ -67,8 +75,15 @@ void MCSat::run() { // TODO: setup using random initial models
             curDomain.addFormula(*it);
         }
         curDomain.addAtoms(prevDomain.atoms_begin(), prevDomain.atoms_end());
-        //std::cout << "curDomain";
-        //curDomain.printDebugDescription(std::cout);
+
+        if (iteration == burnInIterations_ + numSamples_/2) {
+            std::cout << "ITERATION: " << iteration << std::endl;
+            std::cout << "curDomain";
+            curDomain.printDebugDescription(std::cout);
+            std::cout << "sampled sentences: ";
+            std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
+        }
+
 
         boost::unordered_set<Model> curModels = sampleSat(prevModel, curDomain);
         assert(!curModels.empty());
