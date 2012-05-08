@@ -22,8 +22,8 @@ include_directories("${PROJECT_BINARY_DIR}/src")
 
 set(Boost_USE_STATIC_LIBS   OFF)
 set(Boost_USE_MULTITHREADED OFF)
-set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.47" "1.47.0" "1.48" "1.48.0")
-find_package(Boost 1.46.0 COMPONENTS program_options unit_test_framework REQUIRED)
+#set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.47" "1.47.0" "1.48" "1.48.0")
+find_package(Boost 1.48.0 COMPONENTS program_options unit_test_framework REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src)
