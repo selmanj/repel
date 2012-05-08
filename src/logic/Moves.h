@@ -13,7 +13,7 @@
 
 #include "../SISet.h"
 #include "Domain.h"
-#include "../Utils.h"
+#include "../util/Utils.h"
 #include "../Log.h"
 #include "ELSyntax.h"
 

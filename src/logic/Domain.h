@@ -24,7 +24,7 @@
 #include "../SISet.h"
 #include "NameGenerator.h"
 #include "../LRUCache.h"
-#include "../Utils.h"
+#include "../util/Utils.h"
 
 std::string modelToString(const Model& m);
 
