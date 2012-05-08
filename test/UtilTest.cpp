@@ -15,7 +15,7 @@
 
 BOOST_AUTO_TEST_CASE( rng ) {
     boost::mt19937 gen;
-    RNG<boost::mt19937::result_type> rng(gen);
+    RNG<boost::mt19937::result_type> rng = rngFromRef<boost::mt19937::result_type>(gen);
 
     BOOST_CHECK_EQUAL(gen(), 3499211612);
     BOOST_CHECK_EQUAL(rng(), 581869302);
