@@ -37,6 +37,11 @@ public:
     typedef boost::unordered_set<Atom>::const_iterator  atom_const_iterator;
 
     Domain();
+    Domain(const Domain& d);
+
+    friend void swap(Domain& a, Domain& b);
+
+    Domain& operator=(Domain d);
 
     formula_const_iterator formulas_begin() const;
     formula_const_iterator formulas_end() const;
@@ -111,6 +116,8 @@ private:
     //mutable LRUCache<ModelSentencePair,SISet,ModelSentencePair_cmp> cache_;
 };
 
+void swap(Domain& a, Domain& b);
+
 // IMPLEMENTATION
 inline Domain::Domain()
     : dontModifyObsPreds_(true),
@@ -120,6 +127,21 @@ inline Domain::Domain()
       predTypes_(),
       allAtoms_(),
       generator_(){};
+
+inline Domain::Domain(const Domain& d)
+    : dontModifyObsPreds_(d.dontModifyObsPreds_),
+      maxInterval_(d.maxInterval_),
+      formulas_(d.formulas_),
+      partialModel_(d.partialModel_),
+      predTypes_(d.predTypes_),
+      allAtoms_(d.allAtoms_),
+      generator_(d.generator_) {};
+
+inline Domain& Domain::operator=(Domain d) {
+    swap(*this, d);
+    return *this;
+}
+
 
 inline Domain::formula_const_iterator Domain::formulas_begin() const {return formulas_.begin();}
 inline Domain::formula_const_iterator Domain::formulas_end() const {return formulas_.end();}

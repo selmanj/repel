@@ -16,6 +16,17 @@ void Domain::addObservedPredicate(const Atom& a) {
     observations_.setAtom(a, newSet);
 }
 */
+void swap(Domain& a, Domain& b) {
+    using std::swap;
+
+    swap(a.dontModifyObsPreds_, b.dontModifyObsPreds_);
+    swap(a.maxInterval_, b.maxInterval_);
+    swap(a.formulas_, b.formulas_);
+    swap(a.partialModel_, b.partialModel_);
+    swap(a.predTypes_, b.predTypes_);
+    swap(a.allAtoms_, b.allAtoms_);
+    swap(a.generator_, b.generator_);
+}
 
 std::size_t Domain::formulas_size() const {
     return formulas_.size();
