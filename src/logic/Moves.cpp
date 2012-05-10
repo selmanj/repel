@@ -5,6 +5,8 @@
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
 #include <stdexcept>
 #include <utility>
 #include <iostream>
@@ -188,7 +190,7 @@ bool isFormula3Type(const Sentence &s, const Domain &d) {
 }
 
 // TODO: not sure if below function works correctly when deleting phi1 as it may delete more than necessary... does this matter??
-std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis) {
+std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis, boost::mt19937& rng) {
     LOG(LOG_DEBUG) << "inside findMovesForForm1() with sentence: " << dis.toString();
     std::vector<Move> moves;
     // TODO: ensure sentence s is of the proper form
@@ -267,7 +269,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
         }
         if (falseAt.size() != 0) {
             // pick a span interval at random
-            SpanInterval toSatisfy = falseAt.randomSI();
+            SpanInterval toSatisfy = falseAt.randomSI(rng);
 
             unsigned int b = toSatisfy.finish().start();
             // case 1 and 2:  extend the precedent (or consequent) so that it meets with the next spot the consequent is true at
@@ -334,7 +336,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
         }
         if (falseAt.size() != 0) {
             // pick a span interval at random
-            SpanInterval toSatisfy = falseAt.randomSI();
+            SpanInterval toSatisfy = falseAt.randomSI(rng);
             unsigned int b = toSatisfy.start().start();
             // case 1 and 2:  extend the precedent (or consequent) so that it meets with the next spot the consequent is true at
             {
@@ -399,7 +401,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
         }
         if (falseAt.size() != 0) {
             // pick a span interval at random
-            SpanInterval toSatisfy = falseAt.randomSI();
+            SpanInterval toSatisfy = falseAt.randomSI(rng);
             unsigned int b = toSatisfy.finish().finish();
             // case 1: extend phi1 to satisfy violation at b
             SISet phi2TrueAt = phi2->dSatisfied(m, d);
@@ -465,7 +467,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
             if (falseAt.size() != 0) {
                 // TODO: only two moves??
                 // pick a span interval at random
-                SpanInterval toSatisfy = falseAt.randomSI();
+                SpanInterval toSatisfy = falseAt.randomSI(rng);
                 unsigned int b = toSatisfy.finish().finish();
                 // case 1: extend phi2 to satisfy violation ending at b
                 SISet phi2TrueAt = phi2->dSatisfied(m, d);
@@ -499,7 +501,7 @@ std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disju
     return moves;
 }
 
-std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis) {
+std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis, boost::mt19937& rng) {
     std::vector<Move> moves;
     LOG(LOG_DEBUG) << "inside findMovesForForm2() with sentence: " << dis.toString();
 
@@ -587,7 +589,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
         return moves;
     }
     // pick at random
-    SpanInterval toSatisfy = violations.randomSI();
+    SpanInterval toSatisfy = violations.randomSI(rng);
     LOG(LOG_DEBUG) << "choosing to satisfy spaninterval " << toSatisfy.toString();
 
     unsigned int b = toSatisfy.finish().finish();
@@ -639,7 +641,7 @@ std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disju
     return moves;
 }
 
-std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis) {
+std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis, boost::mt19937& rng) {
     std::vector<Move> moves;
     LOG(LOG_DEBUG) << "inside findMovesForForm3() with sentence: " << dis.toString();
 
@@ -679,7 +681,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
         return moves;
     }
     // choose randomly
-    SpanInterval toSatisfyOrig = violations.randomSI();
+    SpanInterval toSatisfyOrig = violations.randomSI(rng);
     // try to satisfy it over its liquid interval
     SpanInterval toSatisfy = SpanInterval(toSatisfyOrig.start().start(), toSatisfyOrig.finish().finish(),
                              toSatisfyOrig.start().start(), toSatisfyOrig.finish().finish());
@@ -733,6 +735,7 @@ std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disju
                             boost::optional<SpanInterval> spShareRelOpt = intersection(spBeforeRelOpt.get(), spAfterRelOpt.get());
                             if (!spShareRelOpt) continue;
                             boost::optional<SpanInterval> leftover = intersection(*spShareRelOpt, spCurr);
+
                             if (leftover && leftover->size() > 0) {
                                 // generate a move deleting it here
                                 boost::shared_ptr<Sentence> itSentenceCopy((*it)->clone());
@@ -914,7 +917,7 @@ std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sent
 }
 
 
-std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence &el) {
+std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence &el, boost::mt19937& rng) {
     std::vector<Move> moves;
     const Sentence& s = *el.sentence();
     if (dynamic_cast<const LiquidOp*>(&s)) {
@@ -927,23 +930,23 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
         SISet notSat = sat.compliment();
         if (notSat.size() == 0) return moves;
 
-        SpanInterval si = notSat.randomSI();
+        SpanInterval si = notSat.randomSI(rng);
         LOG(LOG_DEBUG) << "choosing " << si.toString() << " as the interval to satisfy";
         const LiquidOp* liq = dynamic_cast<const LiquidOp*>(&s);
         moves = findMovesForLiquid(d, m, *liq->sentence(), si);
     } else if (isFormula1Type(s, d)) {
-        moves = findMovesForForm1(d, m, dynamic_cast<const Disjunction&>(s));   // TODO: fix so it uses ELSentence
+        moves = findMovesForForm1(d, m, dynamic_cast<const Disjunction&>(s), rng);   // TODO: fix so it uses ELSentence
     } else if (isFormula2Type(s, d)) {
-        moves = findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s));// TODO: fix so it uses ELSentence
+        moves = findMovesForForm2(d, m, dynamic_cast<const Disjunction&>(s), rng);// TODO: fix so it uses ELSentence
     } else if (isFormula3Type(s, d)) {
-        moves = findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s));// TODO: fix so it uses ELSentence
+        moves = findMovesForForm3(d, m, dynamic_cast<const Disjunction&>(s), rng);// TODO: fix so it uses ELSentence
     } else if (isPELCNFLiteral(s)) {
         // pick an si to satisfy
         SISet notSat = el.dNotSatisfied(m, d);
         if (notSat.size() == 0) return moves;
 
-        SpanInterval si = notSat.randomSI();
-        moves = findMovesForPELCNFLiteral(d, m, s, si);
+        SpanInterval si = notSat.randomSI(rng);
+        moves = findMovesForPELCNFLiteral(d, m, s, si, rng);
     } else if (isDisjunctionOfPELCNFLiterals(s)) {
         // instead of choosing just one si, we'll try them all
         SISet sat = el.dSatisfied(m, d);
@@ -954,7 +957,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
         if (notSat.size() == 0) return moves;
 
         BOOST_FOREACH(SpanInterval si, notSat.asSet()) {
-            std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, dynamic_cast<const Disjunction&>(s), si);
+            std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, dynamic_cast<const Disjunction&>(s), si, rng);
             moves.insert(moves.end(), localMoves.begin(), localMoves.end());
         }
 
@@ -1004,7 +1007,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
     return moves;
 }
 
-std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si) {
+std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si, boost::mt19937& rng) {
     std::vector<Move> moves;
     // check for simple literal - either an atom or a negation applied to an atom
     if (const Atom* a = dynamic_cast<const Atom*>(&s)) {
@@ -1063,7 +1066,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                     boost::shared_ptr<Sentence> insideClone(dia->sentence()->clone());
                     boost::shared_ptr<Negation> negatedInside(new Negation(insideClone));
                     if (siRel) {
-                        std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *negatedInside->sentence(), siRel.get());
+                        std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *negatedInside->sentence(), siRel.get(), rng);
                         BOOST_FOREACH(Move localMove, localMoves) {
                             move.toAdd.insert(move.toAdd.end(), localMove.toAdd.begin(), localMove.toAdd.end());
                             move.toDel.insert(move.toAdd.end(), localMove.toDel.begin(), localMove.toDel.end());
@@ -1173,7 +1176,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
                 //LOG_PRINT(LOG_DEBUG) << "si = " << si.toString() << std::endl;
                 boost::optional<SpanInterval> siRel = si.satisfiesRelation(inverseRelation(rel), d.maxSpanInterval());
                 if (siRel) {
-                    std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *sub, siRel.get());
+                    std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *sub, siRel.get(), rng);
                     moves.insert(moves.end(), localMoves.begin(), localMoves.end());
                 }
             }
@@ -1193,7 +1196,7 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             BOOST_FOREACH(Interval::INTERVAL_RELATION rel, dia->relations()) {
                 boost::shared_ptr<Sentence> diaSentenceCopy(dia->sentence()->clone());
                 boost::shared_ptr<Sentence> diaCopy(new DiamondOp(diaSentenceCopy, rel));
-                std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *diaCopy, si);
+                std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *diaCopy, si, rng);
                 moves.insert(moves.end(), localMoves.begin(), localMoves.end());
             }
             return moves;
@@ -1208,7 +1211,8 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
             // TODO: choose transition points!!!
 
             // instead we will choose a random point in the interval and add it there
-            unsigned int point = durInt.start().start() + (rand() % durInt.start().size());
+            boost::uniform_int<unsigned int> pointPick(durInt.start().start(), durInt.start().finish());
+            unsigned int point = pointPick(rng);
             Move move;
             move.toAdd.push_back(boost::make_tuple(*a, SpanInterval(point, point, point, point)));
             moves.push_back(move);
@@ -1276,22 +1280,22 @@ std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, con
 
 }
 
-std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m, const Disjunction &dis, const SpanInterval& si) {
+std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m, const Disjunction &dis, const SpanInterval& si, boost::mt19937& rng) {
     std::vector<Move> moves;
     // consider satisfying either the left, or the right
     if (const Disjunction *disLeft  = dynamic_cast<const Disjunction*>(&*dis.left())) {
-        std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, *disLeft, si);
+        std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, *disLeft, si, rng);
         moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
     } else {
-        std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *dis.left(), si);
+        std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *dis.left(), si, rng);
         moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
     }
 
     if (const Disjunction *disRight  = dynamic_cast<const Disjunction*>(&*dis.right())) {
-        std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, *disRight, si);
+        std::vector<Move> localMoves = findMovesForPELCNFDisjunction(d, m, *disRight, si, rng);
         moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
     } else {
-        std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *dis.right(), si);
+        std::vector<Move> localMoves = findMovesForPELCNFLiteral(d, m, *dis.right(), si, rng);
         moves.insert(moves.begin(), localMoves.begin(), localMoves.end());
     }
 

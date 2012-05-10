@@ -125,11 +125,11 @@ void Domain::addAtom(const Atom& a) {
     allAtoms_.insert(a);
 }
 
-Model Domain::randomModel() const {
+Model Domain::randomModel(boost::mt19937& rng) const {
     Model newModel(maxInterval_);
     //std::set<Atom, atomcmp> atoms = observations_.atoms();
     for (boost::unordered_set<Atom>::const_iterator it = allAtoms_.begin(); it != allAtoms_.end(); it++) {
-        SISet random = SISet::randomSISet(isLiquid(it->name()), maxInterval_);
+        SISet random = SISet::randomSISet(isLiquid(it->name()), maxInterval_, rng);
         // enforce our partial model
         Proposition trueProp(*it, true);
         Proposition falseProp(*it, false);

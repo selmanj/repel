@@ -9,6 +9,7 @@
 #define MCSATSAMPLERSTRATEGY_H_
 
 #include <boost/utility.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <vector>
 
 class Model;
@@ -23,7 +24,7 @@ public:
     virtual ~MCSatSampleStrategy() {}
 
     virtual MCSatSampleStrategy* clone() const = 0;
-    virtual void sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled) = 0;
+    virtual void sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled) = 0;
 };
 
 

@@ -8,8 +8,15 @@
 #include "MaxWalkSat.h"
 #include "../logic/Domain.h"
 #include "../logic/Moves.h"
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
-Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel, std::ostream* dataout) {
+Model maxWalkSat(Domain& d,
+        int numIterations,
+        double probOfRandomMove,
+        boost::mt19937& rng,
+        const Model* initialModel,
+        std::ostream* dataout) {
     row_out datalog(dataout);
 
     Model currentModel(d.maxInterval());
@@ -90,10 +97,11 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
         }
 
         // pick one at random
-        ELSentence toImprove = curFormulas.at(notFullySatisfied[rand() % notFullySatisfied.size()]);
+        boost::uniform_int<std::size_t> curFormUniformPick(0, notFullySatisfied.size()-1);
+        ELSentence toImprove = curFormulas.at(curFormUniformPick(rng));
         LOG(LOG_DEBUG) << "choosing formula: " << toImprove << " to improve.";
         // find the set of moves that improve it
-        std::vector<Move> moves = findMovesFor(d, currentModel, toImprove);
+        std::vector<Move> moves = findMovesFor(d, currentModel, toImprove, rng);
         if (moves.size() == 0) {
             LOG(LOG_WARN) << "WARNING: unable to find moves for sentence " << toImprove.sentence()->toString()
                     << " but couldn't find any (even though its violated)!  continuing...";
@@ -107,9 +115,11 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
             }
             LOG(LOG_DEBUG) << "moves to consider: " << vecStream.str();
         }
-        if (((double)rand()) / RAND_MAX < probOfRandomMove) {
+        boost::bernoulli_distribution<> randMovePick(probOfRandomMove);
+        if (randMovePick(rng)) {
             // take a random move
-            Move aMove = moves[rand() % moves.size()];
+            boost::uniform_int<std::size_t> movesPick(0, moves.size()-1);
+            Move aMove = moves[movesPick(rng)];
             LOG(LOG_DEBUG) << "taking random move: " << aMove.toString();
             currentModel = executeMove(d, aMove, currentModel);
             score_pair scorePair = computeScoresForMove(d, currentModel, aMove, currentScore, formScores, occurs);
@@ -142,7 +152,8 @@ Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Mo
                     bestLocalScorePairs.push_back(scorePair);
                 }
             }
-            int idx = rand() % bestLocalModels.size();  // choose one at random
+            boost::uniform_int<std::size_t> modelPick(0, bestLocalModels.size()-1);
+            int idx = modelPick(rng);  // choose one at random
             currentModel = bestLocalModels[idx];
             score_pair scorePair = bestLocalScorePairs[idx];
             currentScore = scorePair.totalScore;

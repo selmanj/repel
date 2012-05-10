@@ -8,12 +8,14 @@
 
 #include <cstdlib>
 #include <vector>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/bernoulli_distribution.hpp>
 
 #include "LiquidSampler.h"
 #include "../SpanInterval.h"
 #include "../SISet.h"
 
-std::vector<SpanInterval> LiquidSampler::operator ()(const SpanInterval& si, double p) const {
+std::vector<SpanInterval> LiquidSampler::operator ()(const SpanInterval& si, double p, boost::mt19937& rng) const {
     std::vector<SpanInterval> sampled;
 
     if (p <= 0.0) return sampled;
@@ -31,7 +33,9 @@ std::vector<SpanInterval> LiquidSampler::operator ()(const SpanInterval& si, dou
     do {
         Interval curInterval = toSample.front();
         toSample.pop_front();
-        bool sampleCurInterval = ((double)rand() / (double)RAND_MAX) <= p;
+        //bool sampleCurInterval = ((double)rand() / (double)RAND_MAX) <= p;
+        boost::bernoulli_distribution<double> flip(p);
+        bool sampleCurInterval = flip(rng);
         if (sampleCurInterval) {
             sampled.push_back(SpanInterval(curInterval));
             // now make sure none of our intervals overlap the sampled interval

@@ -11,6 +11,7 @@
 #include <boost/tuple/tuple.hpp>
 namespace po = boost::program_options;
 #include <boost/foreach.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <iostream>
 #include <cstdio>
 #include <string>
@@ -35,6 +36,9 @@ int main(int argc, char* argv[]) {
         po::options_description options;
         po::variables_map vm;
         initConfig(argc, argv, options, vm);
+
+        // get a random number generator
+        boost::mt19937 rng(time(NULL));
 
         if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
             std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
@@ -116,9 +120,9 @@ int main(int argc, char* argv[]) {
             }
             Model maxModel(d.maxInterval());
             if (datastream.is_open() && datastream.good()) {
-                maxModel = maxWalkSat(d, iterations, p, &defModel, &datastream);
+                maxModel = maxWalkSat(d, iterations, p, rng, &defModel, &datastream);
             } else {
-                maxModel = maxWalkSat(d, iterations, p, &defModel, 0);
+                maxModel = maxWalkSat(d, iterations, p, rng, &defModel, 0);
             }
 
             if (datastream.is_open()) datastream.close();

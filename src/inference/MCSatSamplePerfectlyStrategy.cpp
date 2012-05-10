@@ -6,10 +6,11 @@
  */
 
 #include <cstdlib>
+#include <boost/random/bernoulli_distribution.hpp>
 #include "MCSatSamplePerfectlyStrategy.h"
 #include "../logic/Domain.h"
 
-void MCSatSamplePerfectlyStrategy::sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled) {
+void MCSatSamplePerfectlyStrategy::sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled) {
     // sample on an interval basis for each formula
     for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
         ELSentence curSentence = *it;
@@ -28,7 +29,8 @@ void MCSatSamplePerfectlyStrategy::sampleSentences(const Model& m, const Domain&
             for (SpanInterval::const_iterator siIt = si.begin(); siIt != si.end(); siIt++) {
                 Interval interval = *siIt;
                 // sample it with probability 1-exp(-w)
-                if (((double)rand()) / ((double)RAND_MAX) <= prob) {
+                boost::bernoulli_distribution<double> flip(prob);
+                if (flip(rng)) {
                     where.add(SpanInterval(interval.start(), interval.start(), interval.finish(), interval.finish()));
                 }
             }

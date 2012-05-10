@@ -12,6 +12,7 @@
 #include <iostream>
 #include "SpanInterval.h"
 #include <boost/functional/hash.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 class SISet {
 public:
@@ -68,8 +69,8 @@ public:
 
     const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const;
 
-    static SISet randomSISet(bool forceLiquid, const Interval& maxInterval);
-    SpanInterval randomSI() const;
+    static SISet randomSISet(bool forceLiquid, const Interval& maxInterval, boost::mt19937& rng);
+    SpanInterval randomSI(boost::mt19937& rng) const;
 
     template<class OutIter>
     void collectSegments(OutIter out) const;

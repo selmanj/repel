@@ -12,6 +12,9 @@
 #include <cstdlib>
 #include <boost/foreach.hpp>
 #include <iterator>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/bernoulli_distribution.hpp>
+#include <boost/random/uniform_int.hpp>
 #include "SISet.h"
 #include "SpanInterval.h"
 #include "Log.h"
@@ -338,7 +341,7 @@ const SISet SISet::satisfiesRelation(const Interval::INTERVAL_RELATION& rel) con
 }
 
 
-SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
+SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval, boost::mt19937& rng) {
     SISet set(forceLiquid, maxInterval);
     if (!forceLiquid) {
         LOG_PRINT(LOG_ERROR) << "generating random SISets for non-liquid events is not yet implemented!";
@@ -349,8 +352,9 @@ SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
     unsigned int curStart = 0;
     unsigned int curFinish = 0;
     bool hasData = false;
+    boost::bernoulli_distribution<> flip(0.5);
     for (unsigned int point = maxInterval.start(); point <= maxInterval.finish(); point++) {
-        bool sampleThis = (rand() % 2) == 0;
+        bool sampleThis = flip(rng);
         if (sampleThis) {
             if (!hasData) {
                 curStart = point;
@@ -401,14 +405,15 @@ SISet SISet::randomSISet(bool forceLiquid, const Interval& maxInterval) {
     */
 }
 
-SpanInterval SISet::randomSI() const {
+SpanInterval SISet::randomSI(boost::mt19937& rng) const {
     if (size() == 0) {
         LOG_PRINT(LOG_ERROR) << "called randomSI() on an empty SISet.";
         std::runtime_error e("called randomSI() on an empty SISet.");
         throw e;
     }
     // choose a random number from 0 to size
-    int index = rand() % set_.size();
+    boost::uniform_int<std::size_t> setFlip(0, set_.size()-1);
+    std::size_t index = setFlip(rng);
     std::list<SpanInterval>::const_iterator it = set_.begin();
     while (index != 0) {
         it++;

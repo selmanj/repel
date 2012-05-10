@@ -9,6 +9,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <boost/optional.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <cstdio>
 #include <vector>
 #include "logic/ELSyntax.h"
@@ -42,21 +43,21 @@ BOOST_AUTO_TEST_CASE(liquidLitMovesTest) {
     BOOST_CHECK_EQUAL(d.maxInterval(), Interval(1,5));
 
     // initialize seed
-    srand(0);
-    moves = findMovesFor(d, d.defaultModel(), form1);
+    boost::mt19937 rng;
+    moves = findMovesFor(d, d.defaultModel(), form1, rng);
     BOOST_REQUIRE_EQUAL(moves.size(), 1);
     move = moves[0];
     BOOST_CHECK_EQUAL(move.toString(), "toAdd: {Q(a, b) @ [1:5]}, toDel: {}");
 
-    moves = findMovesFor(d, d.defaultModel(), form2);
+    moves = findMovesFor(d, d.defaultModel(), form2, rng);
     BOOST_CHECK_EQUAL(moves.size(), 0);
 
-    moves = findMovesFor(d, d.defaultModel(), form3);
+    moves = findMovesFor(d, d.defaultModel(), form3, rng);
     BOOST_REQUIRE_EQUAL(moves.size(), 1);
     move = moves[0];
     BOOST_CHECK_EQUAL(move.toString(), "toAdd: {}, toDel: {P(a, b) @ [1:5]}");
 
-    moves = findMovesFor(d, d.defaultModel(), form4);
+    moves = findMovesFor(d, d.defaultModel(), form4, rng);
     BOOST_REQUIRE_EQUAL(moves.size(), 1);
     move = moves[0];
     BOOST_CHECK_EQUAL(move.toString(), "toAdd: {S(a) @ [5:5]}, toDel: {}");
@@ -71,10 +72,11 @@ BOOST_AUTO_TEST_CASE(liquidConjMovesTest) {
     d.setMaxInterval(Interval(1,10));
     d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
-    srand(0);
+
+    boost::mt19937 rng;
 
     Move move;
-    move = findMovesFor(d, d.defaultModel(), form1)[0];
+    move = findMovesFor(d, d.defaultModel(), form1, rng)[0];
     BOOST_CHECK_EQUAL(move.toString(), "toAdd: {P(a, b) @ [6:10]}, toDel: {S(a) @ [6:10]}" );
 }
 
@@ -87,9 +89,9 @@ BOOST_AUTO_TEST_CASE(liquidDisjMovesTest) {
     d.setMaxInterval(Interval(1,10));
     d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
-    srand(0);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1, rng);
     BOOST_REQUIRE_EQUAL(moves.size(), 2);
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {P(a, b) @ [3:5]}" );
     BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {S(a) @ [3:5]}, toDel: {}" );
@@ -104,9 +106,10 @@ BOOST_AUTO_TEST_CASE(pelCNFAtomTest) {
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
-    srand(0);
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
+    boost::mt19937 rng;
+
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1, rng);
     BOOST_CHECK_EQUAL(moves.size(), 1);
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {S(a) @ [3:5]}, toDel: {}");
 }
@@ -119,9 +122,9 @@ BOOST_AUTO_TEST_CASE(pelCNFNegAtomTest) {
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
-    srand(0);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1, rng);
     BOOST_REQUIRE_EQUAL(moves.size(), 1);
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {S(a) @ [1:2]}");
 }
@@ -135,9 +138,10 @@ BOOST_AUTO_TEST_CASE(pelCNFDisjunctionTest) {
     d.setMaxInterval(Interval(1,10));
     d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
-    srand(0);
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
+    boost::mt19937 rng;
+
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1, rng);
     BOOST_REQUIRE_EQUAL(moves.size(), 2);
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {P(a, b) @ [6:10]}, toDel: {}");
     BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {S(a) @ [6:10]}, toDel: {}");
@@ -153,9 +157,9 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondTestTest) {
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
     ELSentence form1 = *d.formulas_begin();
-    srand(0);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1, rng);
     BOOST_CHECK_EQUAL(moves.size(), 2);
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {}, toDel: {Dig(a) @ [4:6], Spike(a) @ [4:6]}");
     BOOST_CHECK_EQUAL(moves[1].toString(), "toAdd: {}, toDel: {Huddle(a) @ [2:2]}");
@@ -178,8 +182,8 @@ BOOST_AUTO_TEST_CASE(pelCNFDiamondConjTest) {
     std::cout << "sat = " << sat.toString() << std::endl;
     std::cout << "sat compliment is = " << sat.compliment().toString() << std::endl;
 
-    srand(0);
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1);
+    boost::mt19937 rng;
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), form1, rng);
     BOOST_REQUIRE_EQUAL(moves.size(), 3);
 
     BOOST_CHECK_EQUAL(moves[0].toString(), "toAdd: {GoingUp(a) @ [4:4]}, toDel: {}");
@@ -201,6 +205,8 @@ BOOST_AUTO_TEST_CASE(pelCNFDisjLiqTest) {
 }
 
 BOOST_AUTO_TEST_CASE(maxWalkSatTest) {
+    boost::mt19937 rng;
+
     std::string facts(  "D_P(a) @ [1:5]\n"
                         "D_P(b) @ [4:7]\n");
     std::string formulas(
@@ -211,7 +217,7 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTest) {
     Domain d = loadDomainWithStreams(facts, formulas);
     srand(7);
     Model init = d.defaultModel();
-    Model m = maxWalkSat(d, 100, 0.5, &init);
+    Model m = maxWalkSat(d, 100, 0.5, rng, &init);
     std::cout << m.toString() << std::endl;
 }
 
@@ -222,9 +228,9 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1mi) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
-    srand(2);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin(), rng);
     BOOST_FOREACH(Move move, moves) {
         std::cout << "move: " << move.toString() << std::endl;
     }
@@ -237,9 +243,9 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1m) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
-    srand(2);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin(), rng);
     BOOST_FOREACH(Move move, moves) {
         std::cout << "move: " << move.toString() << std::endl;
     }
@@ -252,9 +258,9 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1f) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
-    srand(2);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin(), rng);
     BOOST_FOREACH(Move move, moves) {
         std::cout << "finish move: " << move.toString() << std::endl;
     }
@@ -268,9 +274,9 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm1fi) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
-    srand(2);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin(), rng);
     BOOST_FOREACH(Move move, moves) {
         std::cout << "finish move: " << move.toString() << std::endl;
     }
@@ -285,9 +291,9 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm2) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
-    srand(2);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin(), rng);
     BOOST_FOREACH(Move move, moves) {
         std::cout << "form2 move: " << move.toString() << std::endl;
     }
@@ -303,9 +309,9 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTestForm3) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
-    srand(2);
+    boost::mt19937 rng;
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin(), rng);
     BOOST_FOREACH(Move move, moves) {
         std::cout << "form3 move: " << move.toString() << std::endl;
     }
@@ -317,10 +323,10 @@ BOOST_AUTO_TEST_CASE(diamondLessThan) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     d.setDontModifyObsPreds(false);
-    srand(0);
+    boost::mt19937 rng;
     d.setMaxInterval(Interval(1,10));
 
-    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin());
+    std::vector<Move> moves = findMovesFor(d, d.defaultModel(), *d.formulas_begin(), rng);
     BOOST_CHECK(moves.size()!=0);
     BOOST_FOREACH(Move m, moves) {
         std::cout << "move = " << m.toString() << std::endl;

@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
 }
 
 BOOST_AUTO_TEST_CASE( randomModelTest ) {
-    srand(0);
+    boost::mt19937 rng;
     std::stringstream facts;
     facts << "Q(a) @ [1:3]\n";
     facts << "!Q(a) @ [4:15]\n";
@@ -263,13 +263,13 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
     options.setAssumeClosedWorldInFacts(false);
     Domain d = loadDomainWithStreams(facts.str(), "", options);
 
-    Model randomModel = d.randomModel();
+    Model randomModel = d.randomModel(rng);
     std::stringstream strstm;
     strstm << randomModel;
 
-    BOOST_CHECK_EQUAL(strstm.str(), "Q(a) @ {[1:3], [16:17]}\n"
-            "R(a) @ {[1:1], [5:13]}\n"
-            "S(a) @ {[1:3], [6:7], [9:9], [11:20]}\n");
+    BOOST_CHECK_EQUAL(strstm.str(), "Q(a) @ {[1:3], [16:16], [18:20]}\n"
+            "R(a) @ {[1:1], [6:14]}\n"
+            "S(a) @ {[2:2], [5:5], [8:8], [10:20]}\n");
     //std::cout << "random model: " << randomModel.toString() << std::endl;
 }
 

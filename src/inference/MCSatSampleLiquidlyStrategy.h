@@ -8,7 +8,9 @@
 #ifndef MCSATSAMPLELIQUIDLYSTRATEGY_H_
 #define MCSATSAMPLELIQUIDLYSTRATEGY_H_
 
+#include <boost/random/mersenne_twister.hpp>
 #include "MCSatSampleStrategy.h"
+
 
 class MCSatSampleLiquidlyStrategy: public MCSatSampleStrategy {
 public:
@@ -16,7 +18,7 @@ public:
     virtual ~MCSatSampleLiquidlyStrategy();
 
     virtual MCSatSampleStrategy* clone() const;
-    virtual void sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled);
+    virtual void sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled);
 };
 
 #endif /* MCSATSAMPLELIQUIDLYSTRATEGY_H_ */

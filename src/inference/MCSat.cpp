@@ -6,6 +6,7 @@
  */
 
 #include <cmath>
+#include <boost/random/bernoulli_distribution.hpp>
 #include "MCSat.h"
 #include "MaxWalkSat.h"
 #include "../logic/UnitProp.h"
@@ -20,7 +21,7 @@ const unsigned int MCSat::defWalksatNumRandomRestarts = 4;
 const bool MCSat::defUseRandomInitialModels = true;
 
 
-void MCSat::run() { // TODO: setup using random initial models
+void MCSat::run(boost::mt19937& rng) { // TODO: setup using random initial models
     if (d_ == 0) {
         throw std::logic_error("MCSat::run() - Domain not set");
     }
@@ -39,7 +40,7 @@ void MCSat::run() { // TODO: setup using random initial models
     //reduced.printDebugDescription(std::cout);
 
 
-    Model prevModel = (useRandomInitialModels_ ? reduced.randomModel() : reduced.defaultModel());
+    Model prevModel = (useRandomInitialModels_ ? reduced.randomModel(rng) : reduced.defaultModel());
 
     // do a starting run on the whole problem as our initial sample
     //boost::unordered_set<Model> initModels = sampleSat(prevModel, reduced);
@@ -51,7 +52,7 @@ void MCSat::run() { // TODO: setup using random initial models
     for (unsigned int iteration = 1; iteration < numSamples_+burnInIterations_; iteration++) {
         std::vector<ELSentence> newSentences;
 
-        sampleStrategy_->sampleSentences(prevModel, reduced, newSentences);
+        sampleStrategy_->sampleSentences(prevModel, reduced, rng, newSentences);
         if (iteration == 1) {
             std::cout << "initial sampled sentences: ";
             std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
@@ -85,10 +86,11 @@ void MCSat::run() { // TODO: setup using random initial models
         }
 
 
-        boost::unordered_set<Model> curModels = sampleSat(prevModel, curDomain);
+        boost::unordered_set<Model> curModels = sampleSat(prevModel, curDomain, rng);
         assert(!curModels.empty());
         // choose a random model
-        boost::unordered_set<Model>::size_type index = (rand() % curModels.size());
+        boost::uniform_int<std::size_t> pickModel(0, curModels.size()-1);
+        boost::unordered_set<Model>::size_type index = pickModel(rng);
         boost::unordered_set<Model>::const_iterator it = curModels.begin();
         while (index > 0) {
             it++;
@@ -123,7 +125,7 @@ Domain MCSat::applyUP(const Domain& d) {
     return reduced;
 }
 
-void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled) {
+void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled) {
     for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
         ELSentence currentSentence = *it;
 
@@ -143,7 +145,9 @@ void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& 
             if (!satisfied.includes(*sIt)) continue;
             // sample it.  with probability 1 - e^-score, add it to be enforced
             double prob = 1.0 - exp((double)-(currentSentence.weight()*sIt->size()));
-            bool addit = (((double)rand()) / ((double)RAND_MAX)) <= prob;
+            boost::bernoulli_distribution<double> flip(prob);
+            bool addit = flip(rng);
+            //bool addit = (((double)rand()) / ((double)RAND_MAX)) <= prob;
             if (addit) toEnforceAt.add(*sIt);
         }
         if (!toEnforceAt.empty()) {
@@ -153,7 +157,7 @@ void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& 
     }
 }
 
-boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Domain& d) {
+boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Domain& d, boost::mt19937& rng) {
     boost::unordered_set<Model> models;
     models.insert(initialModel); // always include the initial model
 
@@ -181,10 +185,10 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
 
     // do some random restarts and hope for different models
     for (unsigned int i = 1; i <= walksatNumRandomRestarts_; i++) {
-        Model iterInitModel = reduced.randomModel();   // TODO: better way to make random models
+        Model iterInitModel = reduced.randomModel(rng);   // TODO: better way to make random models
         if (reduced.formulas_size() == 0) {
             // just add the random model and continue
-            models.insert(reduced.randomModel());
+            models.insert(reduced.randomModel(rng));
             continue;
         }
 
@@ -192,7 +196,7 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
         //std::copy(reduced.formulas_begin(), reduced.formulas_end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
         //std::cout << std::endl;
 
-        Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, &iterInitModel);
+        Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, rng, &iterInitModel);
         if (reduced.isFullySatisfied(iterModel)) models.insert(iterModel);
     }
     return models;

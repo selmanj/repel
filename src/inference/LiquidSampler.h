@@ -10,8 +10,10 @@
 
 #include <functional>
 #include <vector>
+#include <boost/random/mersenne_twister.hpp>
 
 class SpanInterval;
+
 
 struct LiquidSampler : std::binary_function<SpanInterval, double, std::vector<SpanInterval> > {
     /**
@@ -22,7 +24,7 @@ struct LiquidSampler : std::binary_function<SpanInterval, double, std::vector<Sp
      * @param p probabiliy of sampling an interval (0 <= p <= 1)
      * @return vector of liquid spanintervals sampled
      */
-    std::vector<SpanInterval> operator()(const SpanInterval& si, double p) const;
+    std::vector<SpanInterval> operator()(const SpanInterval& si, double p, boost::mt19937& rng) const;
 };
 
 

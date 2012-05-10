@@ -18,7 +18,7 @@
 
 BOOST_AUTO_TEST_CASE( mcsat_test)
 {
-    srand(0);
+    boost::mt19937 rng;
     // disable debug logging
     FileLog::globalLogLevel() = LOG_ERROR;
     std::string facts("D-P(a) @ {[1:50]}\n");
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
         MCSat mcSatSolver(&d);
         mcSatSolver.setBurnInIterations(5000);
         mcSatSolver.setSampleStrategy(new MCSatSampleLiquidlyStrategy());
-        mcSatSolver.run();
+        mcSatSolver.run(rng);
         BOOST_CHECK_EQUAL(mcSatSolver.size(), MCSat::defNumSamples);
         boost::shared_ptr<Sentence> pa = getAsSentence("P(a)");
         Proposition propPa(static_cast<const Atom&>(*pa), true);
@@ -70,6 +70,7 @@ BOOST_AUTO_TEST_CASE( mcsat_test)
 
 BOOST_AUTO_TEST_CASE( mcsat_test2)
 {
+    boost::mt19937 rng;
     // disable debug logging
     FileLog::globalLogLevel() = LOG_ERROR;
     std::string facts("D-P(a) @ {[1:10]}\n");
@@ -81,7 +82,7 @@ BOOST_AUTO_TEST_CASE( mcsat_test2)
     MCSat mcSatSolver(&d);
     mcSatSolver.setSampleStrategy(new MCSatSampleLiquidlyStrategy());
     //mcSatSolver.setBurnInIterations(10000);
-    mcSatSolver.run();
+    mcSatSolver.run(rng);
     BOOST_CHECK_EQUAL(mcSatSolver.size(), MCSat::defNumSamples);
     boost::shared_ptr<Sentence> pa = getAsSentence("P(a)");
     Proposition propPa(static_cast<const Atom&>(*pa), true);
@@ -98,12 +99,14 @@ BOOST_AUTO_TEST_CASE( mcsat_test2)
 }
 
 BOOST_AUTO_TEST_CASE( mcsatSamplePerfectlyStrategy) {
+    boost::mt19937 rng;
+
     std::string facts("D-P(a) @ {[1:25]}\n");
     std::string formulas("100: [ P(a) -> D-P(a) ] @ [1:15]\n");
     Domain d = loadDomainWithStreams(facts, formulas);
     MCSatSamplePerfectlyStrategy strategy;
     std::vector<ELSentence> sampled;
-    strategy.sampleSentences(d.defaultModel(), d, sampled);
+    strategy.sampleSentences(d.defaultModel(), d, rng, sampled);
     BOOST_REQUIRE(sampled.size() == 1);
     std::cout << sampled[0].quantification().toString();
 

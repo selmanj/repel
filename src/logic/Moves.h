@@ -5,6 +5,7 @@
 #include <utility>
 #include <boost/optional.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include <iostream>
 #include <istream>
 #include <cstdlib>
@@ -34,16 +35,16 @@ bool canFindMovesFor(const Sentence &s, const Domain &d);
 bool isFormula1Type(const Sentence &s, const Domain &d);
 bool isFormula2Type(const Sentence &s, const Domain &d);
 bool isFormula3Type(const Sentence &s, const Domain &d);
-std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence &s);
-std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis);
-std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis);
-std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis);
+std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence &s, boost::mt19937& rng);
+std::vector<Move> findMovesForForm1(const Domain& d, const Model& m, const Disjunction &dis, boost::mt19937& rng);
+std::vector<Move> findMovesForForm2(const Domain& d, const Model& m, const Disjunction &dis, boost::mt19937& rng);
+std::vector<Move> findMovesForForm3(const Domain& d, const Model& m, const Disjunction &dis, boost::mt19937& rng);
 
 Move findMovesForLiquidLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
 std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m, const Disjunction &dis, const SpanInterval &si);
 std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval &si);
-std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si);
-std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m, const Disjunction &dis, const SpanInterval& si);
+std::vector<Move> findMovesForPELCNFLiteral(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si, boost::mt19937& rng);
+std::vector<Move> findMovesForPELCNFDisjunction(const Domain &d, const Model& m, const Disjunction &dis, const SpanInterval& si, boost::mt19937& rng);
 Model executeMove(const Domain& d, const Move& move, const Model& model);
 
 boost::shared_ptr<Sentence> convertToPELCNF(const boost::shared_ptr<const Sentence>& sentence, std::vector<boost::shared_ptr<Sentence> >& supportSentences, Domain &d);

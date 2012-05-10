@@ -9,6 +9,7 @@
 #define MCSAT_H_
 
 #include <vector>
+#include <boost/random/mersenne_twister.hpp>
 #include "../logic/Domain.h"
 #include "MCSatSampleStrategy.h"
 
@@ -23,7 +24,7 @@ public:
     static const unsigned int defWalksatNumRandomRestarts;
     static const bool defUseRandomInitialModels;
 
-    boost::unordered_set<Model> sampleSat(const Model& initialModel, const Domain& d);
+    boost::unordered_set<Model> sampleSat(const Model& initialModel, const Domain& d, boost::mt19937& rng);
 
     typedef std::vector<Model>::const_iterator const_iterator;
 
@@ -59,7 +60,7 @@ public:
 
     void clear();
 
-    void run();
+    void run(boost::mt19937& rng);
     double estimateProbability(const Proposition& prop, const Interval& where) const;
     unsigned int countProps(const Proposition& prop, const Interval& where) const;
 private:
@@ -111,7 +112,7 @@ public:
     MCSatSampleSegmentsStrategy& operator=(MCSatSampleSegmentsStrategy other);
     virtual MCSatSampleStrategy* clone() const;
 
-    virtual void sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled);
+    virtual void sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled);
 private:
     boost::unordered_map<Sentence*, boost::unordered_set<SpanInterval>,
     sentence_ptr_hash, sentence_ptr_pred> formulaToSegment_;

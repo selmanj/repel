@@ -21,7 +21,7 @@ MCSatSampleLiquidlyStrategy::~MCSatSampleLiquidlyStrategy() {
     // TODO Auto-generated destructor stub
 }
 
-void MCSatSampleLiquidlyStrategy::sampleSentences(const Model& m, const Domain& d, std::vector<ELSentence>& sampled) {
+void MCSatSampleLiquidlyStrategy::sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled) {
     // sample on an interval basis for each formula, enforcing liquid constraints
     for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
         ELSentence curSentence = *it;
@@ -39,7 +39,7 @@ void MCSatSampleLiquidlyStrategy::sampleSentences(const Model& m, const Domain& 
         LiquidSampler sampler;
         for (SISet::const_iterator siIt = satisfied.begin(); siIt != satisfied.end(); siIt++) {
             //std::cout << "working on " << *siIt << std::endl;
-            std::vector<SpanInterval> samples = sampler(*siIt, prob);
+            std::vector<SpanInterval> samples = sampler(*siIt, prob, rng);
             for (std::vector<SpanInterval>::const_iterator sampleIt = samples.begin();
                     sampleIt != samples.end();
                     sampleIt++) {

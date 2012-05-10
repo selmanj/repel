@@ -8,6 +8,7 @@
 #ifndef MAXWALKSAT_H_
 #define MAXWALKSAT_H_
 
+#include <boost/random.hpp>
 #include <set>
 #include <map>
 #include <vector>
@@ -20,7 +21,12 @@ class Atom;
 class ELSentence;
 struct AtomStringCompare;
 
-Model maxWalkSat(Domain& d, int numIterations, double probOfRandomMove, const Model* initialModel=0, std::ostream* dataout=0);
+Model maxWalkSat(Domain& d,
+        int numIterations,
+        double probOfRandomMove,
+        boost::mt19937& rng,
+        const Model* initialModel=0,
+        std::ostream* dataout=0);
 
 namespace {
     typedef std::set<int> FormSet;

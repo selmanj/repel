@@ -18,6 +18,7 @@
 #include <stdexcept>
 #include <boost/optional.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/random/mersenne_twister.hpp>
 #include "ELSyntax.h"
 #include "Collectors.h"
 #include "Model.h"
@@ -83,7 +84,7 @@ public:
 
     NameGenerator& nameGenerator();
     Model defaultModel() const;
-    Model randomModel() const;
+    Model randomModel(boost::mt19937& rng) const;
     Interval maxInterval() const;
     SpanInterval maxSpanInterval() const;
     void setMaxInterval(const Interval& maxInterval);
