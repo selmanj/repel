@@ -568,3 +568,29 @@ unsigned long hammingDistance(const SISet& a, const SISet& b) {
     return result.size();
 
 }
+
+/* UNFINISHED CODE
+static SISet SISet::asNormalized(const SISet& set) {
+    SISet disjointSet = set;
+    if (!disjointSet.isDisjoint()) disjointSet.makeDisjoint();
+    if (disjointSet.forceLiquid()) return disjointSet;  // liquid sets are already normalized
+    SISet norm(disjointSet.forceLiquid_, disjointSet.maxInterval_);
+
+    for (std::list<SpanInterval>::const_iterator it = disjointSet.set_.begin(); it != disjointSet.set_.end(); it++) {
+        SpanInterval si = *it;
+        for (std::list<SpanInterval>::iterator setIt = norm.set_.begin();
+                setIt != norm.set_.end();) {
+            SpanInterval si2 = *setIt;
+            // check to see if they can be combined
+
+        }
+    }
+}
+
+namespace {
+    bool canMerge(const SpanInterval& left, const SpanInterval& right) {
+        //if (left.start() == right.start() ||
+         //
+    }
+}
+*/

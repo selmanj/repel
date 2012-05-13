@@ -69,6 +69,14 @@ public:
 
     const SISet satisfiesRelation(const Interval::INTERVAL_RELATION& rel) const;
 
+    /**
+     * Construct a SISet from another where the
+     * representation is normalized (made as compact as possible).
+     *
+     * @param set The SISet to normalize.
+     * @return A SISet representing the same set of intervals but normalized (compact).
+     */
+ //   static SISet asNormalized(const SISet& set);
     static SISet randomSISet(bool forceLiquid, const Interval& maxInterval, boost::mt19937& rng);
     SpanInterval randomSI(boost::mt19937& rng) const;
 
@@ -177,9 +185,10 @@ inline std::size_t hash_value(const SISet& si) {
 
 template<class OutIter>
 void SISet::collectSegments(OutIter out) const {
+
     std::copy(begin(), end(), out);
     SISet comp = compliment();
     std::copy(comp.begin(), comp.end(), out);
 }
 
-#endif /* SISET_H_ */
+#endif
