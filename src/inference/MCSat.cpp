@@ -53,18 +53,18 @@ void MCSat::run(boost::mt19937& rng) { // TODO: setup using random initial model
         std::vector<ELSentence> newSentences;
 
         sampleStrategy_->sampleSentences(prevModel, reduced, rng, newSentences);
-        if (iteration == 1) {
-            std::cout << "initial sampled sentences: ";
-            std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
-            std::cout << "initial model:";
-            std::cout << prevModel;
-            for (Domain::formula_const_iterator it = prevDomain.formulas_begin();
-                    it != prevDomain.formulas_end();
-                    it++) {
-                std::cout << "formula " << *it << " is satisfied at: " << it->dSatisfied(prevModel, prevDomain) << std::endl;
-            }
-            std::cin.get();
-        }
+//        if (iteration == 1) {
+//            std::cout << "initial sampled sentences: ";
+//            std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
+//            std::cout << "initial model:";
+//            std::cout << prevModel;
+//            for (Domain::formula_const_iterator it = prevDomain.formulas_begin();
+//                    it != prevDomain.formulas_end();
+//                    it++) {
+//                std::cout << "formula " << *it << " is satisfied at: " << it->dSatisfied(prevModel, prevDomain) << std::endl;
+//            }
+//            std::cin.get();
+//        }
 
         // make a new domain using new Sentences
         Domain curDomain;
@@ -76,14 +76,14 @@ void MCSat::run(boost::mt19937& rng) { // TODO: setup using random initial model
             curDomain.addFormula(*it);
         }
         curDomain.addAtoms(prevDomain.atoms_begin(), prevDomain.atoms_end());
-
-        if (iteration == burnInIterations_ + numSamples_/2) {
-            std::cout << "ITERATION: " << iteration << std::endl;
-            std::cout << "curDomain";
-            curDomain.printDebugDescription(std::cout);
-            std::cout << "sampled sentences: ";
-            std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
-        }
+//
+//        if (iteration == burnInIterations_ + numSamples_/2) {
+//            std::cout << "ITERATION: " << iteration << std::endl;
+//            std::cout << "curDomain";
+//            curDomain.printDebugDescription(std::cout);
+//            std::cout << "sampled sentences: ";
+//            std::copy(newSentences.begin(), newSentences.end(), std::ostream_iterator<ELSentence>(std::cout, "\n"));
+//        }
 
 
         boost::unordered_set<Model> curModels = sampleSat(prevModel, curDomain, rng);
