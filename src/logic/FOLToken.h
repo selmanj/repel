@@ -58,8 +58,14 @@ public:
      * @param type  The type of token.
      * @param contents  The contents of the token
      */
-    FOLToken(FOLParse::TokenType type=FOLParse::Invalid, const std::string& contents="")
-        : type_(type), contents_(contents) {}
+    FOLToken(FOLParse::TokenType type=FOLParse::Invalid,
+            const std::string& contents="",
+            unsigned int lineNumber=0,
+            unsigned int colNumber=0)
+        : type_(type),
+          contents_(contents),
+          lineNumber_(lineNumber),
+          colNumber_(colNumber) {}
 
     /**
      * Get the type of the token.
@@ -78,6 +84,23 @@ public:
      */
     std::string contents() const {return contents_;};
 
+
+    /**
+     * Get the line number of the token.  A value of 0 indicates no line
+     * number is known.
+     *
+     * @return the line number that the token was found at.
+     */
+    unsigned int lineNumber() const { return lineNumber_; }
+
+    /**
+     * Get the column number of the token.  A value of 0 indicates no column
+     * number is known.
+     *
+     * @return the column number that the token was found at.
+     */
+    unsigned int colNumber() const { return colNumber_;}
+
     /**
      * Set the type of the token.
      *
@@ -93,9 +116,28 @@ public:
      */
     void setContents(const std::string& contents) {contents_ = contents;};
 
+    /**
+     * Set the line number of the token.  A value of 0 indicates no line
+     * number is known.
+     *
+     * @param number  the line number the token was discovered at.
+     */
+    void setLineNumber(unsigned int number) {lineNumber_ = number; }
+
+    /**
+     * Set the column number of the token.  A value of 0 indicates no column
+     * number is known.
+     *
+     * @param number  the column number the token was discovered at.
+     */
+    void setColNumber(unsigned int number) {colNumber_ = number; }
+
 private:
     FOLParse::TokenType type_;
     std::string contents_;
+
+    unsigned int lineNumber_;
+    unsigned int colNumber_;
 };
 
 #endif
