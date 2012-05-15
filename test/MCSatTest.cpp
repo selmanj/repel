@@ -366,6 +366,20 @@ BOOST_AUTO_TEST_CASE( mcsat_volleyball) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
 
+    std::set<unsigned int> timePoints;
+    for (Domain::fact_const_iterator it = d.facts_begin(); it != d.facts_end(); it++) {
+        SISet set = it->second;
+        for (SISet::const_iterator siIt = set.begin(); siIt != set.end(); siIt++) {
+            SpanInterval si = *siIt;
+            timePoints.insert(si.start().start());
+            timePoints.insert(si.start().finish());
+            timePoints.insert(si.finish().start());
+            timePoints.insert(si.finish().finish());
+        }
+    }
+
+    std::cout << "found " << timePoints.size() << " timepoints." << std::endl;
+
     MCSat mcSatSolver(&d);
     mcSatSolver.setBurnInIterations(1);
     mcSatSolver.setNumSamples(1);
