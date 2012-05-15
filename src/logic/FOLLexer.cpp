@@ -6,11 +6,11 @@
 #include "FOLToken.h"
 
 // TODO: make this use an iterator rather than return a vector
-std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
+std::vector<FOLToken> FOLParse::tokenize(std::istream& input) {
     std::vector<FOLToken> tokens;
-    while (!input->eof()) {
-        int c = input->get();
-        if (input->eof()) {
+    while (!input.eof()) {
+        int c = input.get();
+        if (input.eof()) {
             break;
         }
         FOLToken token;
@@ -20,14 +20,14 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
                 || c == '_') {
             std::string ident;
             ident.push_back(c);
-            while (!input->eof()) {
-                c = input->peek();
+            while (!input.eof()) {
+                c = input.peek();
                 if ((c >= 'A' && c <= 'Z')
                         || (c >= 'a' && c <= 'z')
                         || (c >= '0' && c <= '9')
                         || c == '_'
                         || c == '-') {
-                    input->get();
+                    input.get();
                     ident.push_back(c);
                 } else {
                     break;
@@ -68,11 +68,11 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
             std::string num;
             bool isFloat = (c == '.');
             num.push_back(c);
-            while (!input->eof()) {
-                c = input->peek();
+            while (!input.eof()) {
+                c = input.peek();
                 if ((c >= '0' && c <= '9') || c == '.') {
                     if (!isFloat && c == '.') isFloat = true;
-                    input->get();
+                    input.get();
                     num.push_back(c);
                 } else {
                     break;
@@ -84,13 +84,13 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
         } else if (c == '?') {
             // variable
             std::string var;
-            while (!input->eof()) {
-                c = input->peek();
+            while (!input.eof()) {
+                c = input.peek();
                 if ((c >= 'A' && c <= 'Z')
                         || (c >= 'a' && c <= 'z')
                         || (c >= '0' && c <= '9')
                         || c == '_') {
-                    input->get();
+                    input.get();
                     var.push_back(c);
                 } else {
                     break;
@@ -99,15 +99,15 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
             token.setType(FOLParse::Variable);
             token.setContents(var);
             tokens.push_back(token);
-        } else if ((c == '-' && input->peek() == '>')
-                || (c == '=' && input->peek() == '>')) {
-            input->get();
+        } else if ((c == '-' && input.peek() == '>')
+                || (c == '=' && input.peek() == '>')) {
+            input.get();
             // implies
             token.setType(FOLParse::Implies);
             token.setContents("->");
             tokens.push_back(token);
-        } else if (c == '<' && input->peek() == '>') {
-            input->get();
+        } else if (c == '<' && input.peek() == '>') {
+            input.get();
             // diamond
             token.setType(FOLParse::Diamond);
             token.setContents("<>");
@@ -208,10 +208,10 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
                 break;
             case '#':
                 // comment, do nothing until we get to endl
-                while (!input->eof()) {
-                    c = input->peek();
+                while (!input.eof()) {
+                    c = input.peek();
                     if (c != '\n') {
-                        input->get();
+                        input.get();
                     } else {
                         break;
                     }

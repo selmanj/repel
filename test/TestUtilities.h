@@ -12,7 +12,7 @@ boost::shared_ptr<Sentence> getAsSentence(const std::string& str);
 
 boost::shared_ptr<Sentence> getAsSentence(const std::string& str) {
     std::istringstream stream(str);
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&stream);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(stream);
     return FOLParse::parseFormula(tokens.begin(),tokens.end());
 }
 
@@ -20,8 +20,8 @@ Domain loadDomainWithStreams(const std::string& facts, const std::string& formul
     std::istringstream factsStream(facts);
     std::istringstream formulasStream(formulas);
 
-    std::vector<FOLToken> factsTokens = FOLParse::tokenize(&factsStream);
-    std::vector<FOLToken> formulaTokens = FOLParse::tokenize(&formulasStream);
+    std::vector<FOLToken> factsTokens = FOLParse::tokenize(factsStream);
+    std::vector<FOLToken> formulaTokens = FOLParse::tokenize(formulasStream);
 
     std::vector<FOL::Event> factvec;
     std::vector<ELSentence> formulaSet;

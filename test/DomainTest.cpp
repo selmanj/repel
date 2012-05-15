@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE( sat_test )
     facts << "Q(a,b) @ [5:15]";
 
 
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     //    std::vector<ELSentence> formulas;
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( sat_where ) {
     facts << "P(a,b) @ [1:10]";
     facts << "Q(a,b) @ [5:15]";
 
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
 
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
     facts << "A(a) @ [1:10]";
     facts << "B(b) @ [2:10]";
 
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( conjunctionMeetsTest ) {
     facts << "Q(a) @ [1:1]";
     facts << "R(a) @ [3:3]";
 
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
     facts << "R(a) @ [1:2]";
     facts << "S(a) @ [2:3]";
 
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
     facts << "R(a) @ [3:5]";
     facts << "S(a) @ [1:3]";
 
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
     facts << "R(a) @ [6:10]\n";
     facts << "S(a) @ [11:20]\n";
 
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&facts);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
     FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
     std::vector<ELSentence> formulas;

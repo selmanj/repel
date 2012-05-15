@@ -708,7 +708,7 @@ void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store)
         std::runtime_error e("unable to open event file for parsing");
         throw e;
     }
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&file);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(file);
     //BOOST_FOREACH(FOLToken token, tokens) {
     //  std::cout << "type: " << token.type() <<  " contents: " << token.contents() << std::endl;
     //}
@@ -724,7 +724,7 @@ void parseFormulaFile(const std::string &filename, std::vector<ELSentence>& stor
         std::runtime_error e("unable to open event file for parsing");
         throw e;
     }
-    std::vector<FOLToken> tokens = FOLParse::tokenize(&file);
+    std::vector<FOLToken> tokens = FOLParse::tokenize(file);
     iters<std::vector<FOLToken>::const_iterator> its(tokens.begin(), tokens.end());
     doParseFormulas(store, its);
     file.close();
