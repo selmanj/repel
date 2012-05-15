@@ -36,31 +36,31 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
             // now check for reserved keywords
             if (ident == "v") {
                 // OR
-                token.setType(FOLParse::OR);
+                token.setType(FOLParse::Or);
             } else if (ident == "var") {
                 // VAR
-                token.setType(FOLParse::VAR);
+                token.setType(FOLParse::Var);
             } else if (ident == "ex1") {
                 // EX1
-                token.setType(FOLParse::EX1);
+                token.setType(FOLParse::Exactly1);
             } else if (ident == "at1") {
                 // AT1
-                token.setType(FOLParse::AT1);
+                token.setType(FOLParse::AtLeast1);
             } else if (ident == "true") {
                 // TRUE
-                token.setType(FOLParse::TTRUE);
+                token.setType(FOLParse::True);
             } else if (ident == "false") {
                 // FALSE
-                token.setType(FOLParse::TFALSE);
+                token.setType(FOLParse::False);
             } else if (ident == "init") {
                 // INIT
-                token.setType(FOLParse::INIT);
+                token.setType(FOLParse::Init);
             } else if (ident == "inf") {
                 // INF
-                token.setType(FOLParse::INF);
+                token.setType(FOLParse::Infinity);
             } else {
                 // IDENT
-                token.setType(FOLParse::IDENT);
+                token.setType(FOLParse::Identifier);
             }
             token.setContents(ident);
             tokens.push_back(token);
@@ -78,7 +78,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
                     break;
                 }
             }
-            token.setType(isFloat ? FOLParse::FLOAT : FOLParse::NUMBER);
+            token.setType(isFloat ? FOLParse::Float : FOLParse::Number);
             token.setContents(num);
             tokens.push_back(token);
         } else if (c == '?') {
@@ -96,113 +96,113 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream* input) {
                     break;
                 }
             }
-            token.setType(FOLParse::VARIABLE);
+            token.setType(FOLParse::Variable);
             token.setContents(var);
             tokens.push_back(token);
         } else if ((c == '-' && input->peek() == '>')
                 || (c == '=' && input->peek() == '>')) {
             input->get();
             // implies
-            token.setType(FOLParse::IMPLIES);
+            token.setType(FOLParse::Implies);
             token.setContents("->");
             tokens.push_back(token);
         } else if (c == '<' && input->peek() == '>') {
             input->get();
             // diamond
-            token.setType(FOLParse::DIAMOND);
+            token.setType(FOLParse::Diamond);
             token.setContents("<>");
             tokens.push_back(token);
         } else {
             switch (c) {    // simple cases below
             case '!':
             case '~':
-                token.setType(FOLParse::NOT);
+                token.setType(FOLParse::Not);
                 token.setContents("!");
                 tokens.push_back(token);
                 break;
             case '[':
-                token.setType(FOLParse::OPEN_BRACKET);
+                token.setType(FOLParse::OpenBracket);
                 token.setContents("[");
                 tokens.push_back(token);
                 break;
             case ']':
-                token.setType(FOLParse::CLOSE_BRACKET);
+                token.setType(FOLParse::CloseBracket);
                 token.setContents("]");
                 tokens.push_back(token);
                 break;
             case '{':
-                token.setType(FOLParse::OPEN_BRACE);
+                token.setType(FOLParse::OpenBrace);
                 token.setContents("{");
                 tokens.push_back(token);
                 break;
             case '}':
-                token.setType(FOLParse::CLOSE_BRACE);
+                token.setType(FOLParse::CloseBrace);
                 token.setContents("}");
                 tokens.push_back(token);
                 break;
             case '*':
-                token.setType(FOLParse::STAR);
+                token.setType(FOLParse::Star);
                 token.setContents("*");
                 tokens.push_back(token);
                 break;
             case '(':
-                token.setType(FOLParse::OPEN_PAREN);
+                token.setType(FOLParse::OpenParen);
                 token.setContents("(");
                 tokens.push_back(token);
                 break;
             case ')':
-                token.setType(FOLParse::CLOSE_PAREN);
+                token.setType(FOLParse::CloseParen);
                 token.setContents(")");
                 tokens.push_back(token);
                 break;
             case '^':
             case '&':
-                token.setType(FOLParse::AND);
+                token.setType(FOLParse::And);
                 token.setContents("^");
                 tokens.push_back(token);
                 break;
             case '|':
-                token.setType(FOLParse::OR);
+                token.setType(FOLParse::Or);
                 token.setContents("v");
                 tokens.push_back(token);
                 break;
             case ',':
-                token.setType(FOLParse::COMMA);
+                token.setType(FOLParse::Comma);
                 token.setContents(",");
                 tokens.push_back(token);
                 break;
             case ':':
-                token.setType(FOLParse::COLON);
+                token.setType(FOLParse::Colon);
                 token.setContents(":");
                 tokens.push_back(token);
                 break;
             case ';':
-                token.setType(FOLParse::SEMICOLON);
+                token.setType(FOLParse::Semicolon);
                 token.setContents(";");
                 tokens.push_back(token);
                 break;
             case '@':
-                token.setType(FOLParse::AT);
+                token.setType(FOLParse::At);
                 token.setContents("@");
                 tokens.push_back(token);
                 break;
             case '=':
-                token.setType(FOLParse::EQUALS);
+                token.setType(FOLParse::Equals);
                 token.setContents("=");
                 tokens.push_back(token);
                 break;
             case '<':
-                token.setType(FOLParse::LT);
+                token.setType(FOLParse::LessThan);
                 token.setContents("<");
                 tokens.push_back(token);
                 break;
             case '>':
-                token.setType(FOLParse::GT);
+                token.setType(FOLParse::GreaterThan);
                 token.setContents(">");
                 tokens.push_back(token);
                 break;
             case '\n':
-                token.setType(FOLParse::ENDL);
+                token.setType(FOLParse::EndLine);
                 token.setContents("\n");
                 tokens.push_back(token);
                 break;
