@@ -367,14 +367,15 @@ BOOST_AUTO_TEST_CASE( mcsat_volleyball) {
     Domain d = loadDomainWithStreams(facts, formulas);
 
     MCSat mcSatSolver(&d);
-    mcSatSolver.setBurnInIterations(5000);
+    mcSatSolver.setBurnInIterations(1);
+    mcSatSolver.setNumSamples(1);
     std::cout << "running mcSatSolver with " << mcSatSolver.burnInIterations() << " burn in iterations and a sample size of " << mcSatSolver.numSamples() << std::endl;
     mcSatSolver.setSampleStrategy(new MCSatSampleLiquidlyStrategy());
     std::clock_t start = std::clock();
     mcSatSolver.run(rng);
     std::clock_t end = std::clock();
-    std::cout << "ran in " << end - start << " seconds.";
-    BOOST_CHECK_EQUAL(mcSatSolver.size(), MCSat::defNumSamples);
+    std::cout << "ran in " << (end - start)/CLOCKS_PER_SEC << " seconds.";
+    BOOST_CHECK_EQUAL(mcSatSolver.size(), mcSatSolver.numSamples());
 }
 
 BOOST_AUTO_TEST_CASE( mcsatSamplePerfectlyStrategy) {

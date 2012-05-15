@@ -48,9 +48,16 @@ void MCSat::run(boost::mt19937& rng) { // TODO: setup using random initial model
     Domain prevDomain = reduced;
 
     if (burnInIterations_ == 0) samples_.push_back(prevModel);
+    unsigned int totalIterations = numSamples_+burnInIterations_;
 
-    for (unsigned int iteration = 1; iteration < numSamples_+burnInIterations_; iteration++) {
+
+    for (unsigned int iteration = 1; iteration < totalIterations; iteration++) {
         std::vector<ELSentence> newSentences;
+
+        if ( totalIterations < 20 ||
+                iteration % (totalIterations / 20) == 0) {
+            std::cout << (((double)iteration) / ((double) totalIterations))*100 << "% done." << std::endl;
+        }
 
         sampleStrategy_->sampleSentences(prevModel, reduced, rng, newSentences);
 //        if (iteration == 1) {
