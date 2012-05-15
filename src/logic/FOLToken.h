@@ -2,6 +2,7 @@
 #define FOLTOKEN_H
 
 #include <string>
+#include <iostream>
 
 // TODO: rename FOLParse and all its ilk to ELParse (event logic parse)
 namespace FOLParse {
@@ -42,6 +43,8 @@ enum TokenType { Invalid,
     False,
     Init,
     Infinity};
+
+    std::ostream& operator<<(std::ostream& out, FOLParse::TokenType token);
 }
 
 /**
@@ -139,5 +142,6 @@ private:
     unsigned int lineNumber_;
     unsigned int colNumber_;
 };
+
 
 #endif

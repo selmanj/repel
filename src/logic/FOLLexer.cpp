@@ -5,15 +5,26 @@
 #include "FOLLexer.h"
 #include "FOLToken.h"
 
+namespace {
+    std::istream::int_type getNextChar(std::istream& stream, unsigned int& colNumber) {
+        colNumber++;
+        return stream.get();
+    }
+}
 // TODO: make this use an iterator rather than return a vector
 std::vector<FOLToken> FOLParse::tokenize(std::istream& input) {
     std::vector<FOLToken> tokens;
+    unsigned int lineNumber = 1;
+    unsigned int colNumber = 0; // will be advanced to one on first read
+
     while (!input.eof()) {
-        int c = input.get();
+        int c = getNextChar(input, colNumber);
         if (input.eof()) {
             break;
         }
         FOLToken token;
+        token.setLineNumber(lineNumber);
+        token.setColNumber(colNumber);
         // first check for identifiers
         if ((c >= 'A' && c <= 'Z')
                 || (c >= 'a' && c <= 'z')
@@ -27,7 +38,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream& input) {
                         || (c >= '0' && c <= '9')
                         || c == '_'
                         || c == '-') {
-                    input.get();
+                    getNextChar(input, colNumber);
                     ident.push_back(c);
                 } else {
                     break;
@@ -72,7 +83,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream& input) {
                 c = input.peek();
                 if ((c >= '0' && c <= '9') || c == '.') {
                     if (!isFloat && c == '.') isFloat = true;
-                    input.get();
+                    getNextChar(input, colNumber);
                     num.push_back(c);
                 } else {
                     break;
@@ -90,7 +101,7 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream& input) {
                         || (c >= 'a' && c <= 'z')
                         || (c >= '0' && c <= '9')
                         || c == '_') {
-                    input.get();
+                    getNextChar(input, colNumber);
                     var.push_back(c);
                 } else {
                     break;
@@ -101,13 +112,13 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream& input) {
             tokens.push_back(token);
         } else if ((c == '-' && input.peek() == '>')
                 || (c == '=' && input.peek() == '>')) {
-            input.get();
+            getNextChar(input, colNumber);
             // implies
             token.setType(FOLParse::Implies);
             token.setContents("->");
             tokens.push_back(token);
         } else if (c == '<' && input.peek() == '>') {
-            input.get();
+            getNextChar(input, colNumber);
             // diamond
             token.setType(FOLParse::Diamond);
             token.setContents("<>");
@@ -205,17 +216,22 @@ std::vector<FOLToken> FOLParse::tokenize(std::istream& input) {
                 token.setType(FOLParse::EndLine);
                 token.setContents("\n");
                 tokens.push_back(token);
+
+                // update counts to next line
+                lineNumber++;
+                colNumber = 0;
                 break;
             case '#':
                 // comment, do nothing until we get to endl
                 while (!input.eof()) {
                     c = input.peek();
                     if (c != '\n') {
-                        input.get();
+                        getNextChar(input, colNumber);
                     } else {
                         break;
                     }
                 }
+
                 break;
             case ' ':
             case '\t':

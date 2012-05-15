@@ -31,44 +31,43 @@ namespace po = boost::program_options;
 
 
 int main(int argc, char* argv[]) {
-    try {
-        // build the variable map from our configuration
-        po::options_description options;
-        po::variables_map vm;
-        initConfig(argc, argv, options, vm);
+    // build the variable map from our configuration
+    po::options_description options;
+    po::variables_map vm;
+    initConfig(argc, argv, options, vm);
 
-        // get a random number generator
-        boost::mt19937 rng(time(NULL));
+    // get a random number generator
+    boost::mt19937 rng(time(NULL));
 
-        if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
-            std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
-            std::cout << options << std::endl;
+    if (vm.count("help") || !vm.count("facts-file") || !vm.count("formula-file")) {
+        std::cout << "Usage: pel [OPTION]... FACT-FILE FORMULA-FILE" << std::endl;
+        std::cout << options << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    if (vm.count("version")) {
+        std::cout << "pel version " << PEL_VERSION_MAJOR << "." << PEL_VERSION_MINOR << std::endl;
+        return EXIT_SUCCESS;
+    }
+
+    // setup our logging facilities
+    FILE* debugFile = fopen("debug.log", "w");
+    if (!debugFile) std::cerr << "unable to open debug.log for logging - logging to stderr";
+    else FilePolicy::stream() = debugFile;
+    FileLog::globalLogLevel() = LOG_DEBUG;
+
+    LOG(LOG_INFO) << "Opened log file for new session";
+
+    // make sure we can open the output model file, if specified
+    FILE* outputFile = NULL;
+    if (vm.count("output")) {
+        outputFile = fopen(vm["output"].as<std::string>().c_str(), "w");
+        if (!outputFile) {
+            std::cerr << "unable to open output file \"" << vm["output"].as<std::string>() << "\" for writing." << std::endl;
             return EXIT_FAILURE;
         }
-
-        if (vm.count("version")) {
-            std::cout << "pel version " << PEL_VERSION_MAJOR << "." << PEL_VERSION_MINOR << std::endl;
-            return EXIT_SUCCESS;
-        }
-
-        // setup our logging facilities
-        FILE* debugFile = fopen("debug.log", "w");
-        if (!debugFile) std::cerr << "unable to open debug.log for logging - logging to stderr";
-        else FilePolicy::stream() = debugFile;
-        FileLog::globalLogLevel() = LOG_DEBUG;
-
-        LOG(LOG_INFO) << "Opened log file for new session";
-
-        // make sure we can open the output model file, if specified
-        FILE* outputFile = NULL;
-        if (vm.count("output")) {
-            outputFile = fopen(vm["output"].as<std::string>().c_str(), "w");
-            if (!outputFile) {
-                std::cerr << "unable to open output file \"" << vm["output"].as<std::string>() << "\" for writing." << std::endl;
-                return EXIT_FAILURE;
-            }
-        }
-
+    }
+    try {
         Domain d = FOLParse::loadDomainFromFiles(vm["facts-file"].as<std::string>(), vm["formula-file"].as<std::string>());
         if (vm.count("max") || vm.count("min")) {
             Interval maxInt = d.maxInterval();
@@ -154,12 +153,8 @@ int main(int argc, char* argv[]) {
 
         // Should be good and close files?
         return EXIT_SUCCESS;
-    } catch (std::exception& e) {
-        std::cerr << "Exception : " << e.what() << std::endl;
-        return EXIT_FAILURE;
-    } catch (...) {
-        std::cerr << "Unknown exception occurred" << std::endl;
-        return EXIT_FAILURE;
+    } catch (bad_parse& p) {
+        std::cerr << "Unable to parse: " << p.details << std::endl;
     }
 }
 
@@ -188,7 +183,6 @@ void initConfig(int argc,
         ("formula-file", po::value<std::string>(), "formula file")
     ;
     po::positional_options_description p;
-    p.add("mode", 1);
     p.add("facts-file", 1);
     p.add("formula-file", 1);
 

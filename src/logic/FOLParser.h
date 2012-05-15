@@ -72,12 +72,18 @@ void consumeTokenType(FOLParse::TokenType type,
         iters<ForwardIterator> &its) throw (bad_parse) {
     if (its.cur == its.last) {
         bad_parse e;
-        e.details << "unexpectedly reached end of tokens while parsing type " << type << std::endl;
+        std::stringstream str;
+        str << "unexpectedly reached end of tokens while parsing type " << type << std::endl;
+        e.details = str.str();
         throw e;
     }
     if (its.cur->type() != type) {
         bad_parse e;
-        e.details << "expected type " << type << " but instead we have: " << its.cur->type() << std::endl;
+        std::stringstream str;
+
+        str << "expected type " << type << " but instead we have: " << its.cur->type() << std::endl;
+        str << "line number: " << its.cur->lineNumber() << ", column number: " << its.cur->colNumber() << std::endl;
+        e.details = str.str();
         throw e;
     }
     its.cur++;
@@ -87,12 +93,17 @@ template <class ForwardIterator>
 std::string consumeIdent(iters<ForwardIterator> &its) throw (bad_parse) {
     if (its.cur == its.last) {
         bad_parse e;
-        e.details << "unexpectedly reached end of tokens while looking for identifier" << std::endl;
+        std::stringstream str;
+        str << "unexpectedly reached end of tokens while looking for identifier" << std::endl;
+        e.details = str.str();
         throw e;
     }
     if (its.cur->type() != FOLParse::Identifier) {
         bad_parse e;
-        e.details << "expected an identifier, instead we have type " << its.cur->type() << std::endl;
+        std::stringstream str;
+        str << "expected an identifier, instead we have type " << its.cur->type() << std::endl;
+        str << "line number: " << its.cur->lineNumber() << ", column number: " << its.cur->colNumber() << std::endl;
+        e.details = str.str();
         throw e;
     }
     std::string name = its.cur->contents();
@@ -104,12 +115,17 @@ template <class ForwardIterator>
 std::string consumeVariable(iters<ForwardIterator> &its) throw (bad_parse) {
     if (its.cur == its.last) {
         bad_parse e;
-        e.details << "unexpectedly reached end of tokens while looking for variable" << std::endl;
+        std::stringstream str;
+        str << "unexpectedly reached end of tokens while looking for variable" << std::endl;
+        e.details = str.str();
         throw e;
     }
     if (its.cur->type() != FOLParse::Variable) {
         bad_parse e;
-        e.details << "expected a variable, instead we have type " << its.cur->type() << std::endl;
+        std::stringstream str;
+        str << "expected a variable, instead we have type " << its.cur->type() << std::endl;
+        str << "line number: " << its.cur->lineNumber() << ", column number: " << its.cur->colNumber() << std::endl;
+        e.details = str.str();
         throw e;
     }
     std::string name = its.cur->contents();
@@ -121,12 +137,17 @@ template <class ForwardIterator>
 unsigned int consumeNumber(iters<ForwardIterator> &its) throw (bad_parse) {
     if (its.cur == its.last) {
         bad_parse e;
-        e.details << "unexpectedly reached end of tokens while looking for number" << std::endl;
+        std::stringstream str;
+        str << "unexpectedly reached end of tokens while looking for number" << std::endl;
+        e.details = str.str();
         throw e;
     }
     if (its.cur->type() != FOLParse::Number) {
         bad_parse e;
-        e.details << "expected a number, instead we have type " << its.cur->type() << std::endl;
+        std::stringstream str;
+        str << "expected a number, instead we have type " << its.cur->type() << std::endl;
+        str << "line number: " << its.cur->lineNumber() << ", column number: " << its.cur->colNumber() << std::endl;
+        e.details = str.str();
         throw e;
     }
 
@@ -142,12 +163,17 @@ template <class ForwardIterator>
 double consumeFloat(iters<ForwardIterator> &its) throw (bad_parse) {
     if (its.cur == its.last) {
         bad_parse e;
-        e.details << "unexpectedly reached end of tokens while looking for number" << std::endl;
+        std::stringstream str;
+        str << "unexpectedly reached end of tokens while looking for number" << std::endl;
+        e.details = str.str();
         throw e;
     }
     if (its.cur->type() != FOLParse::Float) {
         bad_parse e;
-        e.details << "expected a float, instead we have type " << its.cur->type() << std::endl;
+        std::stringstream str;
+        str << "expected a float, instead we have type " << its.cur->type() << std::endl;
+        str << "line number: " << its.cur->lineNumber() << ", column number: " << its.cur->colNumber() << std::endl;
+        e.details = str.str();
         throw e;
     }
 
@@ -577,7 +603,10 @@ Interval::INTERVAL_RELATION doParseRelation(iters<ForwardIterator>& its) {
         } else {
             // no more matches!
             bad_parse p;
-            p.details << "no interval relation matches \"" << str << "\"" << std::endl;
+            std::stringstream str;
+            str << "no interval relation matches \"" << str << "\"" << std::endl;
+            str << "line number: " << its.cur->lineNumber() << ", column number: " << its.cur->colNumber() << std::endl;
+            p.details = str.str();
             throw p;
         }
     }
@@ -705,7 +734,7 @@ namespace FOLParse
 void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store) {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
-        std::runtime_error e("unable to open event file for parsing");
+        std::runtime_error e("unable to open event file " + filename + " for parsing");
         throw e;
     }
     std::vector<FOLToken> tokens = FOLParse::tokenize(file);
@@ -714,19 +743,31 @@ void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store)
     //}
 
     iters<std::vector<FOLToken>::const_iterator > its(tokens.begin(), tokens.end());
-    doParseEvents(store, its);
+    try {
+        doParseEvents(store, its);
+    } catch (bad_parse& e) {
+        e.details += "filename: " +filename + "\n";
+        file.close();
+        throw;
+    }
     file.close();
 };
 
 void parseFormulaFile(const std::string &filename, std::vector<ELSentence>& store) {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
-        std::runtime_error e("unable to open event file for parsing");
+        std::runtime_error e("unable to open event file " + filename + " for parsing");
         throw e;
     }
     std::vector<FOLToken> tokens = FOLParse::tokenize(file);
     iters<std::vector<FOLToken>::const_iterator> its(tokens.begin(), tokens.end());
-    doParseFormulas(store, its);
+    try {
+        doParseFormulas(store, its);
+    } catch (bad_parse& e) {
+        e.details += "filename: " + filename + "\n";
+        file.close();
+        throw;
+    }
     file.close();
 };
 
