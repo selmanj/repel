@@ -8,7 +8,6 @@
 #ifndef SPANINTERVAL_H
 #define SPANINTERVAL_H
 
-
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/functional/hash.hpp>
@@ -21,13 +20,34 @@
 #include <stdexcept>
 #include "Interval.h"
 #include "Log.h"
-
+// forward declaration for the iterator - see below
 class SpanIntervalIterator;
 
+/**
+ * Class for compactly representing a set of Intervals.  A spanning interval
+ * is defined by four integers (or rather, two sets of integer pairs).  One
+ * provides the range of starting points and ending points for intervals
+ * contained in the set.
+ *
+ * For example, Spanning interval [(1,5), (6,10)] is a set of intervals that
+ * contains all intervals that have their starting point in the range 1-5
+ * (inclusive) and their endpoint in the range 6-10 (inclusive).  A Spanning
+ * interval is called liquid if the starting/ending range are the same.
+ */
 class SpanInterval {
 public:
+    /**
+     * Construct a Spanning Interval.  By default, the spanning interval is
+     * [(0,0), (0,0].
+     */
     SpanInterval();
+
+    /**
+     * Construct a liquid Spanning Interval from the given interval.  The
+     * Spanning interval is [(liq), (liq)].
+     */
     explicit SpanInterval(const Interval& liq);
+
     SpanInterval(const Interval& start, const Interval& end);
     SpanInterval(unsigned int liqStart, unsigned int liqEnd);
     SpanInterval(unsigned int startFrom, unsigned int startTo, unsigned int endFrom, unsigned int endTo);
@@ -260,21 +280,22 @@ inline void SpanInterval::liqCompliment(const SpanInterval& universe, OutputIter
 
 template <class OutputIterator>
 void SpanInterval::subtract(const SpanInterval &remove, OutputIterator out) const {
-    boost::optional<SpanInterval> intersect = intersection(*this, remove);
-    if (!intersect) {   // no intersection, don't subtract anything
+    boost::optional<SpanInterval> intersectOpt = intersection(*this, remove);
+    if (!intersectOpt) {   // no intersection, don't subtract anything
         *out = *this;
     } else {
+        SpanInterval intersect = *intersectOpt;
         boost::optional<Interval> a, b, c, d;
 
-        if (intersect->start().start()!=0)          a = Interval(start().start()               , intersect->start().start()-1);
-        if (intersect->start().finish()!=UINT_MAX)  b = Interval(intersect->start().finish()+1 , start().finish());
-        if (intersect->finish().start()!=0)         c = Interval(finish().start()              , intersect->finish().start()-1);
-        if (intersect->finish().finish()!=UINT_MAX) d = Interval(intersect->finish().finish()+1, finish().finish());
+        if (intersect.start().start()!=0)          a = Interval(start().start()               , intersect.start().start()-1);
+        if (intersect.start().finish()!=UINT_MAX)  b = Interval(intersect.start().finish()+1 , start().finish());
+        if (intersect.finish().start()!=0)         c = Interval(finish().start()              , intersect.finish().start()-1);
+        if (intersect.finish().finish()!=UINT_MAX) d = Interval(intersect.finish().finish()+1, finish().finish());
 
         boost::optional<SpanInterval> s1,s2,s3,s4;
         if (a) s1 = SpanInterval(*a, finish()).normalize();
-        if (c) s2 = SpanInterval(intersect->start(), *c).normalize();
-        if (d) s3 = SpanInterval(intersect->start(), *d).normalize();
+        if (c) s2 = SpanInterval(intersect.start(), *c).normalize();
+        if (d) s3 = SpanInterval(intersect.start(), *d).normalize();
         if (b) s4 = SpanInterval(*b, finish()).normalize();
 
         if (s1) {*out = *s1; out++;}
@@ -289,14 +310,15 @@ void SpanInterval::liqSubtract(const SpanInterval& remove, OutputIterator out) c
     if (!isLiquid()) throw std::invalid_argument("SpanInterval::liqSubtract - *this is not liquid");
     if (!remove.isLiquid()) throw std::invalid_argument("SpanInterval::liqSubtract - remove is not liquid");
 
-    boost::optional<SpanInterval> intersect = intersection(*this, remove);
-    if (!intersect) {
+    boost::optional<SpanInterval> intersectOpt = intersection(*this, remove);
+    if (!intersectOpt) {
         *out = *this;   // no intersection, don't subtract anything
     } else {
+        SpanInterval intersect = *intersectOpt;
         boost::optional<Interval> a, b;
 
-        if (intersect->start().start()!=0)         a = Interval(start().start(), intersect->start().start()-1);
-        if (intersect->start().finish()!=UINT_MAX) b = Interval(intersect->start().finish()+1, start().finish());
+        if (intersect.start().start()!=0)         a = Interval(start().start(), intersect.start().start()-1);
+        if (intersect.start().finish()!=UINT_MAX) b = Interval(intersect.start().finish()+1, start().finish());
 
         boost::optional<SpanInterval> s1, s2;
         if (a) s1 = SpanInterval(*a, *a).normalize();
