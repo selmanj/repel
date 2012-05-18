@@ -136,7 +136,7 @@ Model maxWalkSat(Domain& d,
             for (std::vector<Move>::const_iterator it=moves.begin(); it != moves.end(); it++) {
                 Model nextModel = executeMove(d, *it, currentModel);
                 score_pair scorePair = computeScoresForMove(d, nextModel, *it, currentScore, formScores, occurs);
-                unsigned long nextScore = scorePair.totalScore;
+                double nextScore = scorePair.totalScore;
                 if (nextScore > bestLocalScore) {
                     bestLocalModels.clear();
                     bestLocalMoves.clear();
