@@ -127,7 +127,7 @@ Model maxWalkSat(Domain& d,
             formScores = scorePair.formScores;
         } else {
             // find the models resulting from each move, and choose the highest scoring model as our next model
-            double bestLocalScore = 0;
+            double bestLocalScore = 0.0;
             std::vector<Model> bestLocalModels;
             std::vector<Move> bestLocalMoves;
             std::vector<score_pair> bestLocalScorePairs;
@@ -136,7 +136,7 @@ Model maxWalkSat(Domain& d,
             for (std::vector<Move>::const_iterator it=moves.begin(); it != moves.end(); it++) {
                 Model nextModel = executeMove(d, *it, currentModel);
                 score_pair scorePair = computeScoresForMove(d, nextModel, *it, currentScore, formScores, occurs);
-                unsigned long nextScore = scorePair.totalScore;
+                double nextScore = scorePair.totalScore;
                 if (nextScore > bestLocalScore) {
                     bestLocalModels.clear();
                     bestLocalMoves.clear();
