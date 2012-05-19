@@ -3,9 +3,11 @@
 
 #include <vector>
 #include <iostream>
-#include "FOLToken.h"
+
+class FOLToken;
+
 namespace FOLParse {
-std::vector<FOLToken> tokenize(std::istream* input);
+std::vector<FOLToken> tokenize(std::istream& input);
 };
 
 #endif

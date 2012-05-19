@@ -98,7 +98,7 @@ Model maxWalkSat(Domain& d,
 
         // pick one at random
         boost::uniform_int<std::size_t> curFormUniformPick(0, notFullySatisfied.size()-1);
-        ELSentence toImprove = curFormulas.at(curFormUniformPick(rng));
+        ELSentence toImprove = curFormulas.at(notFullySatisfied.at(curFormUniformPick(rng)));
         LOG(LOG_DEBUG) << "choosing formula: " << toImprove << " to improve.";
         // find the set of moves that improve it
         std::vector<Move> moves = findMovesFor(d, currentModel, toImprove, rng);
@@ -127,7 +127,7 @@ Model maxWalkSat(Domain& d,
             formScores = scorePair.formScores;
         } else {
             // find the models resulting from each move, and choose the highest scoring model as our next model
-            double bestLocalScore = 0;
+            double bestLocalScore = 0.0;
             std::vector<Model> bestLocalModels;
             std::vector<Move> bestLocalMoves;
             std::vector<score_pair> bestLocalScorePairs;
