@@ -13,6 +13,7 @@
 #include "SpanInterval.h"
 #include <boost/functional/hash.hpp>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/serialization/access.hpp>
 
 class SISet {
 public:
@@ -94,6 +95,11 @@ public:
     friend bool equalByInterval(const SISet& a, const SISet& b);
     friend std::size_t hash_value(const SISet& si);
 private:
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialization(Archive& ar, const unsigned int version);
+
     std::list<SpanInterval> set_;
     bool forceLiquid_;
     Interval maxInterval_;
@@ -189,6 +195,13 @@ void SISet::collectSegments(OutIter out) const {
     std::copy(begin(), end(), out);
     SISet comp = compliment();
     std::copy(comp.begin(), comp.end(), out);
+}
+
+template <class Archive>
+void SISet::serialization(Archive& ar, const unsigned int version) {
+    ar & set_;
+    ar & forceLiquid_;
+    ar & maxInterval_;
 }
 
 #endif
