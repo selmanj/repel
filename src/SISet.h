@@ -98,7 +98,7 @@ private:
     friend class boost::serialization::access;
 
     template <class Archive>
-    void serialization(Archive& ar, const unsigned int version);
+    void serialize(Archive& ar, const unsigned int version);
 
     std::list<SpanInterval> set_;
     bool forceLiquid_;
@@ -198,7 +198,7 @@ void SISet::collectSegments(OutIter out) const {
 }
 
 template <class Archive>
-void SISet::serialization(Archive& ar, const unsigned int version) {
+void SISet::serialize(Archive& ar, const unsigned int version) {
     ar & set_;
     ar & forceLiquid_;
     ar & maxInterval_;
