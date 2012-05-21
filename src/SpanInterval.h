@@ -156,6 +156,28 @@ private:
     bool isDead_;
 };
 
+/**
+ * Simple functor for sorting spanning intervals by their starting range
+ * start point
+ */
+struct SpanIntervalStartComparator : std::binary_function<SpanInterval, SpanInterval, bool> {
+public:
+    bool operator()(const SpanInterval& l, const SpanInterval& r) const {
+        return (l.start().start() < r.start().start());
+    }
+};
+
+/**
+ * Simple functor for sorting spanning intervals by their finishing range
+ * start point
+ */
+struct SpanIntervalFinishComparator : std::binary_function<SpanInterval, SpanInterval, bool> {
+public:
+    bool operator()(const SpanInterval& l, const SpanInterval& r) const {
+        return (l.finish().start() < r.finish().start());
+    }
+};
+
 // IMPLEMENTATION
 inline SpanInterval::SpanInterval()
 : start_(0, 0), finish_(0, 0) {}
