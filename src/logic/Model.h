@@ -20,7 +20,6 @@ public:
     typedef boost::unordered_map<Atom, SISet>::const_iterator const_iterator;
     typedef boost::unordered_map<Atom, SISet>::value_type value_type;
 
-
     Model(const Interval& maxInterval_);
     Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval_);
     Model(const boost::unordered_map<Proposition, SISet>& partialModel, const Interval& maxInterval_);
@@ -57,9 +56,7 @@ public:
 
 
 private:
-    typedef boost::unordered_map<Atom, SISet> atom_map;
-
-    atom_map amap_;
+    boost::unordered_map<Atom, SISet> amap_;
     Interval maxInterval_;
 };
 

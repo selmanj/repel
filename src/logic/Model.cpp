@@ -118,8 +118,8 @@ void Model::clearAtom(const Atom& a) {
 
 void Model::setMaxInterval(const Interval& maxInterval) {
     maxInterval_ = maxInterval;
-    atom_map resized;
-    for (atom_map::iterator it = amap_.begin(); it != amap_.end(); it++) {
+    boost::unordered_map<Atom, SISet> resized;
+    for (boost::unordered_map<Atom, SISet>::iterator it = amap_.begin(); it != amap_.end(); it++) {
         const Atom a = it->first;
         SISet b = it->second;
 
@@ -168,7 +168,7 @@ std::ostream& operator<<(std::ostream& out, const Model& m) {
     // collect the keys, sort them, then print
     std::list<Atom> atoms;
 
-    for (Model::atom_map::const_iterator it = m.amap_.begin(); it != m.amap_.end(); it++) {
+    for (boost::unordered_map<Atom, SISet>::const_iterator it = m.amap_.begin(); it != m.amap_.end(); it++) {
         std::pair<Atom, SISet> pair = *it;
         atoms.push_back(pair.first);
     }
