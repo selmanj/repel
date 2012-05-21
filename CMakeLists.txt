@@ -5,8 +5,8 @@ set (PEL_VERSION_MAJOR 0)
 set (PEL_VERSION_MINOR 8)
 
 configure_file (
-  "${PROJECT_SOURCE_DIR}/src/PELConfig.h.in"
-  "${PROJECT_BINARY_DIR}/src/PELConfig.h"
+  "${PROJECT_SOURCE_DIR}/src/config.h.in"
+  "${PROJECT_BINARY_DIR}/src/config.h"
   )
 
 # force error messages to be one line

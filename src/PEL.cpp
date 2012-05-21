@@ -5,7 +5,7 @@
 
 //============================================================================
 
-#include "PELConfig.h"
+#include "config.h"
 
 #include <boost/program_options.hpp>
 #include <boost/tuple/tuple.hpp>
