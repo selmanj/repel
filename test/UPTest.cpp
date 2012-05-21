@@ -6,8 +6,14 @@
  */
 
 #define BOOST_TEST_MODULE UPTest
+#include "../src/config.h"
+#define BOOST_TEST_MAIN
+#ifdef USE_DYNAMIC_UNIT_TEST
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#else
+#include <boost/test/included/unit_test.hpp>
+#endif
 #include <boost/shared_ptr.hpp>
 #include <list>
 #include <algorithm>

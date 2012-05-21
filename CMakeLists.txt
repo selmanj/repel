@@ -4,11 +4,6 @@ project (PEL)
 set (PEL_VERSION_MAJOR 0)
 set (PEL_VERSION_MINOR 8)
 
-configure_file (
-  "${PROJECT_SOURCE_DIR}/src/config.h.in"
-  "${PROJECT_BINARY_DIR}/src/config.h"
-  )
-
 # force error messages to be one line
 IF(CMAKE_COMPILER_IS_GNUCC)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0")
@@ -23,7 +18,18 @@ include_directories("${PROJECT_BINARY_DIR}/src")
 set(Boost_USE_STATIC_LIBS   OFF)
 set(Boost_USE_MULTITHREADED OFF)
 #set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.47" "1.47.0" "1.48" "1.48.0")
-find_package(Boost 1.48.0 COMPONENTS program_options unit_test_framework REQUIRED)
+find_package(Boost 1.48.0 COMPONENTS program_options unit_test_framework serialization)
+
+if (NOT Boost_USE_STATIC_LIBS AND Boost_UNIT_TEST_FRAMEWORK_FOUND)
+	set(USE_DYNAMIC_UNIT_TEST ON)
+else()
+	set(USE_DYNAMIC_UNIT_TEST OFF)
+endif()
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/src/config.h.in"
+  "${PROJECT_BINARY_DIR}/src/config.h"
+  )
 
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src)
