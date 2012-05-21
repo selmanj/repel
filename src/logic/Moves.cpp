@@ -16,6 +16,7 @@
 #include "Domain.h"
 #include "Model.h"
 #include "../SISet.h"
+#include "../SpanInterval.h"
 #include "../Log.h"
 #include "NameGenerator.h"
 
