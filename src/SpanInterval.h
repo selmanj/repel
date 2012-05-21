@@ -11,6 +11,7 @@
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/serialization/access.hpp>
 #include <climits>
 #include <set>
 #include <vector>
@@ -97,6 +98,10 @@ public:
     friend std::ostream& operator<<(std::ostream& o, const SpanInterval& si);
 
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     Interval start_, finish_;
 };
 
@@ -373,6 +378,10 @@ inline boost::optional<SpanInterval> intersection(const SpanInterval& a, const S
             std::min(a.finish().finish(), b.finish().finish())).normalize();    // TODO: more sensible way to pick max interval
 }
 
-
+template <class Archive>
+void SpanInterval::serialize(Archive& ar, const unsigned int version) {
+    ar & start_;
+    ar & finish_;
+}
 
 #endif /* SPANINTERVAL_H */

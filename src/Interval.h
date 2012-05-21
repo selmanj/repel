@@ -3,11 +3,11 @@
 
 #include <string>
 #include <boost/functional/hash.hpp>
+#include <boost/serialization/access.hpp>
 #include <boost/optional.hpp>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-
 /**
  * Class Interval represents an interval and defines useful relations between
  * intervals.
@@ -136,6 +136,14 @@ public:
     friend Interval span(const Interval& a, const Interval& b);
 
 private:
+
+    /**
+     * Allow for serialization via boost::serialize
+     */
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     unsigned int s_, e_;
     bool isNull_;
 };
@@ -440,6 +448,13 @@ inline Interval span(const Interval& a, const Interval& b) {
     }
     return Interval((a.start() < b.start() ? a.start() : b.start()),
             (a.finish() > b.finish() ? a.finish() : b.finish()));
+}
+
+template <class Archive>
+void Interval::serialize(Archive& ar, const unsigned int version) {
+    ar & s_;
+    ar & e_;
+    ar & isNull_;
 }
 
 #endif
