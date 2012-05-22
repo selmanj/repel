@@ -1,6 +1,12 @@
 #define BOOST_TEST_MODULE SpanInterval 
+#define BOOST_TEST_MAIN
+#include "../src/config.h"
+#ifdef USE_DYNAMIC_UNIT_TEST
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#else
+#include <boost/test/included/unit_test.hpp>
+#endif
 #include <boost/optional.hpp>
 #include <boost/assign/list_of.hpp>
 #include "../src/SpanInterval.h"

@@ -1,6 +1,12 @@
 #define BOOST_TEST_MODULE Domain
+#define BOOT_TEST_MAIN
+#include "../src/config.h"
+#ifdef USE_DYNAMIC_UNIT_TEST
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#else
+#include <boost/test/included/unit_test.hpp>
+#endif
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/export.hpp>
