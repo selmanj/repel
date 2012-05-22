@@ -1,12 +1,16 @@
 #define BOOST_TEST_MODULE Domain
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/export.hpp>
 #include <sstream>
 #include <cstdlib>
 #include "TestUtilities.h"
 #include "logic/Domain.h"
 #include "logic/ELSyntax.h"
 #include "logic/FOLParser.h"
+#include "../src/logic/syntax/TermSerializationExports.h"
 
 BOOST_AUTO_TEST_CASE( addFactsFormulas ) {
     Domain d;
@@ -271,6 +275,33 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
             "R(a) @ {[1:1], [6:14]}\n"
             "S(a) @ {[2:2], [5:5], [8:8], [10:20]}\n");
     //std::cout << "random model: " << randomModel.toString() << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE( modelSerialization) {
+    std::stringstream facts;
+    facts << "P(a) @ [1:1]\n";
+    facts << "Q(a) @ [3:5]\n";
+
+    std::stringstream formulas;
+    formulas << "1: P(a) -> Q(a)\n";
+
+    Domain d = loadDomainWithStreams(facts.str(), formulas.str());
+    Model m = d.defaultModel();
+
+    {
+        std::ofstream tempFile("tempfile.txt");
+        boost::archive::text_oarchive oArch(tempFile);
+        oArch << m;
+    }
+
+    Model x;
+    {
+        std::ifstream tempFile("tempfile.txt");
+        boost::archive::text_iarchive oArch(tempFile);
+        oArch >> x;
+    }
+    BOOST_CHECK_EQUAL(m, x);
+
 }
 
 BOOST_AUTO_TEST_CASE( scoreTest ) {
