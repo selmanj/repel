@@ -8,6 +8,10 @@
 #include <boost/foreach.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
 #include "Term.h"
 #include "Sentence.h"
 #include "SentenceVisitor.h"
@@ -24,7 +28,7 @@ public:
 
     static const std::size_t TypeCode = 0;
 
-    Atom(std::string name);
+    Atom(std::string name="_UNKNOWN");
     template <class AutoPtrIterator>
     Atom(std::string name, AutoPtrIterator first, AutoPtrIterator last);
     Atom(std::string name, std::auto_ptr<Term> ptr);
@@ -56,6 +60,10 @@ public:
     virtual std::size_t getTypeCode() const;
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     std::string pred;
     boost::ptr_vector<Term> terms;
     //std::vector<boost::shared_ptr<Term> > terms;
@@ -68,6 +76,7 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
+BOOST_CLASS_EXPORT_KEY(Atom);
 /*
 struct atomcmp {
     bool operator()(const Atom& a, const Atom& b) const {
@@ -161,5 +170,18 @@ inline int Atom::doPrecedence() const {return 0;};
 inline bool Atom::doContains(const Sentence& s) const {return *this == s;};
 inline std::size_t Atom::getTypeCode() const {return Atom::TypeCode;}
 
+template <class Archive>
+void Atom::serialize(Archive& ar, const unsigned int version) {
+    // explicitly register that we don't need to serialize the base class
+    boost::serialization::void_cast_register<Atom, Sentence>(
+            static_cast<Atom *>(NULL),
+            static_cast<Sentence *>(NULL)
+    );
+    ar & pred;
+    ar & terms;
+}
+
+template void Atom::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void Atom::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 
 #endif

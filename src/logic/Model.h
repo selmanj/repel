@@ -10,9 +10,11 @@
 
 #include <boost/unordered_map.hpp>
 #include <utility>
-//#include "ELSyntax.h"
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/map.hpp>
 #include "../SISet.h"
 #include "syntax/Atom.h"
+#include "syntax/Constant.h"
 #include "Event.h"
 
 class Model {
@@ -20,8 +22,8 @@ public:
     typedef boost::unordered_map<Atom, SISet>::const_iterator const_iterator;
     typedef boost::unordered_map<Atom, SISet>::value_type value_type;
 
-
-    Model(const Interval& maxInterval_);
+    Model();
+    explicit Model(const Interval& maxInterval_);
     Model(const std::vector<FOL::Event>& pairs, const Interval& maxInterval_);
     Model(const boost::unordered_map<Proposition, SISet>& partialModel, const Interval& maxInterval_);
    // Model(const Model& m);
@@ -57,6 +59,14 @@ public:
 
 
 private:
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void save(Archive& ar, const unsigned int version) const;
+    template <class Archive>
+    void load(Archive& ar, const unsigned int version);
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
     typedef boost::unordered_map<Atom, SISet> atom_map;
 
     atom_map amap_;
@@ -64,6 +74,8 @@ private:
 };
 
 // IMPLEMENTATION
+inline Model::Model()
+    : amap_(), maxInterval_(0,0) {}
 inline Model::Model(const Interval& maxInterval)
     : amap_(), maxInterval_(maxInterval) {}
 
@@ -78,6 +90,40 @@ inline std::size_t hash_value(const Model& m) {
     boost::hash_range(seed, m.amap_.begin(), m.amap_.end());
     boost::hash_combine(seed, m.maxInterval_);
     return seed;
+}
+
+template <class Archive>
+void Model::save(Archive& ar, const unsigned int version) const {
+    // no support for boost-serialization and the unordered map, so we'll
+    // do it by hand.  this isn't an exact serialization but should be
+    // enough for our purposes
+
+    // write the size
+    // TODO: should we handle bucket size as well?
+    boost::unordered_map<Atom, SISet>::size_type size = amap_.size();
+    ar & size;
+    for (boost::unordered_map<Atom, SISet>::const_iterator it = amap_.begin(); it != amap_.end(); it++) {
+        ar & *it;
+    }
+    // max interval
+    ar & maxInterval_;
+}
+
+template <class Archive>
+void Model::load(Archive& ar, const unsigned int version) {
+    // clear the map
+    amap_.clear();
+    // read the size
+    boost::unordered_map<Atom, SISet>::size_type size;
+    ar & size;
+    for (boost::unordered_map<Atom, SISet>::size_type i = 0; i < size; i++) {
+        // read a pair
+        std::pair<Atom, SISet> pair;
+        ar & pair;
+        // insert it into the map
+        amap_.insert(pair);
+    }
+    ar & maxInterval_;
 }
 
 #endif /* MODEL_H_ */

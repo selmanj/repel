@@ -10,6 +10,9 @@
 #include "../Domain.h"
 #include "../Model.h"
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/serialization/export.hpp>
+
+BOOST_CLASS_EXPORT_IMPLEMENT(Atom);
 
 bool Atom::isGrounded() const {
     for (boost::ptr_vector<Term>::const_iterator it = terms.begin(); it != terms.end(); it++) {

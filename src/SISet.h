@@ -14,14 +14,15 @@
 #include <boost/functional/hash.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/list.hpp>
 
 class SISet {
 public:
-    SISet(bool forceLiquid,
-            const Interval& maxInterval)
+    SISet(bool forceLiquid=false,
+            const Interval& maxInterval=Interval(0,0))
     : set_(), forceLiquid_(forceLiquid), maxInterval_(maxInterval) {}
 
-    explicit SISet(const SpanInterval& si, bool forceLiquid,
+    SISet(const SpanInterval& si, bool forceLiquid,
           const Interval& maxInterval);
 
     template <class InputIterator>

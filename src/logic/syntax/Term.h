@@ -4,6 +4,8 @@
 #include <string>
 #include <boost/utility.hpp>
 #include <iostream>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/access.hpp>
 
 class Term : boost::noncopyable {
 public:
@@ -22,11 +24,17 @@ protected:
     virtual void doToString(std::string& str) const = 0;
 
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version) {}
+
     virtual Term* doClone() const = 0;
     virtual std::string doName() const = 0;
     virtual bool doEquals(const Term& t) const = 0;
     virtual std::size_t doHash() const = 0;
 };
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(Term)
 
 // IMPLEMENTATION
 inline Term::~Term() {};

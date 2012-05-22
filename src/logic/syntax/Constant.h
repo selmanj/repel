@@ -3,11 +3,18 @@
 
 #include <string>
 #include <boost/functional/hash.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/void_cast.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include "Term.h"
+
 
 class Constant : public Term {
 public:
-    Constant(std::string name);
+    Constant(std::string name="_unknown");
     Constant(const Constant& c);
     ~Constant();
 
@@ -17,6 +24,11 @@ public:
 protected:
     virtual void doToString(std::string& str) const;
 private:
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     std::string name_;
 
     virtual Term* doClone() const;
@@ -24,7 +36,6 @@ private:
     virtual bool doEquals(const Term& t) const;
     virtual std::size_t doHash() const;
 };
-
 
 // implementation
 inline Constant::Constant(std::string name) : name_(name) {}
@@ -56,6 +67,16 @@ inline std::size_t hash_value(const Constant& c) {
     boost::hash<std::string> hasher;
     return hasher(c.name_);
 }
+
+template <class Archive>
+void Constant::serialize(Archive& ar, const unsigned int version) {
+    ar & boost::serialization::base_object<Term>(*this);
+    ar & name_;
+}
+
+
+template void Constant::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void Constant::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 
 
 #endif
