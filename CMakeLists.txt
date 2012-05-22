@@ -28,7 +28,7 @@ find_package(Boost 1.48.0 COMPONENTS program_options unit_test_framework seriali
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
-set(pel_LIBRARIES ${Boost_LIBRARIES})
+set(pel_LIBRARIES ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_SERIALIZATION_LIBRARY})
 
 enable_testing()
 
