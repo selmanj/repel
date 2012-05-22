@@ -3,6 +3,7 @@ add_library(pel-syntax
   Atom.cpp
   BoolLit.cpp
   Conjunction.cpp
+  Constant.cpp
   Disjunction.cpp
   DiamondOp.cpp
   ELSentence.cpp
