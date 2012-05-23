@@ -10,12 +10,15 @@
 
 #include "Sentence.h"
 #include "boost/functional/hash.hpp"
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/export.hpp>
 
 class BoolLit: public Sentence {
 public:
     static const std::size_t TypeCode = 1;
 
-    BoolLit(bool value);
+    BoolLit(bool value=false);
     BoolLit(const BoolLit& other);
     virtual ~BoolLit();
 
@@ -30,6 +33,11 @@ public:
     virtual std::size_t getTypeCode() const;
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     bool val_;
 
     virtual void doToString(std::stringstream& str) const;
@@ -39,6 +47,8 @@ private:
     virtual bool doContains(const Sentence& s) const;
     virtual std::size_t doHashValue() const;
 };
+
+BOOST_CLASS_EXPORT_KEY(BoolLit)
 
 // IMPLEMENTATION
 inline BoolLit::BoolLit(bool value) : val_(value) {}
@@ -72,5 +82,13 @@ inline Sentence* BoolLit::doClone() const { return new BoolLit(*this);};
 inline int BoolLit::doPrecedence() const { return 0;}
 inline bool BoolLit::doContains(const Sentence& s) const {return *this == s;}
 inline std::size_t BoolLit::getTypeCode() const { return BoolLit::TypeCode;}
+
+template <class Archive>
+void BoolLit::serialize(Archive& ar, const unsigned int version) {
+    boost::serialization::void_cast_register<BoolLit, Sentence>(
+            static_cast<BoolLit*>(NULL),
+            static_cast<Sentence*>(NULL));
+    ar & val_;
+}
 
 #endif /* BOOLLIT_H_ */
