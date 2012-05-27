@@ -22,13 +22,14 @@
 #include "../src/logic/syntax/TermSerializationExports.h"
 #include "TestUtilities.h"
 
-void checkSentenceSerialization(boost::shared_ptr<Sentence> s) {
+template <class T>
+void checkSerializationPtr(T s) {
     std::stringstream stream;
     {
         boost::archive::text_oarchive oarch(stream);
         oarch << s;
     }
-    boost::shared_ptr<Sentence> t;
+    T t;
     {
         boost::archive::text_iarchive iarch(stream);
         iarch >> t;
@@ -37,14 +38,40 @@ void checkSentenceSerialization(boost::shared_ptr<Sentence> s) {
     BOOST_CHECK(*s == *t);
 }
 
+template <class T>
+void checkSerialization(T s) {
+    std::stringstream stream;
+    {
+        boost::archive::text_oarchive oarch(stream);
+        oarch << s;
+    }
+    T t;
+    {
+        boost::archive::text_iarchive iarch(stream);
+        iarch >> t;
+    }
+
+    BOOST_CHECK(s == t);
+}
+
 BOOST_AUTO_TEST_CASE(generalSentenceSerialization) {
-    checkSentenceSerialization(getAsSentence("P(a)"));
-    checkSentenceSerialization(getAsSentence("true"));
-    checkSentenceSerialization(getAsSentence("false"));
-    checkSentenceSerialization(getAsSentence("!P(a)"));
-    checkSentenceSerialization(getAsSentence("P(a) v Q(a)"));
-    checkSentenceSerialization(getAsSentence("P(a) ^{m} R(a)"));
-    checkSentenceSerialization(getAsSentence("[P(a)]"));
-    checkSentenceSerialization(getAsSentence("<>{m} P(a)"));
-    checkSentenceSerialization(getAsSentence("P(a) v [!R(a) ^ S(a)] v <>{s} T(a)"));
+    checkSerializationPtr(getAsSentence("P(a)"));
+    checkSerializationPtr(getAsSentence("true"));
+    checkSerializationPtr(getAsSentence("false"));
+    checkSerializationPtr(getAsSentence("!P(a)"));
+    checkSerializationPtr(getAsSentence("P(a) v Q(a)"));
+    checkSerializationPtr(getAsSentence("P(a) ^{m} R(a)"));
+    checkSerializationPtr(getAsSentence("[P(a)]"));
+    checkSerializationPtr(getAsSentence("<>{m} P(a)"));
+    checkSerializationPtr(getAsSentence("P(a) v [!R(a) ^ S(a)] v <>{s} T(a)"));
+}
+
+BOOST_AUTO_TEST_CASE(domainSerialization) {
+    std::string facts("P(a) @ [1:10]\n"
+            "Q(A) @ [5:6]");
+    std::string formulas("1: [P(a) -> Q(a)]\n"
+            "[Q(a) -> P(a)]");
+
+    Domain d = loadDomainWithStreams(facts, formulas);
+    checkSerialization(d);
 }

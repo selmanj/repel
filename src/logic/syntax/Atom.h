@@ -113,6 +113,10 @@ struct PredicateType {
 
     std::string name;
     unsigned int arity;
+private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
 };
 
 // IMPLEMENTATION
@@ -183,4 +187,9 @@ void Atom::serialize(Archive& ar, const unsigned int version) {
 template void Atom::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template void Atom::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 
+template <class Archive>
+void PredicateType::serialize(Archive& ar, const unsigned int version) {
+    ar & name;
+    ar & arity;
+}
 #endif

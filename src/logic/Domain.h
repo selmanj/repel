@@ -19,6 +19,10 @@
 #include <boost/optional.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
+#include "../util/boost_serialize_unordered_map.hpp"
+#include "../util/boost_serialize_unordered_set.hpp"
 #include "ELSyntax.h"
 #include "Collectors.h"
 #include "Model.h"
@@ -100,8 +104,14 @@ public:
 
     void printDebugDescription(std::ostream& out) const;
 
+    friend bool operator==(const Domain& l, const Domain& r);
+    friend bool operator!=(const Domain& l, const Domain& r);
+
     static const unsigned int hardFormulaFactor = 10;
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
 
     void growMaxInterval(const Interval& maxInterval);
 
@@ -191,5 +201,18 @@ inline SpanInterval Domain::maxSpanInterval() const {
     return SpanInterval(maxInterval_.start(), maxInterval_.finish(),
             maxInterval_.start(), maxInterval_.finish());
 };
+
+template <class Archive>
+void Domain::serialize(Archive& ar, const unsigned int version) {
+    ar & dontModifyObsPreds_;
+    ar & maxInterval_;
+    ar & formulas_;
+    ar & partialModel_;
+    ar & predTypes_;
+    ar & allAtoms_;
+    ar & generator_;
+}
+
+inline bool operator!=(const Domain& l, const Domain& r) {return !operator==(l, r);}
 
 #endif /* DOMAIN_H_ */

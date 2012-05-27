@@ -9,6 +9,7 @@
  */
 class Proposition {
 public:
+    Proposition();
     Proposition(const Atom& a, bool s);
 
     Proposition inverse() const;
@@ -37,5 +38,8 @@ void Proposition::serialize(Archive& ar, const unsigned int version) {
     ar & atom_;
     ar & sign_;
 }
+
+inline Proposition::Proposition()
+    : atom_(), sign_(false) {}
 
 #endif

@@ -23,7 +23,7 @@ class Domain;
 
 class ELSentence {
 public:
-
+    ELSentence();
     ELSentence(const boost::shared_ptr<Sentence>& s);
     ELSentence(const boost::shared_ptr<Sentence>& s, double w);
     ELSentence(const boost::shared_ptr<Sentence>& s, double w, const SISet& q);
@@ -81,6 +81,8 @@ struct IsHardClausePred : public std::unary_function<ELSentence, bool> {
 
 // IMPLEMENTATION
 
+inline ELSentence::ELSentence()
+    : s_(), w_(1.0), hasInfWeight_(true), quantification_(0) {}
 inline ELSentence::ELSentence(const boost::shared_ptr<Sentence>& s)
     : s_(s), w_(1.0), hasInfWeight_(true), quantification_(0) {}
 

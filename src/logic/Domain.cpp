@@ -239,3 +239,15 @@ void Domain::printDebugDescription(std::ostream& out) const {
     std::copy(allAtoms_.begin(),  allAtoms_.end(), std::ostream_iterator<Atom>(out, ", "));
     out << std::endl;
 }
+
+bool operator==(const Domain& l, const Domain& r) {
+    return (
+            l.dontModifyObsPreds_ == r.dontModifyObsPreds_ &&
+            l.maxInterval_ == r.maxInterval_ &&
+            l.formulas_ == r.formulas_ &&
+            l.partialModel_ == r.partialModel_ &&
+            l.predTypes_ == r.predTypes_ &&
+            l.allAtoms_ == r.allAtoms_ &&
+            l.generator_ == r.generator_
+    );
+}
