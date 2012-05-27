@@ -5,6 +5,7 @@
 #include <sstream>
 #include <boost/utility.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/serialization/access.hpp>
 #include "SentenceVisitor.h"
 #include "../../SISet.h"
 
@@ -144,6 +145,11 @@ public:
     bool operator!=(const TQConstraints& b) const;
     std::string toString() const;
     bool empty() const;
+private:
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
 };
 
 bool isDisjunctionOfPELCNFLiterals(const Sentence& sentence);
@@ -218,5 +224,11 @@ inline bool TQConstraints::operator!=(const TQConstraints& b) const {
 
 inline bool TQConstraints::empty() const {
     return (mustBeIn.size() == 0) && (mustNotBeIn.size() == 0);
+}
+
+template <class Archive>
+void TQConstraints::serialize(Archive& ar, const unsigned int version) {
+    ar & mustBeIn;
+    ar & mustNotBeIn;
 }
 #endif  // SENTENCE_H

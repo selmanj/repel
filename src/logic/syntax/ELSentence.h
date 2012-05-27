@@ -10,6 +10,8 @@
 #define ELSENTENCE_H_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <stdexcept>
 #include <string>
 #include <sstream>
@@ -58,6 +60,10 @@ public:
 
     friend void swap(ELSentence& a, ELSentence& b);
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     boost::shared_ptr<Sentence> s_;
     double w_;
     bool hasInfWeight_;
@@ -164,6 +170,14 @@ inline void swap(ELSentence& a, ELSentence& b) {
     swap(a.w_, b.w_);
     swap(a.hasInfWeight_, b.hasInfWeight_);
     swap(a.quantification_, b.quantification_);
+}
+
+template <class Archive>
+void ELSentence::serialize(Archive& ar, const unsigned int version) {
+    ar & s_;
+    ar & w_;
+    ar & hasInfWeight_;
+    ar & quantification_;
 }
 
 #endif /* ELSENTENCE_H_ */

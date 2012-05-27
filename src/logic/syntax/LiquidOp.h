@@ -2,6 +2,9 @@
 #define LIQUIDOP_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/void_cast.hpp>
 #include "Sentence.h"
 
 class Model;
@@ -11,6 +14,7 @@ class LiquidOp : public Sentence {
 public:
     static const std::size_t TypeCode=7;
 
+    LiquidOp();
     LiquidOp(boost::shared_ptr<Sentence> sentence);
     LiquidOp(const LiquidOp& liq);
     virtual ~LiquidOp();
@@ -26,6 +30,10 @@ public:
     friend std::size_t hash_value(const LiquidOp& l);
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     boost::shared_ptr<Sentence> s_;
 
     virtual Sentence* doClone() const;
@@ -39,7 +47,7 @@ private:
 };
 
 // IMPLEMENTATION
-
+inline LiquidOp::LiquidOp() : s_() {};
 inline LiquidOp::LiquidOp(boost::shared_ptr<Sentence> sentence) : s_(sentence) {};
 inline LiquidOp::LiquidOp(const LiquidOp& liq) : s_(liq.s_) {}; // shallow copy
 inline LiquidOp::~LiquidOp() {};
@@ -86,4 +94,15 @@ inline bool LiquidOp::doContains(const Sentence& s) const {
     return (*this == s || s_->contains(s));
 }
 inline std::size_t LiquidOp::doHashValue() const { return hash_value(*this);}
+
+template <class Archive>
+void LiquidOp::serialize(Archive& ar, const unsigned int version) {
+    // register that we dont need to cal the base class
+    boost::serialization::void_cast_register<LiquidOp, Sentence>(
+            static_cast<LiquidOp*>(NULL),
+            static_cast<Sentence*>(NULL)
+            );
+    ar & s_;
+}
+
 #endif

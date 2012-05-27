@@ -2,6 +2,8 @@
 #define NEGATION_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/void_cast.hpp>
 #include "Sentence.h"
 #include "SentenceVisitor.h"
 
@@ -9,6 +11,7 @@ class Negation : public Sentence {
 public:
     static const std::size_t TypeCode = 11;
 
+    Negation();
     Negation(boost::shared_ptr<Sentence> sentence);
     Negation(const Negation& neg); // shallow copy
     virtual ~Negation();
@@ -25,6 +28,10 @@ public:
     friend std::size_t hash_value(const Negation& n);
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     boost::shared_ptr<Sentence> s_;
 
     virtual Sentence* doClone() const;
@@ -37,7 +44,8 @@ private:
 };
 
 // IMPLEMENTATION
-
+inline Negation::Negation()
+    : s_() {}
 inline Negation::Negation(boost::shared_ptr<Sentence> sentence) : s_(sentence) {};
 inline Negation::Negation(const Negation& neg) : s_(neg.s_) {}; // shallow copy
 inline Negation::~Negation() {};
@@ -84,5 +92,15 @@ inline bool Negation::doContains(const Sentence& s) const {
     return (*this == s || s_->contains(s));
 }
 inline std::size_t Negation::doHashValue() const { return hash_value(*this);}
+
+template <class Archive>
+void Negation::serialize(Archive& ar, const unsigned int version) {
+    // register that we dont need to cal the base class
+    boost::serialization::void_cast_register<Negation, Sentence>(
+            static_cast<Negation*>(NULL),
+            static_cast<Sentence*>(NULL)
+            );
+    ar & s_;
+}
 
 #endif

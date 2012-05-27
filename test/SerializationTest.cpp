@@ -18,25 +18,33 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <iostream>
 #include <sstream>
-#include "../src/logic/syntax/BoolLit.h"
+#include "../src/logic/syntax/SentenceSerializationExport.h"
+#include "../src/logic/syntax/TermSerializationExports.h"
+#include "TestUtilities.h"
 
-BOOST_AUTO_TEST_CASE(boolLitSerialization) {
-    BoolLit bT(true), bF(false);
-
+void checkSentenceSerialization(boost::shared_ptr<Sentence> s) {
     std::stringstream stream;
     {
         boost::archive::text_oarchive oarch(stream);
-        oarch << bT;
-        oarch << bF;
+        oarch << s;
     }
-    BoolLit bTloaded(false), bFloaded(true), bSLoaded(true);
+    boost::shared_ptr<Sentence> t;
     {
         boost::archive::text_iarchive iarch(stream);
-        iarch >> bTloaded;
-        iarch >> bFloaded;
+        iarch >> t;
     }
 
-    BOOST_CHECK(bT == bTloaded);
-    BOOST_CHECK(bF == bFloaded);
+    BOOST_CHECK(*s == *t);
+}
 
+BOOST_AUTO_TEST_CASE(generalSentenceSerialization) {
+    checkSentenceSerialization(getAsSentence("P(a)"));
+    checkSentenceSerialization(getAsSentence("true"));
+    checkSentenceSerialization(getAsSentence("false"));
+    checkSentenceSerialization(getAsSentence("!P(a)"));
+    checkSentenceSerialization(getAsSentence("P(a) v Q(a)"));
+    checkSentenceSerialization(getAsSentence("P(a) ^{m} R(a)"));
+    checkSentenceSerialization(getAsSentence("[P(a)]"));
+    checkSentenceSerialization(getAsSentence("<>{m} P(a)"));
+    checkSentenceSerialization(getAsSentence("P(a) v [!R(a) ^ S(a)] v <>{s} T(a)"));
 }

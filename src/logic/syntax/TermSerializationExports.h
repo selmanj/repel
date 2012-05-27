@@ -10,4 +10,6 @@
 
 BOOST_CLASS_EXPORT(Constant)
 //BOOST_CLASS_EXPORT(Variable)
+
+// TODO: delete me?
 #endif

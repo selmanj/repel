@@ -8,6 +8,7 @@
 #include "Conjunction.h"
 #include "../Domain.h"
 
+
 void Conjunction::visit(SentenceVisitor& v) const {
     left_->visit(v);
     right_->visit(v);

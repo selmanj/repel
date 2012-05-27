@@ -48,7 +48,6 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
-BOOST_CLASS_EXPORT_KEY(BoolLit)
 
 // IMPLEMENTATION
 inline BoolLit::BoolLit(bool value) : val_(value) {}
@@ -85,6 +84,7 @@ inline std::size_t BoolLit::getTypeCode() const { return BoolLit::TypeCode;}
 
 template <class Archive>
 void BoolLit::serialize(Archive& ar, const unsigned int version) {
+    // explicitly register that we don't need to serialize the base class
     boost::serialization::void_cast_register<BoolLit, Sentence>(
             static_cast<BoolLit*>(NULL),
             static_cast<Sentence*>(NULL));

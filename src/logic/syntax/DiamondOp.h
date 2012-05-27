@@ -2,6 +2,10 @@
 #define DIAMONDOP_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/export.hpp>
 #include <set>
 #include "Sentence.h"
 #include "SentenceVisitor.h"
@@ -13,6 +17,7 @@ public:
 
     static const std::set<Interval::INTERVAL_RELATION>& defaultRelations();
 
+    DiamondOp();
     DiamondOp(boost::shared_ptr<Sentence> sentence, const TQConstraints* tqconstraints=0);
     DiamondOp(boost::shared_ptr<Sentence> sentence,
             Interval::INTERVAL_RELATION relation,
@@ -42,6 +47,10 @@ public:
     virtual std::size_t getTypeCode() const;
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     std::set<Interval::INTERVAL_RELATION> rels_;
     boost::shared_ptr<Sentence> s_;
     TQConstraints tqconstraints_;   // TODO: make these optional?
@@ -57,8 +66,11 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
+
 // implementation below
 // constructors
+inline DiamondOp::DiamondOp()
+    : rels_(), s_(), tqconstraints_() {}
 inline DiamondOp::DiamondOp(boost::shared_ptr<Sentence> sentence, const TQConstraints* tqconstraints)
     : rels_(), s_(sentence), tqconstraints_() {
         rels_ = std::set<Interval::INTERVAL_RELATION>(DiamondOp::defaultRelations().begin(), DiamondOp::defaultRelations().end());
@@ -140,4 +152,18 @@ inline void DiamondOp::visit(SentenceVisitor& v) const {
 }
 
 inline std::size_t DiamondOp::doHashValue() const { return hash_value(*this);}
+
+template <class Archive>
+void DiamondOp::serialize(Archive& ar, const unsigned int version) {
+    // register that there is no need to call the base class serialize
+    boost::serialization::void_cast_register<DiamondOp, Sentence>(
+            static_cast<DiamondOp*>(NULL),
+            static_cast<Sentence*>(NULL)
+    );
+
+    ar & rels_;
+    ar & s_;
+    ar & tqconstraints_;
+}
+
 #endif

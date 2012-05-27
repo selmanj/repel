@@ -5,6 +5,11 @@
 #include <utility>
 #include <boost/shared_ptr.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include "Sentence.h"
 #include "SentenceVisitor.h"
 #include "../../Interval.h"
@@ -16,6 +21,7 @@ class Conjunction : public Sentence {
 public:
     static const std::size_t TypeCode = 2;
 
+    Conjunction();
     template<class InputIterator>
     Conjunction(boost::shared_ptr<Sentence> left,
             boost::shared_ptr<Sentence> right,
@@ -61,6 +67,9 @@ public:
     static const std::set<Interval::INTERVAL_RELATION>& defaultRelations();
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
 
     boost::shared_ptr<Sentence>  left_;
     boost::shared_ptr<Sentence> right_;
@@ -75,7 +84,11 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
+
 // IMPLEMENTATION
+inline Conjunction::Conjunction()
+    : left_(), right_(), rels_(), tqconstraints_() {}
+
 template<class InputIterator>
 Conjunction::Conjunction(boost::shared_ptr<Sentence> left,
         boost::shared_ptr<Sentence> right,
@@ -173,6 +186,18 @@ inline int Conjunction::doPrecedence() const { return 3; };
 inline bool Conjunction::doContains(const Sentence& s) const {
     if (*this == s) return true;
     return (left_->contains(s) || right_->contains(s));
+}
+
+template <class Archive>
+void Conjunction::serialize(Archive& ar, const unsigned int version) {
+    // explicitly register that we don't need to serialize the base class
+    boost::serialization::void_cast_register<Conjunction, Sentence>(
+            static_cast<Conjunction*>(NULL),
+            static_cast<Sentence*>(NULL));
+    ar & left_;
+    ar & right_;
+    ar & rels_;
+    ar & tqconstraints_;
 }
 
 

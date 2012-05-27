@@ -2,6 +2,7 @@
 #define PROPOSITION_H_
 
 #include "Atom.h"
+#include <boost/serialization/access.hpp>
 
 /**
  * Simple container class for propositions (literals) without a temporal quantifier.
@@ -21,11 +22,20 @@ public:
     void setAtom(const Atom& a);
     void setSign(bool b);
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     Atom atom_;
     bool sign_;  // if positive, true, if negative, false
 };
 
 std::ostream& operator<<(std::ostream& out, const Proposition& p);
 
+template <class Archive>
+void Proposition::serialize(Archive& ar, const unsigned int version) {
+    ar & atom_;
+    ar & sign_;
+}
 
 #endif

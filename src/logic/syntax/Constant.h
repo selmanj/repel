@@ -68,15 +68,8 @@ inline std::size_t hash_value(const Constant& c) {
     return hasher(c.name_);
 }
 
-template <class Archive>
-void Constant::serialize(Archive& ar, const unsigned int version) {
-    ar & boost::serialization::base_object<Term>(*this);
-    ar & name_;
-}
 
 
-template void Constant::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void Constant::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 
 
 #endif

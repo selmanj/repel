@@ -2,6 +2,9 @@
 #define DISJUNCTION_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include "Sentence.h"
 #include "SentenceVisitor.h"
 
@@ -12,6 +15,7 @@ class Disjunction : public Sentence {
 public:
     static const std::size_t TypeCode = 5;
 
+    Disjunction();
     Disjunction(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right);
     Disjunction(const Disjunction& a);
     virtual ~Disjunction();
@@ -31,6 +35,10 @@ public:
     friend std::size_t hash_value(const Disjunction& d);
     virtual SISet satisfied(const Model& m, const Domain& d, bool forceLiquid) const;
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     boost::shared_ptr<Sentence> left_;
     boost::shared_ptr<Sentence> right_;
 
@@ -44,8 +52,10 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
-// IMPLEMENTATION
 
+// IMPLEMENTATION
+inline Disjunction::Disjunction()
+    : left_(), right_() {};
 inline Disjunction::Disjunction(boost::shared_ptr<Sentence> left, boost::shared_ptr<Sentence> right)
     : left_(left), right_(right) {};
 inline Disjunction::Disjunction(const Disjunction& a) : left_(a.left_), right_(a.right_) {};    // shallow copy
@@ -102,5 +112,18 @@ inline bool Disjunction::doContains(const Sentence& s) const {
     if (*this == s) return true;
     return (left_->contains(s) || right_->contains(s));
 }
+
+template <class Archive>
+void Disjunction::serialize(Archive& ar, const unsigned int version) {
+    // register that there is no need to call the base class serialize
+    boost::serialization::void_cast_register<Disjunction,Sentence>(
+            static_cast<Disjunction*>(NULL),
+            static_cast<Sentence*>(NULL)
+    );
+
+    ar & left_;
+    ar & right_;
+}
+
 
 #endif

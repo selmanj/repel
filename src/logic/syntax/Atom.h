@@ -76,7 +76,6 @@ private:
     virtual std::size_t doHashValue() const;
 };
 
-BOOST_CLASS_EXPORT_KEY(Atom);
 /*
 struct atomcmp {
     bool operator()(const Atom& a, const Atom& b) const {
@@ -173,12 +172,10 @@ inline std::size_t Atom::getTypeCode() const {return Atom::TypeCode;}
 template <class Archive>
 void Atom::serialize(Archive& ar, const unsigned int version) {
     // explicitly register that we don't need to serialize the base class
-    /*
     boost::serialization::void_cast_register<Atom, Sentence>(
             static_cast<Atom *>(NULL),
             static_cast<Sentence *>(NULL)
     );
-    */
     ar & pred;
     ar & terms;
 }

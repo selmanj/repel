@@ -11,7 +11,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-BOOST_CLASS_EXPORT_IMPLEMENT(BoolLit)
 
 bool BoolLit::doEquals(const Sentence& t) const {
     const BoolLit *bt = dynamic_cast<const BoolLit*>(&t);
