@@ -10,8 +10,11 @@
 
 #include <vector>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
 #include "../logic/Domain.h"
 #include "MCSatSampleStrategy.h"
+#include "MCSatSampleLiquidlyStrategy.h"
 
 class Model;
 
@@ -63,7 +66,14 @@ public:
     void run(boost::mt19937& rng);
     double estimateProbability(const Proposition& prop, const Interval& where) const;
     unsigned int countProps(const Proposition& prop, const Interval& where) const;
+
+    friend bool operator==(const MCSat& l, const MCSat& r);
+    friend bool operator!=(const MCSat& l, const MCSat& r);
 private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+
     static Domain applyUP(const Domain& d);   // TODO: move this to UnitProp.h eventually
 
     const Domain* d_;
@@ -101,6 +111,7 @@ struct sentence_ptr_pred : std::binary_function<const Sentence*, const Sentence*
  * Implementation of MCSatSampleStrategy, samples constraints based on the
  * segments that are true for all the underlying atoms in a sentence
  */
+/* TODO: delete me
 class MCSatSampleSegmentsStrategy : public MCSatSampleStrategy {
 public:
     MCSatSampleSegmentsStrategy();
@@ -117,6 +128,7 @@ private:
     boost::unordered_map<Sentence*, boost::unordered_set<SpanInterval>,
     sentence_ptr_hash, sentence_ptr_pred> formulaToSegment_;
 };
+*/
 
 // IMPLEMENTATION BELOW:
 inline MCSat::MCSat(const Domain *d)
@@ -129,9 +141,9 @@ inline MCSat::MCSat(const Domain *d)
       useRandomInitialModels_(defUseRandomInitialModels),
       samples_(),
       sampleStrategy_(0) {
-    // use default strategy of segment strategy
-    sampleStrategy_ = (d == 0 ? new MCSatSampleSegmentsStrategy()
-                        : new MCSatSampleSegmentsStrategy(*d));
+    // use default strategy of liquid strategy
+    sampleStrategy_ = new MCSatSampleLiquidlyStrategy();
+
 }
 
 inline MCSat::MCSat(const MCSat& m)
@@ -193,7 +205,7 @@ inline void MCSat::setSampleStrategy(MCSatSampleStrategy *strategy) {
 inline void MCSat::setUseRandomInitialModels(bool b) {useRandomInitialModels_ = b;}
 
 inline void MCSat::clear() {samples_.clear();}
-
+/*
 inline MCSatSampleSegmentsStrategy::MCSatSampleSegmentsStrategy()
     : formulaToSegment_() {}
 
@@ -210,6 +222,22 @@ inline MCSatSampleSegmentsStrategy& MCSatSampleSegmentsStrategy::operator=(MCSat
     swap(*this, other);
     return *this;
 }
+*/
+
+template <class Archive>
+void MCSat::serialize(Archive& ar, const unsigned int version) {
+    ar & d_;
+    ar & numSamples_;
+    ar & burnInIterations_;
+    ar & walksatIterations_;
+    ar & walksatRandomMoveProb_;
+    ar & walksatNumRandomRestarts_;
+    ar & useRandomInitialModels_;
+    ar & samples_;
+    ar & sampleStrategy_;
+}
+
+inline bool operator!=(const MCSat& l, const MCSat& r) { return !operator==(l,r);}
 
 
 #endif /* MCSAT_H_ */

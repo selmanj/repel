@@ -25,7 +25,12 @@ public:
 
     virtual MCSatSampleStrategy* clone() const = 0;
     virtual void sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled) = 0;
+    bool operator==(const MCSatSampleStrategy& s) const;
+    bool operator!=(const MCSatSampleStrategy& s) const;
+private:
+    virtual bool doEquals(const MCSatSampleStrategy& s) const = 0;
 };
-
+inline bool MCSatSampleStrategy::operator==(const MCSatSampleStrategy& s) const {return doEquals(s);}
+inline bool MCSatSampleStrategy::operator!=(const MCSatSampleStrategy& s) const {return !this->operator ==(s); }
 
 #endif /* MCSATSAMPLERSTRATEGY_H_ */

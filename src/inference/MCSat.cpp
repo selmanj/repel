@@ -132,6 +132,8 @@ Domain MCSat::applyUP(const Domain& d) {
     return reduced;
 }
 
+/*
+
 void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& d, boost::mt19937& rng, std::vector<ELSentence>& sampled) {
     for (Domain::formula_const_iterator it = d.formulas_begin(); it != d.formulas_end(); it++) {
         ELSentence currentSentence = *it;
@@ -163,6 +165,7 @@ void MCSatSampleSegmentsStrategy::sampleSentences(const Model& m, const Domain& 
         }
     }
 }
+*/
 
 boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Domain& d, boost::mt19937& rng) {
     boost::unordered_set<Model> models;
@@ -228,7 +231,7 @@ unsigned int MCSat::countProps(const Proposition& prop, const Interval& where) c
     return count;
 }
 
-
+/*
 MCSatSampleSegmentsStrategy::MCSatSampleSegmentsStrategy(const Domain& d)
     : formulaToSegment_() {
     for (Domain::fact_const_iterator it = d.facts_begin(); it != d.facts_end(); it++) {
@@ -286,4 +289,27 @@ MCSatSampleSegmentsStrategy::~MCSatSampleSegmentsStrategy() {
     }
     toDelete.clear();
 }
+*/
 
+bool operator==(const MCSat& l, const MCSat& r) {
+    return (
+            (l.d_ == r.d_ || (l.d_ != NULL && r.d_ != NULL && *l.d_ == *r.d_) ) &&
+            l.numSamples_ == r.numSamples_ &&
+            l.burnInIterations_ == r.burnInIterations_ &&
+            l.walksatIterations_ == r.walksatIterations_ &&
+            l.walksatRandomMoveProb_ == r.walksatRandomMoveProb_ &&
+            l.walksatNumRandomRestarts_ == r.walksatNumRandomRestarts_ &&
+            l.useRandomInitialModels_ == r.useRandomInitialModels_ &&
+            l.samples_ == r.samples_ &&
+            (l.sampleStrategy_ == r.sampleStrategy_ || (l.sampleStrategy_ != NULL && r.sampleStrategy_ != NULL && *l.sampleStrategy_ == *r.sampleStrategy_))
+            );
+//    ar & d_;
+//    ar & numSamples_;
+//    ar & burnInIterations_;
+//    ar & walksatIterations_;
+//    ar & walksatRandomMoveProb_;
+//    ar & walksatNumRandomRestarts_;
+//    ar & useRandomInitialModels_;
+//    ar & samples_;
+//    ar & sampleStrategy_;
+}

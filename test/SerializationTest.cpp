@@ -18,8 +18,10 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <iostream>
 #include <sstream>
+#include "../src/inference/MCSat.h"
 #include "../src/logic/syntax/SentenceSerializationExport.h"
 #include "../src/logic/syntax/TermSerializationExports.h"
+#include "../src/inference/MCSatSampleStrategySerializationExport.h"
 #include "TestUtilities.h"
 
 template <class T>
@@ -74,4 +76,16 @@ BOOST_AUTO_TEST_CASE(domainSerialization) {
 
     Domain d = loadDomainWithStreams(facts, formulas);
     checkSerialization(d);
+}
+
+BOOST_AUTO_TEST_CASE(mcSatSerialization) {
+    std::string facts("P(a) @ [1:10]\n"
+            "Q(A) @ [5:6]");
+    std::string formulas("1: [P(a) -> Q(a)]\n"
+            "[Q(a) -> P(a)]");
+
+    Domain d = loadDomainWithStreams(facts, formulas);
+    MCSat sat(&d);
+    // don't actually run it, it takes too long. just test it
+    checkSerialization(sat);
 }
