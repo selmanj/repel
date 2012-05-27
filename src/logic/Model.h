@@ -12,6 +12,7 @@
 #include <utility>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/map.hpp>
+#include "../util/boost_serialize_unordered_map.hpp"
 #include "../SISet.h"
 #include "syntax/Atom.h"
 #include "syntax/Constant.h"
@@ -60,13 +61,15 @@ public:
 
 private:
     friend class boost::serialization::access;
-
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version);
+/*
     template <class Archive>
     void save(Archive& ar, const unsigned int version) const;
     template <class Archive>
     void load(Archive& ar, const unsigned int version);
     BOOST_SERIALIZATION_SPLIT_MEMBER()
-
+*/
     typedef boost::unordered_map<Atom, SISet> atom_map;
 
     atom_map amap_;
@@ -92,6 +95,12 @@ inline std::size_t hash_value(const Model& m) {
     return seed;
 }
 
+template <class Archive>
+void Model::serialize(Archive& ar, const unsigned int version) {
+    ar & amap_;
+    ar & maxInterval_;
+}
+/*
 template <class Archive>
 void Model::save(Archive& ar, const unsigned int version) const {
     // no support for boost-serialization and the unordered map, so we'll
@@ -125,5 +134,6 @@ void Model::load(Archive& ar, const unsigned int version) {
     }
     ar & maxInterval_;
 }
+*/
 
 #endif /* MODEL_H_ */
