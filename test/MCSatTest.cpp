@@ -17,10 +17,17 @@
 #include <boost/random.hpp>
 #include <string>
 #include <ctime>
+#include <unistd.h>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <iostream>
+#include <fstream>
 #include "../src/inference/MCSat.h"
 #include "../src/inference/MCSatSamplePerfectlyStrategy.h"
 #include "../src/inference/MCSatSampleLiquidlyStrategy.h"
 #include "../src/logic/syntax/Proposition.h"
+#include "../src/AllSerializationExports.h"
 #include "TestUtilities.h"
 
 BOOST_AUTO_TEST_CASE( mcsat_test)
@@ -106,7 +113,7 @@ BOOST_AUTO_TEST_CASE( mcsat_test2)
 }
 
 BOOST_AUTO_TEST_CASE( mcsat_volleyball) {
-    boost::mt19937 rng;
+    boost::mt19937 rng((time(NULL) * 32)^getpid());
     // disable debug logging
     FileLog::globalLogLevel() = LOG_ERROR;
     std::string facts("# Video002.mat\n"
@@ -387,15 +394,25 @@ BOOST_AUTO_TEST_CASE( mcsat_volleyball) {
     std::cout << "found " << timePoints.size() << " timepoints." << std::endl;
 
     MCSat mcSatSolver(&d);
-    mcSatSolver.setBurnInIterations(1);
-    mcSatSolver.setNumSamples(1);
+    mcSatSolver.setBurnInIterations(10000);
+    mcSatSolver.setNumSamples(2000);
     std::cout << "running mcSatSolver with " << mcSatSolver.burnInIterations() << " burn in iterations and a sample size of " << mcSatSolver.numSamples() << std::endl;
+    std::cout << "rng = " << rng << std::endl;
     mcSatSolver.setSampleStrategy(new MCSatSampleLiquidlyStrategy());
     std::clock_t start = std::clock();
     mcSatSolver.run(rng);
     std::clock_t end = std::clock();
-    std::cout << "ran in " << (end - start)/CLOCKS_PER_SEC << " seconds.";
+    std::cout << "ran in " << (end - start)/CLOCKS_PER_SEC << " seconds." << std::endl;
+    std::cout << "BEGIN OUTPUT OF MODEL.DAT" << std::endl;
+    std::cout << "----------------------------------" << std::endl;
+    {
+        boost::archive::text_oarchive tout(std::cout);
+        tout << mcSatSolver;
+    }
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << "END OUTPUT OF MODEL.DAT" << std::endl;
     BOOST_CHECK_EQUAL(mcSatSolver.size(), mcSatSolver.numSamples());
+
 }
 
 BOOST_AUTO_TEST_CASE( mcsatSamplePerfectlyStrategy) {
