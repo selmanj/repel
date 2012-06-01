@@ -9,7 +9,7 @@
 
 class Variable : public Term {
 public:
-    Variable(std::string name);
+    Variable(std::string name="_Unknown");
     Variable(const Variable& c) : name_(c.name_) {};
     ~Variable() {};
 

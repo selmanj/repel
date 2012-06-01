@@ -394,8 +394,8 @@ BOOST_AUTO_TEST_CASE( mcsat_volleyball) {
     std::cout << "found " << timePoints.size() << " timepoints." << std::endl;
 
     MCSat mcSatSolver(&d);
-    mcSatSolver.setBurnInIterations(10000);
-    mcSatSolver.setNumSamples(2000);
+    mcSatSolver.setBurnInIterations(1);
+    mcSatSolver.setNumSamples(1);
     std::cout << "running mcSatSolver with " << mcSatSolver.burnInIterations() << " burn in iterations and a sample size of " << mcSatSolver.numSamples() << std::endl;
     std::cout << "rng = " << rng << std::endl;
     mcSatSolver.setSampleStrategy(new MCSatSampleLiquidlyStrategy());
@@ -407,6 +407,7 @@ BOOST_AUTO_TEST_CASE( mcsat_volleyball) {
     std::cout << "----------------------------------" << std::endl;
     {
         boost::archive::text_oarchive tout(std::cout);
+        registerAllPELTypes(tout);
         tout << mcSatSolver;
     }
     std::cout << "----------------------------------" << std::endl;

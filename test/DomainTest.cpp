@@ -16,7 +16,7 @@
 #include "logic/Domain.h"
 #include "logic/ELSyntax.h"
 #include "logic/FOLParser.h"
-#include "../src/logic/syntax/TermSerializationExports.h"
+#include "../src/AllSerializationExports.h"
 
 BOOST_AUTO_TEST_CASE( addFactsFormulas ) {
     Domain d;
@@ -297,6 +297,7 @@ BOOST_AUTO_TEST_CASE( modelSerialization) {
     {
         std::ofstream tempFile("tempfile.txt");
         boost::archive::text_oarchive oArch(tempFile);
+        registerAllPELTypes(oArch);
         oArch << m;
     }
 
@@ -304,6 +305,7 @@ BOOST_AUTO_TEST_CASE( modelSerialization) {
     {
         std::ifstream tempFile("tempfile.txt");
         boost::archive::text_iarchive oArch(tempFile);
+        registerAllPELTypes(oArch);
         oArch >> x;
     }
     BOOST_CHECK_EQUAL(m, x);

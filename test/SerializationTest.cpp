@@ -19,9 +19,7 @@
 #include <iostream>
 #include <sstream>
 #include "../src/inference/MCSat.h"
-#include "../src/logic/syntax/SentenceSerializationExport.h"
-#include "../src/logic/syntax/TermSerializationExports.h"
-#include "../src/inference/MCSatSampleStrategySerializationExport.h"
+#include "../src/AllSerializationExports.h"
 #include "TestUtilities.h"
 
 template <class T>
@@ -29,11 +27,13 @@ void checkSerializationPtr(T s) {
     std::stringstream stream;
     {
         boost::archive::text_oarchive oarch(stream);
+        registerAllPELTypes(oarch);
         oarch << s;
     }
     T t;
     {
         boost::archive::text_iarchive iarch(stream);
+        registerAllPELTypes(iarch);
         iarch >> t;
     }
 
@@ -45,11 +45,13 @@ void checkSerialization(T s) {
     std::stringstream stream;
     {
         boost::archive::text_oarchive oarch(stream);
+        registerAllPELTypes(oarch);
         oarch << s;
     }
     T t;
     {
         boost::archive::text_iarchive iarch(stream);
+        registerAllPELTypes(iarch);
         iarch >> t;
     }
 
