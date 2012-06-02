@@ -12,6 +12,8 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/mpl/assert.hpp>
 #include "../logic/Domain.h"
 #include "MCSatSampleStrategy.h"
 #include "MCSatSampleLiquidlyStrategy.h"
@@ -26,6 +28,7 @@ public:
     static const double defWalksatRandomMoveProb;
     static const unsigned int defWalksatNumRandomRestarts;
     static const bool defUseRandomInitialModels;
+    static const bool defUseUnitPropagation;
 
     boost::unordered_set<Model> sampleSat(const Model& initialModel, const Domain& d, boost::mt19937& rng);
 
@@ -46,6 +49,8 @@ public:
     double walksatRandomMoveProb() const;
     unsigned int walksatNumRandomRestarts() const;
     bool useRandomInitialModels() const;
+    bool useUnitPropagation() const;
+
 
     const_iterator begin() const;
     const_iterator end() const;
@@ -60,6 +65,7 @@ public:
     void setWalksatNumRandomRestarts(unsigned int walksatNumRandomRestarts);
     void setSampleStrategy(MCSatSampleStrategy *strategy);
     void setUseRandomInitialModels(bool b);
+    void setUseUnitPropagation(bool b);
 
     void clear();
 
@@ -84,6 +90,7 @@ private:
     double walksatRandomMoveProb_;
     unsigned int walksatNumRandomRestarts_;
     bool useRandomInitialModels_;
+    bool useUnitPropagation_;
 
     std::vector<Model> samples_;
     MCSatSampleStrategy *sampleStrategy_;
@@ -139,6 +146,7 @@ inline MCSat::MCSat(const Domain *d)
       walksatRandomMoveProb_(defWalksatRandomMoveProb),
       walksatNumRandomRestarts_(defWalksatNumRandomRestarts),
       useRandomInitialModels_(defUseRandomInitialModels),
+      useUnitPropagation_(defUseUnitPropagation),
       samples_(),
       sampleStrategy_(0) {
     // use default strategy of liquid strategy
@@ -154,6 +162,7 @@ inline MCSat::MCSat(const MCSat& m)
       walksatRandomMoveProb_(m.walksatRandomMoveProb_),
       walksatNumRandomRestarts_(m.walksatNumRandomRestarts_),
       useRandomInitialModels_(m.useRandomInitialModels_),
+      useUnitPropagation_(m.useUnitPropagation_),
       samples_(m.samples_),
       sampleStrategy_(m.sampleStrategy_ == 0 ? 0 : m.sampleStrategy_->clone()) {}
 
@@ -172,6 +181,7 @@ inline void swap(MCSat& l, MCSat& r) {
     swap(l.walksatRandomMoveProb_, r.walksatRandomMoveProb_);
     swap(l.walksatNumRandomRestarts_, r.walksatNumRandomRestarts_);
     swap(l.useRandomInitialModels_, r.useRandomInitialModels_);
+    swap(l.useUnitPropagation_, r.useUnitPropagation_);
     swap(l.samples_, r.samples_);
     swap(l.sampleStrategy_, r.sampleStrategy_);
 }
@@ -190,7 +200,7 @@ inline MCSat::const_iterator MCSat::end() const { return samples_.end();}
 inline const MCSatSampleStrategy* MCSat::sampleStrategy() const { return sampleStrategy_;}
 inline std::size_t MCSat::size() const {return samples_.size(); }
 inline bool MCSat::useRandomInitialModels() const {return useRandomInitialModels_;}
-
+inline bool MCSat::useUnitPropagation() const { return useUnitPropagation_;}
 
 
 inline void MCSat::setDomain(const Domain* d) {d_ = d;}
@@ -203,6 +213,7 @@ inline void MCSat::setSampleStrategy(MCSatSampleStrategy *strategy) {
     sampleStrategy_ = strategy;
 }
 inline void MCSat::setUseRandomInitialModels(bool b) {useRandomInitialModels_ = b;}
+inline void MCSat::setUseUnitPropagation(bool b) {useUnitPropagation_ = b;}
 
 inline void MCSat::clear() {samples_.clear();}
 /*
@@ -233,9 +244,14 @@ void MCSat::serialize(Archive& ar, const unsigned int version) {
     ar & walksatRandomMoveProb_;
     ar & walksatNumRandomRestarts_;
     ar & useRandomInitialModels_;
+    if (version > 0) {
+        ar & useUnitPropagation_;
+    }
     ar & samples_;
     ar & sampleStrategy_;
 }
+
+BOOST_CLASS_VERSION(MCSat, 1)
 
 inline bool operator!=(const MCSat& l, const MCSat& r) { return !operator==(l,r);}
 

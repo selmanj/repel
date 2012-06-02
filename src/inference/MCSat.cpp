@@ -19,7 +19,7 @@ const unsigned int MCSat::defWalksatIterations = 1000;
 const double MCSat::defWalksatRandomMoveProb = 0.2;
 const unsigned int MCSat::defWalksatNumRandomRestarts = 4;
 const bool MCSat::defUseRandomInitialModels = true;
-
+const bool MCSat::defUseUnitPropagation = true;
 
 void MCSat::run(boost::mt19937& rng) { // TODO: setup using random initial models
     if (d_ == 0) {
@@ -35,7 +35,12 @@ void MCSat::run(boost::mt19937& rng) { // TODO: setup using random initial model
     //d_->printDebugDescription(std::cout);
 
     // first, run unit propagation on our domain to get a new reduced one.
-    Domain reduced = MCSat::applyUP(*d_);
+    Domain reduced;
+    if (useUnitPropagation_) {
+        reduced = MCSat::applyUP(*d_);
+    } else {
+        reduced = *d_;
+    }
     //std::cout << "reduced domain: ";
     //reduced.printDebugDescription(std::cout);
 
@@ -182,12 +187,16 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
         dSat.addFormula(s);
     }
     dSat.addAtoms(d.atoms_begin(), d.atoms_end());
-    // perform UP
+    // perform UP (if possible)
     Domain reduced;
-    try {
-        reduced = MCSat::applyUP(dSat);
-    } catch (contradiction& c) {
-        return models;  // can't continue, just return our models which has only one item.
+    if (useUnitPropagation_) {
+        try {
+            reduced = MCSat::applyUP(dSat);
+        } catch (contradiction& c) {
+            return models;  // can't continue, just return our models which has only one item.
+        }
+    } else {
+        reduced = dSat;
     }
 
     // rewrite infinite weighted formulas so they have singular weight
@@ -300,6 +309,7 @@ bool operator==(const MCSat& l, const MCSat& r) {
             l.walksatRandomMoveProb_ == r.walksatRandomMoveProb_ &&
             l.walksatNumRandomRestarts_ == r.walksatNumRandomRestarts_ &&
             l.useRandomInitialModels_ == r.useRandomInitialModels_ &&
+            l.useUnitPropagation_ == r.useUnitPropagation_ &&
             l.samples_ == r.samples_ &&
             (l.sampleStrategy_ == r.sampleStrategy_ || (l.sampleStrategy_ != NULL && r.sampleStrategy_ != NULL && *l.sampleStrategy_ == *r.sampleStrategy_))
             );
