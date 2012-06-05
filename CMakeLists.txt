@@ -19,7 +19,7 @@ set(Boost_USE_STATIC_LIBS   OFF)
 set(Boost_USE_MULTITHREADED OFF)
 #set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.47" "1.47.0" "1.48" "1.48.0")
 
-find_package(Boost 1.48.0 COMPONENTS program_options unit_test_framework serialization)
+find_package(Boost 1.48.0 COMPONENTS program_options iostreams unit_test_framework serialization)
 
 if (NOT Boost_USE_STATIC_LIBS AND Boost_UNIT_TEST_FRAMEWORK_FOUND)
 	set(USE_DYNAMIC_UNIT_TEST ON)

@@ -6,6 +6,10 @@
  */
 #include <boost/random.hpp>
 #include <boost/program_options.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+//#include <boost/iostreams/filter/zlib.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
@@ -15,12 +19,14 @@
 #include "../test/TestUtilities.h"  // <-- TODO: shouldn't be needed here
 
 namespace po = boost::program_options;
+namespace io = boost::iostreams;
 
 int main(int argc, char* argv[]) {
     // build the variable map from our configuration
     po::options_description options("Allowed options");
     options.add_options()
             ("help", "this message")
+            ("disable-up", "disable unit propagation")
             ("seed", po::value<unsigned int>(), "rng seed")
             ("name", po::value<std::string>(), "job name (used for file naming)");
     po::variables_map vm;
@@ -320,15 +326,24 @@ int main(int argc, char* argv[]) {
     MCSat mcSatSolver(&d);
     mcSatSolver.setBurnInIterations(1);
     mcSatSolver.setNumSamples(1);
+    if (vm.count("disable-up")) {
+        mcSatSolver.setUseUnitPropagation(false);
+    } else {
+        mcSatSolver.setUseUnitPropagation(true);
+    }
     std::cout << "running mcSatSolver with " << mcSatSolver.burnInIterations() << " burn in iterations and a sample size of " << mcSatSolver.numSamples() << std::endl;
     std::string prefix = (vm.count("name") ? vm["name"].as<std::string>() : "mcsat-volleyball");
     std::cout << "saving random seed..." << std::endl;
     {
-        std::string rngFilename = prefix + "-seed.txt";
-        std::ofstream rngOut(rngFilename.c_str(), std::ios_base::trunc);
-        if (!rngOut) {
+        std::string rngFilename = prefix + "-seed.txt.gz";
+        io::file_descriptor_sink rngOutFile(rngFilename.c_str(), std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+        if (!rngOutFile.is_open()){
             std::cerr << "unable to open file " + rngFilename + "for RNG writing." << std::endl;
         } else {
+            // gzip it using boost iostreams
+            io::filtering_ostream rngOut;
+            rngOut.push(io::gzip_compressor());
+            rngOut.push(rngOutFile);
             rngOut << rng;
         }
     }
@@ -341,12 +356,15 @@ int main(int argc, char* argv[]) {
     std::cout << "ran in " << (end - start)/CLOCKS_PER_SEC << " seconds." << std::endl;
     std::cout << "saving model file..." << std::endl;
     {
-        std::string outFilename = prefix + "-model.dat";
-        std::ofstream outFile(outFilename.c_str(), std::ios_base::trunc);
-        if (!outFile) {
+        std::string outFilename = prefix + "-model.dat.gz";
+        io::file_descriptor_sink outFile(outFilename.c_str(), std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+        if (!outFile.is_open()) {
             std::cerr << "unable to open file " + outFilename + " for model writing." << std::endl;
         } else {
-            boost::archive::text_oarchive tout(outFile);
+            io::filtering_ostream dataOut;
+            dataOut.push(io::gzip_compressor());
+            dataOut.push(outFile);
+            boost::archive::text_oarchive tout(dataOut);
             registerAllPELTypes(tout);
             tout << mcSatSolver;
         }
