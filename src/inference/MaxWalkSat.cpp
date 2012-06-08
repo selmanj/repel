@@ -11,6 +11,15 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
+unsigned int MWSSolver::defNumIterations = 1000;
+double MWSSolver::defProbOfRandomMove = 0.2;
+
+Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
+    std::runtime_error e("MWSSolver::run() not implemented.");
+    throw e;
+}
+
+/*
 Model maxWalkSat(Domain& d,
         int numIterations,
         double probOfRandomMove,
@@ -236,3 +245,4 @@ namespace {
         return pair;
     }
 }
+*/
