@@ -21,12 +21,48 @@
 namespace po = boost::program_options;
 namespace io = boost::iostreams;
 
+int analyzeOutput(const std::string& filename) {
+    MCSat solver;
+    {
+        io::file_descriptor_source inFile(filename.c_str(), std::ios_base::in | std::ios_base::binary);
+        if (!inFile.is_open()) {
+            std::cerr << "unable to open file " + filename + " for model reading" << std::endl;
+            return EXIT_FAILURE;
+        } else {
+            io::filtering_istream dataIn;
+            dataIn.push(io::gzip_decompressor());
+            dataIn.push(inFile);
+            boost::archive::text_iarchive tin(dataIn);
+            registerAllPELTypes(tin);
+            tin >> solver;
+        }
+    }
+    std::cout << "number of samples: " << solver.numSamples() << std::endl;
+
+    boost::shared_ptr<Sentence> ballContactS = getAsSentence("BallContact(them)");
+    Proposition ballContactProp(static_cast<const Atom&>(*ballContactS), true);
+
+    std::cout << "counts:" << std::endl;
+    Interval maxInterval = solver.domain()->maxInterval();
+    unsigned int counts[maxInterval.finish() - maxInterval.start() + 1];
+
+    for (unsigned int j = maxInterval.start(); j <= maxInterval.finish(); j++) {
+        counts[j] = solver.countProps(ballContactProp, Interval(j,j));
+        std::cout << counts[j];
+        if (j != maxInterval.finish()) std::cout << ", ";
+    }
+    std::cout << std::endl;
+
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char* argv[]) {
     // build the variable map from our configuration
     po::options_description options("Allowed options");
     options.add_options()
             ("help", "this message")
             ("disable-up", "disable unit propagation")
+            ("analyze", po::value<std::string>(), "analyse previously-generated output")
             ("seed", po::value<unsigned int>(), "rng seed")
             ("name", po::value<std::string>(), "job name (used for file naming)");
     po::variables_map vm;
@@ -38,6 +74,10 @@ int main(int argc, char* argv[]) {
         std::cout << options << std::endl;
         return EXIT_FAILURE;
     }
+    if (vm.count("analyze")) {
+        return analyzeOutput(vm["analyze"].as<std::string>());
+    }
+
     boost::mt19937 rng;
     if (vm.count("rng")) {
         rng.seed(vm["rng"].as<unsigned int>());
