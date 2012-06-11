@@ -110,6 +110,7 @@ int main(int argc, char* argv[]) {
             LOG(LOG_INFO) << "searching for a maximum-weight model, with p=" << p << " and iterations=" << iterations;
             Model defModel = d.defaultModel();
 
+            /*
             std::fstream datastream;
             if(vm.count("datafile")) {
                 datastream.open(vm["datafile"].as<std::string>().c_str(), std::fstream::out);
@@ -117,14 +118,9 @@ int main(int argc, char* argv[]) {
                     LOG_PRINT(LOG_ERROR) << "unable to open file \"" << vm["datafile"].as<std::string>() << "\" for data file storage.";
                 }
             }
-            Model maxModel(d.maxInterval());
-            if (datastream.is_open() && datastream.good()) {
-                maxModel = maxWalkSat(d, iterations, p, rng, &defModel, &datastream);
-            } else {
-                maxModel = maxWalkSat(d, iterations, p, rng, &defModel, 0);
-            }
-
-            if (datastream.is_open()) datastream.close();
+            */
+            MWSSolver mwsSolver(iterations, p, &d);
+            Model maxModel = mwsSolver.run(rng, defModel);
 
             LOG_PRINT(LOG_INFO) << "Best model found: " << std::endl;
             LOG_PRINT(LOG_INFO) << maxModel;
@@ -174,7 +170,7 @@ void initConfig(int argc,
         ("iterations,i", po::value<unsigned int>()->default_value(1000), "number of iterations before returning a model")
         ("output,o", po::value<std::string>(), "output model file")
         ("unitProp,u", "perform unit propagation only and exit")
-        ("datafile,d", po::value<std::string>(), "log scores from maxwalksat to this file (csv form)")
+//        ("datafile,d", po::value<std::string>(), "log scores from maxwalksat to this file (csv form)")
     ;
 
     po::options_description hidden("Hidden options");

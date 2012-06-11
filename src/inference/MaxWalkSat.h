@@ -15,7 +15,7 @@
 #include <iostream>
 
 //class Move;
-//class Model;
+class Model;
 class Domain;
 //class Atom;
 //class ELSentence;
@@ -178,13 +178,6 @@ inline void MWSSolver::setDomain(Domain* d) {
     domain_ = d;
 }
 
-inline Model MWSSolver::run(boost::mt19937& rng) {
-    if (domain_ == NULL) {
-        std::logic_error e("unable to run MWSSolver with Domain set to null ptr");
-        throw e;
-    }
-    return run(rng, domain_->defaultModel());
-}
 
 /*
 

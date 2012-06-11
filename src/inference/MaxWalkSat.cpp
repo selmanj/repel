@@ -11,8 +11,16 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-unsigned int MWSSolver::defNumIterations = 1000;
-double MWSSolver::defProbOfRandomMove = 0.2;
+const unsigned int MWSSolver::defNumIterations = 1000;
+const double MWSSolver::defProbOfRandomMove = 0.2;
+
+Model MWSSolver::run(boost::mt19937& rng) {
+    if (domain_ == NULL) {
+        std::logic_error e("unable to run MWSSolver with Domain set to null ptr");
+        throw e;
+    }
+    return run(rng, domain_->defaultModel());
+}
 
 Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
     std::runtime_error e("MWSSolver::run() not implemented.");
