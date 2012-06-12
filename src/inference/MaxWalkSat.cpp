@@ -435,18 +435,17 @@ namespace {
 
 void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
         const Model& model,
-        const std::vector<bool>& whichToUpdate,
+        std::vector<bool>& whichToUpdate,
         std::vector<double>& scores,
         std::vector<bool>& fullySatisfied) {
-
     // first, calculate all the SISets for our sentences
-    for (std::vector<bool>::size_type i = 0;
+    for (std::size_t i = 0;
             i < whichToUpdate.size();
             i++) {
         if (!whichToUpdate[i]) continue;    // skip elements that don't need updating
 
         ELSentence formula = formulas[i];
-        // find the quantification for the current sentece
+        // find the quantification for the current sentence
         SISet quantification(domain_->maxSpanInterval(), false, domain_->maxInterval());
         if (formula.isQuantified()) {
             quantification = formula.quantification();
@@ -461,5 +460,7 @@ void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
         } else {
             fullySatisfied[i] = false;
         }
+        // done updating!  make a note
+        whichToUpdate[i] = false;
     }
 }

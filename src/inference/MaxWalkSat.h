@@ -125,7 +125,7 @@ private:
     // update the formula scores and return a list of sentences that are not fully satisfied and have moves
     void updateScores(const std::vector<ELSentence>& formulas,
             const Model& m,
-            const std::vector<bool>& whichToUpdate,
+            std::vector<bool>& whichToUpdate,
             std::vector<double>& scores,
             std::vector<bool>& fullySatisfied);
 
