@@ -18,7 +18,7 @@
 class Model;
 class Domain;
 //class Atom;
-//class ELSentence;
+class ELSentence;
 //struct AtomStringCompare;
 
 /**
@@ -122,6 +122,13 @@ public:
      */
     Model run(boost::mt19937& rng, const Model& initialModel);
 private:
+    // update the formula scores and return a list of sentences that are not fully satisfied and have moves
+    void updateScores(const std::vector<ELSentence>& formulas,
+            const Model& m,
+            const std::vector<bool>& whichToUpdate,
+            std::vector<double>& scores,
+            std::vector<bool>& fullySatisfied);
+
     unsigned int numIterations_;
     double probOfRandomMove_;
     Domain* domain_;
