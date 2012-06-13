@@ -9,15 +9,16 @@
 #define MAXWALKSAT_H_
 
 #include <boost/random.hpp>
+#include <boost/unordered_map.hpp>
 #include <set>
 #include <map>
 #include <vector>
 #include <iostream>
 
-//class Move;
+class Move;
 class Model;
 class Domain;
-//class Atom;
+class Atom;
 class ELSentence;
 //struct AtomStringCompare;
 
@@ -128,6 +129,12 @@ private:
             std::vector<bool>& whichToUpdate,
             std::vector<double>& scores,
             std::vector<bool>& fullySatisfied);
+
+    // execute a move, updating all sentences that need scores updating at the same time
+    Model updateWithMove(const Move& m,
+            const Model& currentModel,
+            const boost::unordered_map<Atom, std::vector<std::vector<ELSentence>::size_type > >& atomMap,
+            std::vector<bool>& formsNeedUpdate);
 
     unsigned int numIterations_;
     double probOfRandomMove_;

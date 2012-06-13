@@ -39,8 +39,8 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
         return initialModel;
     }
 
-    // now store the sentences that have valid moves
-    std::vector<std::vector<ELSentence>::size_type > formulasWithMoves;
+    // now note which sentences have valid moves
+    std::vector<bool> formWithMoves;
     for (std::vector<ELSentence>::size_type i = 0;
             i < formulas.size();
             i++) {
@@ -51,8 +51,9 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
         }
         if (!canFindMovesFor(*formulas[i].sentence(), *domain_)) {
             LOG(LOG_WARN) << "currently cannot generate moves for sentence: \"" << formulas[i].sentence()->toString() << "\".  ignoring it for generating moves";
+            formWithMoves[i] = false;
         } else {
-            formulasWithMoves.push_back(i);
+            formWithMoves[i] = true;
         }
     }
 
@@ -92,6 +93,123 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
         }
         LOG(LOG_DEBUG) << "currentModel: " << currentModel;
         LOG(LOG_DEBUG) << "current score: " << currentScore;
+
+        // first, check to see if all our formulas are fully satisfied - if
+        // that's the case, there's no real improvement left
+
+        // At the same time build a list of formulas we can find moves for
+        // that are not fully satisfied
+        bool noImprovementLeft = true;
+        std::vector<std::size_t> formCandidates;
+        for (std::vector<bool>::size_type i = 0;
+                i < formulas.size();
+                i++) {
+            if (!formFullySat[i]) {
+                noImprovementLeft = false;
+                if (formWithMoves[i]) {
+                    formCandidates.push_back(i);
+                }
+            }
+        }
+        if (noImprovementLeft) {
+            LOG(LOG_DEBUG) << "exiting early, no more sentences to satisfy!";
+            return currentModel;
+        }
+        // if formCandidates is empty, then we aren't fully satisfied but we
+        // can't generate moves for any valid sentences right now.  log a
+        // warning and generate a random move
+        Move nextMove;
+        if (formCandidates.empty()) {
+            LOG(LOG_WARN) << "cannot generate any moves for the current model (not all formulas are currently handled) - generating a random move";
+            // pick a random atom
+            boost::uniform_int<std::size_t> atomPick(0, domain_->atoms_size()-1);
+            std::size_t atomInd = atomPick(rng);
+            Domain::atom_const_iterator atomIt = domain_->atoms_begin();
+            while (atomInd > 0) {
+                atomIt++;
+                atomInd--;
+            }
+
+            Atom atom = *atomIt;
+            // now pick a spanning interval
+
+            Interval maxInterval = domain_->maxInterval();
+            boost::uniform_int<unsigned int> momentPick(maxInterval.start(), maxInterval.finish());
+            unsigned int start = momentPick(rng);
+            unsigned int finish = momentPick(rng);
+            if (start > finish) std::swap(start, finish);
+
+            SpanInterval si;
+            if (domain_->isLiquid(atom.name())) {
+                si = SpanInterval(start, finish);
+            } else {
+                si = SpanInterval(start, start, finish, finish);
+            }
+            // make a random flip to add/subtract
+            Move::change ch(atom, si);
+            boost::bernoulli_distribution<> flip(0.5);
+            if (flip(rng)) {
+                nextMove.toAdd.push_back(ch);
+            } else {
+                nextMove.toDel.push_back(ch);
+            }
+        } else {
+            // choose a formula to improve at random
+            boost::uniform_int<std::size_t> formulaPick(0, formCandidates.size()-1);
+            std::size_t formChoseInd = formulaPick(rng);
+            ELSentence formula = formulas[formChoseInd];
+            LOG(LOG_DEBUG) << "choosing formula: " << formula << " to improve.";
+
+            // find the moves for it
+            std::vector<Move> moves = findMovesFor(*domain_, currentModel, formula, rng);
+            if (moves.size() == 0) {
+                LOG(LOG_WARN) << "WARNING: unable to find moves for sentence " << formula.sentence()->toString()
+                        << " but couldn't find any (even though its violated)!  continuing (with a null iteration)...";
+                continue; // TODO: this shouldn't happen, right?
+            }
+            if (FileLog::globalLogLevel() <= LOG_DEBUG) {
+                std::ostringstream vecStream;
+                for (std::vector<Move>::const_iterator it = moves.begin(); it != moves.end(); it++) {
+                    if (it != moves.begin()) vecStream << ", ";
+                    vecStream << "(" << it->toString() << ")";
+                }
+                LOG(LOG_DEBUG) << "moves to consider: " << vecStream.str();
+            }
+
+            boost::bernoulli_distribution<> randMovePick(probOfRandomMove_);
+            if (randMovePick(rng)) {
+                // take a random move
+                boost::uniform_int<std::size_t> movesPick(0, moves.size()-1);
+                Move aMove = moves[movesPick(rng)];
+                LOG(LOG_DEBUG) << "taking random move: " << aMove.toString();
+
+                currentModel = updateWithMove(aMove, currentModel, atomToSentence, formNeedUpdates);
+                // update scores
+                updateScores(formulas, currentModel, formNeedUpdates, formScores, formFullySat);
+                currentScore = std::accumulate(formScores.begin(), formScores.end(), 0.0);
+            } else {
+                // instead of choosing a random move, choose the move that leads to the
+                // highest scoring move.
+
+                // we will calculate the resulting model and score for all
+                // moves, and choose the highest scoring one to move to
+                std::vector<std::pair<Model, double> > nearbyModels;
+                for (std::vector<Move>::const_iterator it = moves.begin(); it != moves.end(); it++) {
+                    Move m = *it;
+                    std::vector<bool> localFormNeedUpdates(formNeedUpdates);
+                    Model nearbyModel = updateWithMove(m, currentModel, atomToSentence, localFormNeedUpdates);
+
+                    std::vector<double> localScores(formScores);
+                    std::vector<bool> localFormFullySat(formFullySat);
+                    updateScores(formulas, currentModel, localFormNeedUpdates, localScores, localFormFullySat);
+                    double nearbyScore = std::accumulate(localScores.begin(), localScores.end(), 0.0);
+
+                    nearbyModels.push_back(std::make_pair(nearbyModel, nearbyScore));
+                }
+            }
+        }
+
+
     }
 
 //    for (int iteration=1; iteration <= numIterations; iteration++) {
@@ -203,6 +321,42 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
 
     std::runtime_error e("MWSSolver::run() not implemented.");
     throw e;
+}
+
+Model MWSSolver::updateWithMove(const Move& m,
+        const Model& currentModel,
+        const boost::unordered_map<Atom, std::vector<std::vector<ELSentence>::size_type > >& atomMap,
+        std::vector<bool>& formsNeedUpdate) {
+    // scan over all atoms in the move - if its being modified, mark the formula as needing update
+    boost::unordered_set<Atom> moveAtoms;
+    for (std::vector<Move::change>::const_iterator it = m.toAdd.begin();
+            it != m.toAdd.end();
+            it++) {
+        moveAtoms.insert(it->get<0>());
+    }
+    for (std::vector<Move::change>::const_iterator it = m.toDel.begin();
+            it != m.toDel.end();
+            it++) {
+        moveAtoms.insert(it->get<0>());
+    }
+
+    for (boost::unordered_set<Atom>::const_iterator it = moveAtoms.begin();
+            it != moveAtoms.end();
+            it++) {
+        Atom a = *it;
+        if (atomMap.count(a)) {
+            // TODO: loop over all sentences
+            std::vector<std::vector<ELSentence>::size_type > formsWithAtom = atomMap.at(a);
+            for (std::vector<std::vector<ELSentence>::size_type >::const_iterator atomIt = formsWithAtom.begin();
+                    atomIt != formsWithAtom.end();
+                    atomIt++) {
+            formsNeedUpdate[*atomIt] = true;
+            }
+        }
+    }
+
+    // now execute the move
+    return executeMove(*domain_, m, currentModel);
 }
 
 /*
