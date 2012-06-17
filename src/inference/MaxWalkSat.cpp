@@ -12,6 +12,7 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/unordered_map.hpp>
+#include <limits>
 
 const unsigned int MWSSolver::defNumIterations = 1000;
 const double MWSSolver::defProbOfRandomMove = 0.2;
@@ -22,6 +23,21 @@ Model MWSSolver::run(boost::mt19937& rng) {
         throw e;
     }
     return run(rng, domain_->defaultModel());
+}
+
+namespace {
+// we will calculate the resulting model and score for all
+// moves, and choose the highest scoring one to move to.  This struct
+// makes it a lot more convenient to do.
+struct MWSState {
+    Move move;
+    Model model;
+    double score;
+    // the three below here are copies of the versions above
+    std::vector<bool> localFormNeedUpdates;
+    std::vector<double> localScores;
+    std::vector<bool> localFormFullySat;
+};
 }
 
 Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
@@ -193,7 +209,13 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
 
                 // we will calculate the resulting model and score for all
                 // moves, and choose the highest scoring one to move to
-                std::vector<std::pair<Model, double> > nearbyModels;
+                MWSState bestMWSState;
+
+                bestMWSState.score = std::numeric_limits<double>::min();    // the lowest value possible
+                // also have a vector of best models in case of ties
+                std::vector<MWSState> ties;
+
+                //std::vector<std::pair<Model, double> > nearbyModels;
                 for (std::vector<Move>::const_iterator it = moves.begin(); it != moves.end(); it++) {
                     Move m = *it;
                     std::vector<bool> localFormNeedUpdates(formNeedUpdates);
@@ -204,13 +226,55 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
                     updateScores(formulas, currentModel, localFormNeedUpdates, localScores, localFormFullySat);
                     double nearbyScore = std::accumulate(localScores.begin(), localScores.end(), 0.0);
 
-                    nearbyModels.push_back(std::make_pair(nearbyModel, nearbyScore));
+                    if (nearbyScore > bestMWSState.score) {
+                        // save it
+                        bestMWSState.move = m;
+                        bestMWSState.model = nearbyModel;
+                        bestMWSState.score = nearbyScore;
+                        bestMWSState.localFormNeedUpdates = localFormNeedUpdates;
+                        bestMWSState.localScores = localScores;
+                        bestMWSState.localFormFullySat = localFormFullySat;
+
+                        ties.clear();
+                        ties.push_back(bestMWSState);
+                    } else if (nearbyScore == bestMWSState.score) {
+                        // found a tie
+                        MWSState tieState;
+                        tieState.move = m;
+                        tieState.model = nearbyModel;
+                        tieState.score = nearbyScore;
+                        tieState.localFormNeedUpdates = localFormNeedUpdates;
+                        tieState.localScores = localScores;
+                        tieState.localFormFullySat = localFormFullySat;
+
+                        ties.push_back(tieState);
+                    }
                 }
+                assert(bestMWSState.score > std::numeric_limits<double>::min());
+                if (ties.size() > 1) {
+                    // pick a choice randomly
+                    boost::uniform_int<std::size_t> tieChoice(0, ties.size()-1);
+                    bestMWSState = ties[tieChoice(rng)];
+                }
+                LOG(LOG_DEBUG) << "taking move " << bestMWSState.move.toString();
+
+                currentModel = bestMWSState.model;
+                currentScore = bestMWSState.score;
+                formNeedUpdates = bestMWSState.localFormNeedUpdates;
+                formScores = bestMWSState.localScores;
+                formFullySat = bestMWSState.localFormFullySat;
             }
         }
-
+        // check to see if its the best score foudn so far
+        if (currentScore > bestScore) {
+            LOG(LOG_DEBUG) << "remembering this model as the best one seen so far.";
+            bestScore = currentScore;
+            bestModel = currentModel;
+        }
 
     }
+    LOG(LOG_INFO) << "returning the best model found with a score of " << bestScore;
+    return bestModel;
 
 //    for (int iteration=1; iteration <= numIterations; iteration++) {
 //        if (iteration % showPeriodMod == 0) {
