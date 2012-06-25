@@ -984,7 +984,7 @@ std::vector<Move> findMovesFor(const Domain& d, const Model& m, const ELSentence
         }
 
         if (removeIt) {
-            LOG_PRINT(LOG_ERROR) << "tried to modify an observed atom with move: " + it->toString() << " .  Removing it.";
+            LOG_PRINT(LOG_WARN) << "tried to modify an observed atom with move: " + it->toString() << " .  Removing it.";
             it = moves.erase(it);
         } else {
             it++;
