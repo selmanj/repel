@@ -56,7 +56,7 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
     }
 
     // now note which sentences have valid moves
-    std::vector<bool> formWithMoves;
+    std::vector<bool> formWithMoves(formulas.size(), false);
     for (std::vector<ELSentence>::size_type i = 0;
             i < formulas.size();
             i++) {
@@ -135,6 +135,14 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
         // can't generate moves for any valid sentences right now.  log a
         // warning and generate a random move
         Move nextMove;
+//        std::cout << "candidates = ";
+//        for (std::vector<std::size_t>::const_iterator it = formCandidates.begin();
+//                it != formCandidates.end();
+//                it++) {
+//            std::cout << formulas[*it].toString() << ", ";
+//        }
+//        std::cin.get();
+
         if (formCandidates.empty()) {
             LOG(LOG_WARN) << "cannot generate any moves for the current model (not all formulas are currently handled) - generating a random move";
             // pick a random atom
@@ -173,7 +181,7 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
             // choose a formula to improve at random
             boost::uniform_int<std::size_t> formulaPick(0, formCandidates.size()-1);
             std::size_t formChoseInd = formulaPick(rng);
-            ELSentence formula = formulas[formChoseInd];
+            ELSentence formula = formulas[formCandidates[formChoseInd]];
             LOG(LOG_DEBUG) << "choosing formula: " << formula << " to improve.";
 
             // find the moves for it
@@ -656,11 +664,25 @@ void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
         std::vector<bool>& whichToUpdate,
         std::vector<double>& scores,
         std::vector<bool>& fullySatisfied) {
+//    std::cout << "in MWSSolver::updateScores()" << std::endl;
+//    std::cout << "whichToUpdate: ";
+//    std::copy(whichToUpdate.begin(), whichToUpdate.end(), std::ostream_iterator<bool>(std::cout, ", "));
+//    std::cout << std::endl;
+//
+//    std::cout << "fullySatisfied: ";
+//    std::copy(fullySatisfied.begin(), fullySatisfied.end(), std::ostream_iterator<bool>(std::cout, ", "));
+//    std::cout << std::endl;
+
     // first, calculate all the SISets for our sentences
     for (std::size_t i = 0;
             i < whichToUpdate.size();
             i++) {
-        if (!whichToUpdate[i]) continue;    // skip elements that don't need updating
+//        std::cout << "  current formula: " << formulas[i] << std::endl;
+
+        if (!whichToUpdate[i]) {
+//            std::cout << "  asked not to update this formula" << std::endl;
+            continue;    // skip elements that don't need updating
+        }
 
         ELSentence formula = formulas[i];
         // find the quantification for the current sentence
@@ -670,10 +692,12 @@ void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
         }
 
         SISet formSat = formula.dSatisfied(model, *domain_);
+//        std::cout << "  formula is satisfied at " << formSat << std::endl;
         // next, overwrite the score for the model
         scores[i] = ((double)formSat.size()) * formula.weight();
         // finally, mark if its completely satisfied
         if (quantification.includes(formSat) && formSat.includes(quantification)) {
+//            std::cout << "  marking formula as completely satisfied" << std::endl;
             fullySatisfied[i] = true;
         } else {
             fullySatisfied[i] = false;
@@ -681,4 +705,9 @@ void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
         // done updating!  make a note
         whichToUpdate[i] = false;
     }
+//    std::cout << "leaving MWSSolver::updateScores()";
+//    std::cout << "fullySatisfied: ";
+//    std::copy(fullySatisfied.begin(), fullySatisfied.end(), std::ostream_iterator<bool>(std::cout, ", "));
+//    std::cout << std::endl;
+
 }
