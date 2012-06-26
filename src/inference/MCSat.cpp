@@ -203,6 +203,7 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
     reduced = reduced.replaceInfForms();
 
     // do some random restarts and hope for different models
+    MWSSolver walksatSolver(walksatIterations_, walksatRandomMoveProb_, &reduced);
     for (unsigned int i = 1; i <= walksatNumRandomRestarts_; i++) {
         Model iterInitModel = reduced.randomModel(rng);   // TODO: better way to make random models
         if (reduced.formulas_size() == 0) {
@@ -215,7 +216,7 @@ boost::unordered_set<Model> MCSat::sampleSat(const Model& initialModel, const Do
         //std::copy(reduced.formulas_begin(), reduced.formulas_end(), std::ostream_iterator<ELSentence>(std::cout, ", "));
         //std::cout << std::endl;
 
-        Model iterModel = maxWalkSat(reduced, walksatIterations_, walksatRandomMoveProb_, rng, &iterInitModel);
+        Model iterModel = walksatSolver.run(rng, iterInitModel);
         if (reduced.isFullySatisfied(iterModel)) models.insert(iterModel);
     }
     return models;

@@ -6,6 +6,8 @@
 #include "syntax/Atom.h"
 
 struct AtomCollector : public SentenceVisitor {
+    typedef boost::unordered_set<Atom> atom_set;
+
     virtual void accept(const Sentence& s) {
         // only care about predicates
         if (s.getTypeCode() == Atom::TypeCode) {

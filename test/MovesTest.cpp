@@ -223,7 +223,8 @@ BOOST_AUTO_TEST_CASE(maxWalkSatTest) {
     Domain d = loadDomainWithStreams(facts, formulas);
     srand(7);
     Model init = d.defaultModel();
-    Model m = maxWalkSat(d, 100, 0.5, rng, &init);
+    MWSSolver solver(100, 0.5, &d);
+    Model m = solver.run(rng, init);
     std::cout << m.toString() << std::endl;
 }
 

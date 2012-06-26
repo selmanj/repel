@@ -802,6 +802,7 @@ Domain loadDomainFromFiles(const std::string &eventfile, const std::string &form
     d.addFormulas(formSet.begin(), formSet.end());
 
     if (options.assumeClosedWorldInFacts()) {
+        LOG(LOG_DEBUG) << "assuming closed world - adding in missing facts";
         // for every fact atom, subtract the places where it's not true, and add in the false statements
         for (boost::unordered_set<Atom>::const_iterator it = factAtoms.begin(); it != factAtoms.end(); it++) {
             SISet noFixedValue = d.getModifiableSISet(*it);
