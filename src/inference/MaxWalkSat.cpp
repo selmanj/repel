@@ -184,11 +184,13 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
             ELSentence formula = formulas[formCandidates[formChoseInd]];
             LOG(LOG_DEBUG) << "choosing formula: " << formula << " to improve.";
 
+
             // find the moves for it
             std::vector<Move> moves = findMovesFor(*domain_, currentModel, formula, rng);
             if (moves.size() == 0) {
+
                 LOG(LOG_WARN) << "WARNING: unable to find moves for sentence " << formula.sentence()->toString()
-                        << " but couldn't find any (even though its violated)!  continuing (with a null iteration)...";
+                        << " even though its violated!  continuing (with a null iteration)...";
                 continue; // TODO: this shouldn't happen, right?
             }
             if (FileLog::globalLogLevel() <= LOG_DEBUG) {
@@ -231,7 +233,7 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
 
                     std::vector<double> localScores(formScores);
                     std::vector<bool> localFormFullySat(formFullySat);
-                    updateScores(formulas, currentModel, localFormNeedUpdates, localScores, localFormFullySat);
+                    updateScores(formulas, nearbyModel, localFormNeedUpdates, localScores, localFormFullySat);
                     double nearbyScore = std::accumulate(localScores.begin(), localScores.end(), 0.0);
 
                     if (nearbyScore > bestMWSState.score) {
@@ -265,7 +267,6 @@ Model MWSSolver::run(boost::mt19937& rng, const Model& initialModel) {
                     bestMWSState = ties[tieChoice(rng)];
                 }
                 LOG(LOG_DEBUG) << "taking move " << bestMWSState.move.toString();
-
                 currentModel = bestMWSState.model;
                 currentScore = bestMWSState.score;
                 formNeedUpdates = bestMWSState.localFormNeedUpdates;
@@ -665,9 +666,6 @@ void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
         std::vector<double>& scores,
         std::vector<bool>& fullySatisfied) {
 //    std::cout << "in MWSSolver::updateScores()" << std::endl;
-//    std::cout << "whichToUpdate: ";
-//    std::copy(whichToUpdate.begin(), whichToUpdate.end(), std::ostream_iterator<bool>(std::cout, ", "));
-//    std::cout << std::endl;
 //
 //    std::cout << "fullySatisfied: ";
 //    std::copy(fullySatisfied.begin(), fullySatisfied.end(), std::ostream_iterator<bool>(std::cout, ", "));
@@ -677,14 +675,13 @@ void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
     for (std::size_t i = 0;
             i < whichToUpdate.size();
             i++) {
-//        std::cout << "  current formula: " << formulas[i] << std::endl;
 
         if (!whichToUpdate[i]) {
 //            std::cout << "  asked not to update this formula" << std::endl;
             continue;    // skip elements that don't need updating
         }
-
         ELSentence formula = formulas[i];
+
         // find the quantification for the current sentence
         SISet quantification(domain_->maxSpanInterval(), false, domain_->maxInterval());
         if (formula.isQuantified()) {
@@ -692,12 +689,12 @@ void MWSSolver::updateScores(const std::vector<ELSentence>& formulas,
         }
 
         SISet formSat = formula.dSatisfied(model, *domain_);
-//        std::cout << "  formula is satisfied at " << formSat << std::endl;
         // next, overwrite the score for the model
         scores[i] = ((double)formSat.size()) * formula.weight();
         // finally, mark if its completely satisfied
-        if (quantification.includes(formSat) && formSat.includes(quantification)) {
-//            std::cout << "  marking formula as completely satisfied" << std::endl;
+        SISet leftover = quantification;
+        leftover.subtract(formSat);
+        if (leftover.empty()) {
             fullySatisfied[i] = true;
         } else {
             fullySatisfied[i] = false;
