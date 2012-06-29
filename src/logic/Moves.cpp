@@ -901,17 +901,22 @@ std::vector<Move> findMovesForLiquidDisjunction(const Domain& d, const Model& m,
 }
 
 std::vector<Move> findMovesForLiquid(const Domain& d, const Model& m, const Sentence &s, const SpanInterval& si) {
+    SpanInterval toModify = si;
+    if (!toModify.isLiquid()) {
+        toModify = toModify.toLiquidInc();
+    }
+
     std::vector<Move> moves;
     if (dynamic_cast<const Negation *>(&s) || dynamic_cast<const Atom *>(&s)) {
-        Move move = findMovesForLiquidLiteral(d, m, s, si);
+        Move move = findMovesForLiquidLiteral(d, m, s, toModify);
         if (!move.isEmpty()) moves.push_back(move);
     } else if (dynamic_cast<const Conjunction *>(&s)) {
         const Conjunction* c = dynamic_cast<const Conjunction *>(&s);
-        Move move = findMovesForLiquidConjunction(d, m, *c, si);
+        Move move = findMovesForLiquidConjunction(d, m, *c, toModify);
         if (!move.isEmpty()) moves.push_back(move);
     } else if (dynamic_cast<const Disjunction *>(&s)) {
         const Disjunction* dis = dynamic_cast<const Disjunction *>(&s);
-        std::vector<Move> disMoves = findMovesForLiquidDisjunction(d, m, *dis, si);
+        std::vector<Move> disMoves = findMovesForLiquidDisjunction(d, m, *dis, toModify);
         moves.insert(moves.end(), disMoves.begin(), disMoves.end());
     }
     return moves;
