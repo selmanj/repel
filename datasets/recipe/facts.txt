@@ -1,0 +1,7 @@
+D-OnTable(object0001) @ [1:100]
+
+D-HandInFrame() @ [148 : 200]
+D-HandInFrame() @ [348 : 378]
+D-HandInFrame() @ [496 : 527]
+D-HandInFrame() @ [538 : 925]
+D-HandInFrame() @ [1035 : 1482]
