@@ -213,7 +213,6 @@ void doParseFormulas(std::vector<ELSentence>& store, iters<ForwardIterator> &its
         } else {
             ELSentence formula = doParseWeightedFormula(its);
             store.push_back(formula);
-            //store.push_back(formula);
         }
     }
 }
