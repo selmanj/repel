@@ -23,7 +23,7 @@ void swap(Domain& a, Domain& b) {
     swap(a.maxInterval_, b.maxInterval_);
     swap(a.formulas_, b.formulas_);
     swap(a.partialModel_, b.partialModel_);
-    swap(a.predTypes_, b.predTypes_);
+    //swap(a.predTypes_, b.predTypes_);
     swap(a.allAtoms_, b.allAtoms_);
     swap(a.generator_, b.generator_);
 }
@@ -74,7 +74,7 @@ void Domain::addFact(const Proposition& p, const SISet& where) {
         partialModel_.at(p).setMaxInterval(newSet.maxInterval());
         partialModel_.at(p).add(newSet);
     }
-    predTypes_.insert(p.atom().predicateType());
+   // predTypes_.insert(p.atom().predicateType());
     allAtoms_.insert(p.atom());
     growMaxInterval(where.maxInterval());
 }
@@ -104,9 +104,11 @@ void Domain::addFormula(const ELSentence& e) {
         //    toAdd.setQuantification(set);
        // }
     }
+    /*
     PredicateTypeCollector pcollect;
     e.sentence()->visit(pcollect);
     predTypes_.insert(pcollect.types.begin(), pcollect.types.end());
+    */
     AtomCollector acollect;
     e.sentence()->visit(acollect);
     allAtoms_.insert(acollect.atoms.begin(), acollect.atoms.end());
@@ -121,7 +123,7 @@ void Domain::addFormula(const ELSentence& e) {
 }
 
 void Domain::addAtom(const Atom& a) {
-    predTypes_.insert(a.predicateType());
+ //   predTypes_.insert(a.predicateType());
     allAtoms_.insert(a);
 }
 
@@ -246,7 +248,7 @@ bool operator==(const Domain& l, const Domain& r) {
             l.maxInterval_ == r.maxInterval_ &&
             l.formulas_ == r.formulas_ &&
             l.partialModel_ == r.partialModel_ &&
-            l.predTypes_ == r.predTypes_ &&
+            //l.predTypes_ == r.predTypes_ &&
             l.allAtoms_ == r.allAtoms_ &&
             l.generator_ == r.generator_
     );

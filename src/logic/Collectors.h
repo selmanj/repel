@@ -19,6 +19,7 @@ struct AtomCollector : public SentenceVisitor {
 };
 
 
+/*
 struct PredicateTypeCollector : public SentenceVisitor {
     virtual void accept(const Sentence& s) {
         if (s.getTypeCode() == Atom::TypeCode) {
@@ -29,6 +30,6 @@ struct PredicateTypeCollector : public SentenceVisitor {
 
     boost::unordered_set<PredicateType> types;
 };
-
+*/
 //struct
 #endif

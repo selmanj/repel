@@ -119,7 +119,7 @@ private:
     Interval maxInterval_;
     std::vector<ELSentence> formulas_;
     PropMap partialModel_;
-    boost::unordered_set<PredicateType> predTypes_;
+    //boost::unordered_set<PredicateType> predTypes_;
     boost::unordered_set<Atom> allAtoms_;
 
     NameGenerator generator_;
@@ -135,7 +135,7 @@ inline Domain::Domain()
       maxInterval_(),
       formulas_(),
       partialModel_(),
-      predTypes_(),
+    //  predTypes_(),
       allAtoms_(),
       generator_(){};
 
@@ -144,7 +144,7 @@ inline Domain::Domain(const Domain& d)
       maxInterval_(d.maxInterval_),
       formulas_(d.formulas_),
       partialModel_(d.partialModel_),
-      predTypes_(d.predTypes_),
+    //  predTypes_(d.predTypes_),
       allAtoms_(d.allAtoms_),
       generator_(d.generator_) {};
 
@@ -208,7 +208,7 @@ void Domain::serialize(Archive& ar, const unsigned int version) {
     ar & maxInterval_;
     ar & formulas_;
     ar & partialModel_;
-    ar & predTypes_;
+   // ar & predTypes_;
     ar & allAtoms_;
     ar & generator_;
 }

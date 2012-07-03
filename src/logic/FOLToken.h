@@ -42,7 +42,8 @@ enum TokenType { Invalid,
     True,
     False,
     Init,
-    Infinity};
+    Infinity,
+    Type};
 
     std::ostream& operator<<(std::ostream& out, FOLParse::TokenType token);
 }

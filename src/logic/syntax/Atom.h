@@ -19,7 +19,6 @@
 
 class Domain;
 class Model;
-struct PredicateType;
 
 class Atom : public Sentence {
 public:
@@ -41,7 +40,7 @@ public:
 
     int arity() const;
     std::string name() const;
-    PredicateType predicateType() const;
+    //PredicateType predicateType() const;
 
     Atom& operator=(const Atom& b);
 
@@ -88,10 +87,12 @@ struct AtomStringCompare {
     bool operator()(const Atom& a, const Atom& b) const;
 };
 
+
 /**
  * Class describing the type of an atom.  Right now its just the predicate name and
  * number of arguments.
  */
+/*
 struct PredicateType {
     PredicateType() : name(), arity(0) {};
     PredicateType(const std::string& predname, unsigned int numArgs)
@@ -118,7 +119,7 @@ private:
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version);
 };
-
+*/
 // IMPLEMENTATION
 
 inline Atom::Atom(std::string name)
@@ -134,7 +135,7 @@ inline Atom::Atom(const Atom& a)
 inline int Atom::arity() const {return terms.size();};
 inline std::string Atom::name() const {return pred;};
 
-inline PredicateType Atom::predicateType() const {return PredicateType(name(), arity());}
+//inline PredicateType Atom::predicateType() const {return PredicateType(name(), arity());}
 
 
 inline Atom& Atom::operator=(const Atom& b) {
@@ -187,9 +188,11 @@ void Atom::serialize(Archive& ar, const unsigned int version) {
 template void Atom::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template void Atom::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 
+/*
 template <class Archive>
 void PredicateType::serialize(Archive& ar, const unsigned int version) {
     ar & name;
     ar & arity;
 }
+*/
 #endif
