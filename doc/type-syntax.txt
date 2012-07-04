@@ -1,0 +1,4 @@
+
+objType: 'type' ':' IDENT '=' '{' (IDENT (',' IDENT)* )? '}'
+
+predType: 'type' ':' IDENT '(' (IDENT (',' IDENT)* )? ')'
