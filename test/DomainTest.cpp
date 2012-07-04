@@ -61,7 +61,9 @@ BOOST_AUTO_TEST_CASE( sat_test )
 
     std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
-    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec, objTypes, predTypes);
     //    std::vector<ELSentence> formulas;
 
     Domain d = loadDomainWithStreams(facts.str(), "");
@@ -135,7 +137,9 @@ BOOST_AUTO_TEST_CASE( sat_where ) {
 
     std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
-    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec, objTypes, predTypes);
 
     std::vector<ELSentence> formulas;
 
@@ -166,7 +170,10 @@ BOOST_AUTO_TEST_CASE( conjunctionIntervalTest ) {
 
     std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
-    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec, objTypes, predTypes);
+
     std::vector<ELSentence> formulas;
     Domain d = loadDomainWithStreams(facts.str(), "");
 
@@ -186,7 +193,10 @@ BOOST_AUTO_TEST_CASE( conjunctionMeetsTest ) {
 
     std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
-    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec, objTypes, predTypes);
+
     std::vector<ELSentence> formulas;
     Domain d = loadDomainWithStreams(facts.str(), "");
 
@@ -203,7 +213,10 @@ BOOST_AUTO_TEST_CASE( conjunctionOverlapsTest ) {
 
     std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
-    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec, objTypes, predTypes);
+
     std::vector<ELSentence> formulas;
     Domain d = loadDomainWithStreams(facts.str(), "");
 
@@ -236,7 +249,10 @@ BOOST_AUTO_TEST_CASE( trueFalseTest ) {
 
     std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
-    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec, objTypes, predTypes);
+
     std::vector<ELSentence> formulas;
     Domain d = loadDomainWithStreams(facts.str(), "");
 
@@ -267,7 +283,10 @@ BOOST_AUTO_TEST_CASE( randomModelTest ) {
 
     std::vector<FOLToken> tokens = FOLParse::tokenize(facts);
     std::vector<FOL::Event> factvec;
-    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseEvents(tokens.begin(), tokens.end(), factvec, objTypes, predTypes);
+
     std::vector<ELSentence> formulas;
     ParseOptions options;
     options.setAssumeClosedWorldInFacts(false);

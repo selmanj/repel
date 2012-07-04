@@ -192,16 +192,70 @@ bool endOfTokens(iters<ForwardIterator> &its) {
 
 
 template <class ForwardIterator>
-void doParseEvents(std::vector<FOL::Event>& store, iters<ForwardIterator> &its) {
+void doParseEvents(std::vector<FOL::Event>& store,
+        std::map<std::string, std::set<std::string> >& objTypes,
+        std::map<std::string, std::vector<std::string> >& predTypes,
+        iters<ForwardIterator> &its) {
     while (!endOfTokens(its)) {
         if (peekTokenType(FOLParse::EndLine, its)) {
             consumeTokenType(FOLParse::EndLine, its);
-        } else {
+        } else if (peekTokenType(FOLParse::Type, its)) {
+            doParseType(objTypes, predTypes, its);
+        } else { // must be an event
             std::vector<FOL::Event> events = doParseEvent(its);
             BOOST_FOREACH(FOL::Event event, events) {
                 store.push_back(event);
             }
         }
+    }
+}
+
+template <class ForwardIterator>
+void doParseType(std::map<std::string, std::set<std::string> >& objTypes,
+        std::map<std::string, std::vector<std::string> >& predTypes,
+        iters<ForwardIterator> &its) {
+    consumeTokenType(FOLParse::Type, its);
+    consumeTokenType(FOLParse::Colon, its);
+    std::string ident = consumeIdent(its);
+    // if we have an equals, we are building a set of objs
+    if (peekTokenType(FOLParse::Equals, its)) {
+        std::set<std::string> objsInType;
+
+        consumeTokenType(FOLParse::Equals, its);
+        consumeTokenType(FOLParse::OpenBrace, its);
+        if (peekTokenType(FOLParse::Identifier, its)) {
+            objsInType.insert(consumeIdent(its));
+            while (peekTokenType(FOLParse::Comma, its)) {
+                consumeTokenType(FOLParse::Comma, its);
+                objsInType.insert(consumeIdent(its));
+            }
+        }
+        consumeTokenType(FOLParse::CloseBrace, its);
+
+        // add our mapping to the obj types set, checking to see if it already
+        // exists
+        if (objTypes.count(ident) != 0) {
+            LOG(LOG_WARN) << "already have an existing type definition for " << ident << " - using the new one.";
+        }
+        objTypes.insert(std::make_pair(ident, objsInType));
+    } else {
+        // must be a predicate type definition
+        std::vector<std::string> predArgs;
+
+        consumeTokenType(FOLParse::OpenParen, its);
+        if (peekTokenType(FOLParse::Identifier, its)) {
+            predArgs.push_back(consumeIdent(its));
+            while (peekTokenType(FOLParse::Comma, its)) {
+                consumeTokenType(FOLParse::Comma, its);
+                predArgs.push_back(consumeIdent(its));
+            }
+        }
+        consumeTokenType(FOLParse::CloseParen, its);
+
+        if (predTypes.count(ident) != 0) {
+            LOG(LOG_WARN) << "already have an existing type definition for predicate " << ident << " - using the new one";
+        }
+        predTypes.insert(std::make_pair(ident, predArgs));
     }
 }
 
@@ -724,13 +778,17 @@ boost::shared_ptr<Sentence> doParseStaticFormula_paren(iters<ForwardIterator> &i
     }
     return s;
 }
+
 };
 
 namespace FOLParse 
 {
 
 // TODO: change this from parsing FOL::Events to Proposition/SISet pairs
-void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store) {
+void parseEventFile(const std::string &filename,
+        std::vector<FOL::Event>& store,
+        std::map<std::string, std::set<std::string> >& objTypes,
+        std::map<std::string, std::vector<std::string> >& predTypes) {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
         std::runtime_error e("unable to open event file " + filename + " for parsing");
@@ -743,7 +801,7 @@ void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store)
 
     iters<std::vector<FOLToken>::const_iterator > its(tokens.begin(), tokens.end());
     try {
-        doParseEvents(store, its);
+        doParseEvents(store, objTypes, predTypes, its);
     } catch (bad_parse& e) {
         e.details += "filename: " +filename + "\n";
         file.close();
@@ -752,7 +810,10 @@ void parseEventFile(const std::string &filename, std::vector<FOL::Event>& store)
     file.close();
 };
 
-void parseFormulaFile(const std::string &filename, std::vector<ELSentence>& store) {
+void parseFormulaFile(const std::string &filename,
+        std::vector<ELSentence>& store,
+        std::map<std::string, std::set<std::string> >& objTypes,
+        std::map<std::string, std::vector<std::string> >& predTypes) {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
         std::runtime_error e("unable to open event file " + filename + " for parsing");
@@ -782,9 +843,12 @@ Domain loadDomainFromFiles(const std::string &eventfile, const std::string &form
     //std::vector<WSentence> formulas;
     std::vector<ELSentence> formSet;
 
-    parseEventFile(eventfile, events);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+
+    parseEventFile(eventfile, events, objTypes, predTypes);
     std::cout << "Read " << events.size() << " events from file." << std::endl;
-    parseFormulaFile(formulafile, formSet);
+    parseFormulaFile(formulafile, formSet, objTypes, predTypes);
     std::cout << "Read " << formSet.size() << " formulas from file." << std::endl;
 
     Domain d;
@@ -817,9 +881,12 @@ Domain loadDomainFromFiles(const std::string &eventfile, const std::string &form
 
 template <class ForwardIterator>
 void parseEvents(const ForwardIterator &first,
-        const ForwardIterator &last, std::vector<FOL::Event>& store) {
+        const ForwardIterator &last,
+        std::vector<FOL::Event>& store,
+        std::map<std::string, std::set<std::string> >& objTypes,
+        std::map<std::string, std::vector<std::string> >& predTypes) {
     iters<ForwardIterator> its(first, last);
-    doParseEvents(store, its);
+    doParseEvents(store, objTypes, predTypes, its);
 }
 
 template <class ForwardIterator>

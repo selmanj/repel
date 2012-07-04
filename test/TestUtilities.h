@@ -26,7 +26,10 @@ Domain loadDomainWithStreams(const std::string& facts, const std::string& formul
     std::vector<FOL::Event> factvec;
     std::vector<ELSentence> formulaSet;
 
-    FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+
+    FOLParse::parseEvents(factsTokens.begin(), factsTokens.end(), factvec, objTypes, predTypes);
     FOLParse::parseFormulas(formulaTokens.begin(), formulaTokens.end(), formulaSet);
 
     // convert to propositions
