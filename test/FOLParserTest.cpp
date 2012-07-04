@@ -7,6 +7,7 @@
 #else
 #include <boost/test/included/unit_test.hpp>
 #endif
+#include <boost/assign/list_of.hpp>
 #include "logic/FOLParser.h"
 #include "logic/FOLLexer.h"
 #include "logic/FOLToken.h"
@@ -154,5 +155,30 @@ BOOST_AUTO_TEST_CASE( quantified_formula_test ) {
     BOOST_CHECK_EQUAL(form.sentence()->toString(), "p(?x, y) v q(a)");
     BOOST_REQUIRE(form.isQuantified());
     BOOST_CHECK_EQUAL(form.quantification().toString(), "{[1:10], [11:12], [(13, 13), (14, 15)]}");
+
+}
+
+BOOST_AUTO_TEST_CASE( type_test ) {
+    std::stringstream str("type: dogs = {fred, louie, speedy}");
+    std::stringstream str2("type: smells(fred, bad)");
+
+    std::vector<FOLToken> tokens = FOLParse::tokenize(str);
+    std::vector<FOLToken> tokens2 = FOLParse::tokenize(str2);
+    std::map<std::string, std::set<std::string> > objTypes;
+    std::map<std::string, std::vector<std::string> > predTypes;
+    FOLParse::parseTypes(tokens.begin(), tokens.end(), objTypes, predTypes);
+    FOLParse::parseTypes(tokens2.begin(), tokens2.end(), objTypes, predTypes);
+
+    BOOST_REQUIRE_EQUAL(objTypes.size(), 1);
+    BOOST_REQUIRE_EQUAL(objTypes.count("dogs"), 1);
+    const std::set<std::string> expectedTypes = boost::assign::list_of("fred")("louie")("speedy");
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(objTypes["dogs"].begin(), objTypes["dogs"].end(),
+            expectedTypes.begin(), expectedTypes.end());
+
+    BOOST_REQUIRE_EQUAL(predTypes.size(), 1);
+    BOOST_REQUIRE_EQUAL(predTypes.count("smells"), 1);
+    const std::vector<std::string> expectedArgs = boost::assign::list_of("fred")("bad");
+    BOOST_REQUIRE_EQUAL_COLLECTIONS(predTypes["smells"].begin(), predTypes["smells"].end(),
+            expectedArgs.begin(), expectedArgs.end());
 
 }
