@@ -936,6 +936,15 @@ ELSentence parseWeightedFormula(const ForwardIterator &first,
     iters<ForwardIterator> its(first, last);
     return doParseWeightedFormula(its);
 }
+
+template <class ForwardIterator>
+void parseTypes(const ForwardIterator &first,
+        const ForwardIterator& last,
+        std::map<std::string, std::set<std::string> >& objTypes,
+        std::map<std::string, std::vector<std::string> >& predTypes) {
+    iters<ForwardIterator> its(first, last);
+    doParseType(objTypes, predTypes, its);
+}
 };
 
 
