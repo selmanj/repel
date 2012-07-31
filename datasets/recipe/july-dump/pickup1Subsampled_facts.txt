@@ -1,0 +1,5 @@
+D-OnTable(object0000) @ [98 : 165]
+D-Touched(object0000) @ [128 : 165]
+D-HandInFrame() @ [59 : 226]
+D-OnTable(object0001) @ [215 : 286]
+D-Touched(object0000) @ [128 : 286]
